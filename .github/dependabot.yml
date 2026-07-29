@@ -18,11 +18,15 @@ updates:
       prefix: deps
     groups:
       production-minor-patch:
+        patterns:
+          - "*"
         dependency-type: production
         update-types:
           - minor
           - patch
       development-minor-patch:
+        patterns:
+          - "*"
         dependency-type: development
         update-types:
           - minor
@@ -45,6 +49,8 @@ updates:
       prefix: deps
     groups:
       rust-minor-patch:
+        patterns:
+          - "*"
         update-types:
           - minor
           - patch
@@ -66,6 +72,8 @@ updates:
       prefix: ci
     groups:
       actions-minor-patch:
+        patterns:
+          - "*"
         update-types:
           - minor
           - patch

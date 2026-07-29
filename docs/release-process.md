@@ -61,6 +61,12 @@ The workflow has no tag-push trigger. Its default is draft-only. A later `publis
 
 The `release` environment must require a trusted reviewer and should prevent administrators from bypassing approval. The draft job can create and verify an unpublished draft, but only the environment-gated promotion job can publish it.
 
+Actions artifacts used to hand source, legal files, metadata, and native
+packages between jobs expire after one day. A successful run copies the exact
+payload into the unpublished GitHub draft before that handoff expires. If a
+failed run is not resumed within the retention window, dispatch a fresh draft
+build rather than treating missing intermediate artifacts as release evidence.
+
 ## Desktop artifacts
 
 Desktop builds should be produced on maintained hosted runners for each supported platform. A matrix entry must not be advertised as supported until its package installs and starts in a clean environment.

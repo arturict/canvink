@@ -16,10 +16,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  frontend:
-    name: Frontend
+  rust:
+    name: required
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 60
 
     steps:
       - name: Check out repository
@@ -36,16 +36,16 @@ jobs:
       - name: Install pinned pnpm
         run: npm install --global pnpm@11.18.0
 
-      - name: Install dependencies
+      - name: Install locked frontend dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
+      - name: Lint frontend
         run: pnpm lint
 
-      - name: Type-check
+      - name: Type-check frontend
         run: pnpm typecheck
 
-      - name: Test
+      - name: Test frontend
         run: pnpm test
 
       - name: Verify Cargo release marker
@@ -62,17 +62,6 @@ jobs:
 
       - name: Smoke-test built site
         run: node scripts/smoke-site.mjs dist
-
-  rust:
-    name: Rust
-    runs-on: ubuntu-24.04
-    timeout-minutes: 45
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
 
       - name: Install Linux build dependencies
         run: |
@@ -94,7 +83,6 @@ jobs:
         uses: Swatinem/rust-cache@23869a5bd66c73db3c0ac40331f3206eb23791dc # v2.9.1
         with:
           workspaces: src-tauri -> target
-          cache-all-crates: true
           cache-on-failure: false
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
@@ -117,22 +105,3 @@ jobs:
 
       - name: Enforce Rust dependency policy
         run: cargo deny --manifest-path src-tauri/Cargo.toml --config .github/cargo-deny.toml check licenses advisories bans sources
-
-  required:
-    name: required
-    if: always()
-    needs:
-      - frontend
-      - rust
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    permissions: {}
-
-    steps:
-      - name: Verify required jobs
-        env:
-          FRONTEND_RESULT: ${{ needs.frontend.result }}
-          RUST_RESULT: ${{ needs.rust.result }}
-        run: |
-          test "$FRONTEND_RESULT" = "success"
-          test "$RUST_RESULT" = "success"

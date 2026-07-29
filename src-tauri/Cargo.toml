@@ -8,6 +8,11 @@ rust-version = "1.85"
 license = "AGPL-3.0-or-later"
 repository = "https://github.com/arturict/canvink"
 
+[package.metadata.ci]
+# Increment this value to rotate the full Rust cache key while retaining the
+# toolchain-level restore prefix.
+rust-cache-policy = "lean-v1"
+
 [lib]
 name = "canvink_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]

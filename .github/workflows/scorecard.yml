@@ -5,6 +5,19 @@ on:
   push:
     branches:
       - main
+    paths:
+      - ".github/**"
+      - "**/Dockerfile"
+      - "**/Dockerfile.*"
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+      - "**/package.json"
+      - "**/pnpm-lock.yaml"
+      - "**/pnpm-workspace.yaml"
+      - "CODE_OF_CONDUCT.md"
+      - "CONTRIBUTING.md"
+      - "LICENSE*"
+      - "SECURITY.md"
   schedule:
     - cron: "31 4 * * 1"
   workflow_dispatch:
@@ -51,4 +64,4 @@ jobs:
           name: scorecard-results
           path: results.sarif
           if-no-files-found: error
-          retention-days: 5
+          retention-days: 1

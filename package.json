@@ -18,7 +18,7 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint . --max-warnings 0",
-    "licenses:npm": "pnpm licenses list --json | node scripts/check-npm-licenses.mjs",
+    "licenses:npm": "node scripts/check-npm-licenses.mjs",
     "release-marker:check": "node scripts/check-cargo-release-marker.mjs",
     "notices:generate": "node scripts/generate-third-party-notices.mjs",
     "notices:check": "node scripts/generate-third-party-notices.mjs --check",

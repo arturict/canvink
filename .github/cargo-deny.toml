@@ -1,6 +1,11 @@
 [advisories]
 yanked = "deny"
 unmaintained = "workspace"
+unsound = "all"
+unused-ignored-advisory = "deny"
+ignore = [
+  { id = "RUSTSEC-2024-0429", reason = "Tauri 2.11 requires the GTK3 Linux stack and glib 0.18. Canvink does not call the affected VariantStrIter API. Remove this exception when the supported Tauri Linux stack resolves to any officially patched glib release." },
+]
 
 [licenses]
 unused-allowed-license = "allow"

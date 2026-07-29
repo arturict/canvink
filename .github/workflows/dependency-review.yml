@@ -1,0 +1,89 @@
+name: Dependency Review
+
+on:
+  pull_request:
+  merge_group:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Open same-repository pull request number to review
+        required: true
+        type: number
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: dependency-review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Review dependency changes
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+          fail-on-scopes: runtime
+          warn-only: false
+
+      - name: Resolve explicitly dispatched pull request
+        if: github.event_name == 'workflow_dispatch'
+        id: dispatched-pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+
+          pr="$(
+            gh pr view "$PR_NUMBER" \
+              --repo "$GITHUB_REPOSITORY" \
+              --json baseRefName,baseRefOid,headRefOid,isCrossRepository,state
+          )"
+          default_branch="$(
+            gh repo view "$GITHUB_REPOSITORY" \
+              --json defaultBranchRef \
+              --jq .defaultBranchRef.name
+          )"
+          base_name="$(jq -er .baseRefName <<<"$pr")"
+          base_oid="$(jq -er .baseRefOid <<<"$pr")"
+          head_oid="$(jq -er .headRefOid <<<"$pr")"
+
+          test "$(jq -er .state <<<"$pr")" = "OPEN"
+          test "$(jq -r .isCrossRepository <<<"$pr")" = "false"
+          test "$base_name" = "$default_branch"
+          [[ "$base_oid" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$head_oid" =~ ^[0-9a-f]{40}$ ]]
+          test "$GITHUB_SHA" = "$head_oid"
+
+          echo "base_oid=$base_oid" >> "$GITHUB_OUTPUT"
+          echo "head_oid=$head_oid" >> "$GITHUB_OUTPUT"
+
+      - name: Review explicitly dispatched dependency changes
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          base-ref: ${{ steps.dispatched-pr.outputs.base_oid }}
+          head-ref: ${{ steps.dispatched-pr.outputs.head_oid }}
+          fail-on-severity: high
+          fail-on-scopes: runtime
+          warn-only: false
+
+      - name: Review merge queue dependency changes
+        if: github.event_name == 'merge_group'
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          base-ref: ${{ github.event.merge_group.base_sha }}
+          head-ref: ${{ github.event.merge_group.head_sha }}
+          fail-on-severity: high
+          fail-on-scopes: runtime
+          warn-only: false

@@ -1,0 +1,13 @@
+* @arturict
+
+/.github/ @arturict
+/scripts/verify-release.mjs @arturict
+/scripts/smoke-site.mjs @arturict
+/src-tauri/ @arturict
+/.node-version @arturict
+/.release-please-manifest.json @arturict
+/package.json @arturict
+/pnpm-lock.yaml @arturict
+/release-please-config.json @arturict
+/rust-toolchain.toml @arturict
+/vercel.json @arturict

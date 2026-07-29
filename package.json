@@ -1,0 +1,65 @@
+{
+  "name": "canvink",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A local-first notebook for ink, text, images, and PDFs.",
+  "license": "AGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arturict/canvink.git"
+  },
+  "homepage": "https://canvink.vercel.app",
+  "bugs": {
+    "url": "https://github.com/arturict/canvink/issues"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b --pretty false",
+    "lint": "eslint . --max-warnings 0",
+    "licenses:npm": "pnpm licenses list --json | node scripts/check-npm-licenses.mjs",
+    "release-marker:check": "node scripts/check-cargo-release-marker.mjs",
+    "notices:generate": "node scripts/generate-third-party-notices.mjs",
+    "notices:check": "node scripts/generate-third-party-notices.mjs --check",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm release-marker:check && pnpm licenses:npm && pnpm build",
+    "test": "vitest run && node --test scripts/*.test.mjs",
+    "test:watch": "vitest",
+    "preview": "vite preview",
+    "smoke:browser": "node scripts/smoke-browser.mjs",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build --ci -- --locked"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.11.1",
+    "idb-keyval": "6.3.0",
+    "jspdf": "4.2.1",
+    "konva": "10.3.0",
+    "lucide-react": "1.27.0",
+    "pdfjs-dist": "6.2.108",
+    "perfect-freehand": "1.2.3",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-konva": "19.2.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.62.0",
+    "@tauri-apps/cli": "2.11.4",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.4",
+    "eslint": "10.8.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.8.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.65.0",
+    "vite": "8.1.5",
+    "vitest": "4.1.10"
+  },
+  "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

@@ -1,0 +1,16 @@
+allowBuilds:
+  core-js: false
+supportedArchitectures:
+  os:
+    - win32
+    - linux
+  cpu:
+    - x64
+  libc:
+    - glibc
+    - musl
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - pdfjs-dist@6.2.108
+  - baseline-browser-mapping@2.11.6
+  - electron-to-chromium@1.5.398

@@ -1,0 +1,228 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: release-please-main
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    name: Prepare release pull request
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    env:
+      RELEASE_PLEASE_TOKEN_CONFIGURED: ${{ secrets.RELEASE_PLEASE_TOKEN != '' }}
+    outputs:
+      pr: ${{ steps.release.outputs.pr }}
+      prs_created: ${{ steps.release.outputs.prs_created }}
+      release_please_token_configured: ${{ steps.token-source.outputs.configured }}
+
+    steps:
+      - name: Record token source
+        id: token-source
+        shell: bash
+        run: echo "configured=$RELEASE_PLEASE_TOKEN_CONFIGURED" >> "$GITHUB_OUTPUT"
+
+      - name: Reconcile externally published release pull requests
+        id: lifecycle
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          default_branch="$(
+            gh repo view "$GITHUB_REPOSITORY" \
+              --json defaultBranchRef \
+              --jq .defaultBranchRef.name
+          )"
+          pending="$(
+            gh pr list \
+              --repo "$GITHUB_REPOSITORY" \
+              --state merged \
+              --base "$default_branch" \
+              --label "autorelease: pending" \
+              --limit 100 \
+              --json baseRefName,headRefName,mergeCommit,number
+          )"
+          blocked=false
+
+          while IFS= read -r candidate; do
+            test -n "$candidate" || continue
+            pr_number="$(jq -er .number <<<"$candidate")"
+            base_name="$(jq -er .baseRefName <<<"$candidate")"
+            head_name="$(jq -er .headRefName <<<"$candidate")"
+            merge_sha="$(jq -er '.mergeCommit.oid' <<<"$candidate")"
+
+            test "$base_name" = "$default_branch"
+            test "$head_name" = "release-please--branches--${default_branch}--components--canvink"
+            [[ "$merge_sha" =~ ^[0-9a-f]{40}$ ]]
+
+            changed_files="$(
+              gh pr view "$pr_number" \
+                --repo "$GITHUB_REPOSITORY" \
+                --json files \
+                --jq '[.files[].path]'
+            )"
+            for required_file in \
+              .release-please-manifest.json \
+              CHANGELOG.md \
+              package.json \
+              src-tauri/Cargo.lock \
+              src-tauri/Cargo.toml \
+              src-tauri/tauri.conf.json
+            do
+              jq -e --arg path "$required_file" \
+                'index($path) != null' <<<"$changed_files" >/dev/null
+            done
+
+            manifest="$(
+              gh api \
+                "repos/${GITHUB_REPOSITORY}/contents/.release-please-manifest.json?ref=${merge_sha}" \
+                --jq .content |
+                tr -d '\n' |
+                base64 --decode
+            )"
+            version="$(
+              jq -er '
+                if
+                  type == "object" and
+                  keys == ["."] and
+                  (.["."] | type == "string")
+                then .["."]
+                else error("invalid release manifest")
+                end
+              ' <<<"$manifest"
+            )"
+            [[ "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]
+            tag="v${version}"
+
+            if ! tag_object="$(
+              gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${tag}" 2>/dev/null
+            )"; then
+              blocked=true
+              continue
+            fi
+            tag_sha="$(jq -er '.object.sha' <<<"$tag_object")"
+            tag_type="$(jq -er '.object.type' <<<"$tag_object")"
+            if test "$tag_type" = "tag"; then
+              tag_sha="$(
+                gh api "repos/${GITHUB_REPOSITORY}/git/tags/${tag_sha}" \
+                  --jq '.object.sha'
+              )"
+            fi
+            test "$tag_sha" = "$merge_sha"
+
+            if ! release="$(
+              gh release view "$tag" \
+                --repo "$GITHUB_REPOSITORY" \
+                --json isDraft,tagName 2>/dev/null
+            )"; then
+              blocked=true
+              continue
+            fi
+            if test "$(jq -r .isDraft <<<"$release")" != "false"; then
+              blocked=true
+              continue
+            fi
+            test "$(jq -er .tagName <<<"$release")" = "$tag"
+
+            if ! gh label list \
+              --repo "$GITHUB_REPOSITORY" \
+              --limit 100 \
+              --json name \
+              --jq '.[].name' |
+              grep -Fxq "autorelease: tagged"
+            then
+              gh label create "autorelease: tagged" \
+                --repo "$GITHUB_REPOSITORY" \
+                --color "0e8a16" \
+                --description "Release Please tag was externally published"
+            fi
+            gh pr edit "$pr_number" \
+              --repo "$GITHUB_REPOSITORY" \
+              --remove-label "autorelease: pending" \
+              --add-label "autorelease: tagged"
+          done < <(jq -c '.[]' <<<"$pending")
+
+          echo "blocked=$blocked" >> "$GITHUB_OUTPUT"
+          if test "$blocked" = "true"; then
+            {
+              echo "## Release Please is waiting"
+              echo
+              echo "A merged release pull request remains pending until its exact tag and GitHub Release are published."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Open or update release pull request
+        id: release
+        if: steps.lifecycle.outputs.blocked != 'true'
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          skip-github-release: true
+
+  dispatch-checks:
+    name: Dispatch release pull request checks
+    needs:
+      - release-please
+    if: >-
+      needs.release-please.outputs.prs_created == 'true' &&
+      needs.release-please.outputs.release_please_token_configured != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: write
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Dispatch checks for a pull request created by GITHUB_TOKEN
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_JSON: ${{ needs.release-please.outputs.pr }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          pr_number="$(jq -er '.number' <<<"$PR_JSON")"
+          expected_base="$(jq -er '.baseBranchName' <<<"$PR_JSON")"
+          expected_head="$(jq -er '.headBranchName' <<<"$PR_JSON")"
+
+          test "$expected_base" = "main"
+
+          actual_pr="$(
+            gh pr view "$pr_number" \
+              --repo "$GITHUB_REPOSITORY" \
+              --json baseRefName,headRefName,headRefOid,isCrossRepository,state
+          )"
+
+          test "$(jq -er '.baseRefName' <<<"$actual_pr")" = "$expected_base"
+          test "$(jq -er '.headRefName' <<<"$actual_pr")" = "$expected_head"
+          test "$(jq -r '.isCrossRepository' <<<"$actual_pr")" = "false"
+          test "$(jq -er '.state' <<<"$actual_pr")" = "OPEN"
+          test -n "$(jq -er '.headRefOid' <<<"$actual_pr")"
+
+          gh workflow run ci.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "$expected_head"
+          gh workflow run codeql.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "$expected_head"
+          gh workflow run dependency-review.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "$expected_head" \
+            -f pr_number="$pr_number"

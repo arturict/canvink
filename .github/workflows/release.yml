@@ -1,0 +1,1322 @@
+name: Release
+run-name: Release ${{ inputs.tag }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Exact version tag, for example v0.1.0
+        required: true
+        type: string
+      publish:
+        description: Promote an existing manually tested draft without rebuilding
+        required: true
+        default: false
+        type: boolean
+      draft_id:
+        description: Exact prior draft database ID; required only when publish is true
+        required: false
+        type: string
+      manifest_sha256:
+        description: SHA-256 of the prior draft's SHA256SUMS; required only when publish is true
+        required: false
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: release-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Verify release inputs
+    if: ${{ !inputs.publish }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      checks: read
+      contents: read
+    outputs:
+      sha: ${{ steps.release.outputs.sha }}
+      signing: ${{ steps.release.outputs.signing }}
+      tag: ${{ steps.release.outputs.tag }}
+      version: ${{ steps.release.outputs.version }}
+
+    steps:
+      - name: Check out release commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          check-latest: false
+
+      - name: Verify versions, commit, and unsigned configuration
+        id: release
+        env:
+          MAIN_MODE: exact
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: >-
+          node scripts/verify-release.mjs
+          --tag "$RELEASE_TAG"
+          --main-mode "$MAIN_MODE"
+          --unsigned
+          --github-output
+
+      - name: Require successful CI and CodeQL for the release commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+        shell: bash
+        run: |
+          REQUIRED_CHECKS=(required CodeQL "Vercel deployment")
+          for ATTEMPT in {1..60}; do
+            CHECK_RUNS="$(
+              gh api \
+                -H "Accept: application/vnd.github+json" \
+                "repos/${GITHUB_REPOSITORY}/commits/${RELEASE_SHA}/check-runs?per_page=100"
+            )"
+            ALL_SUCCESS=true
+
+            for CHECK_NAME in "${REQUIRED_CHECKS[@]}"; do
+              CHECK_STATE="$(
+                jq -r \
+                  --arg name "$CHECK_NAME" \
+                  '[.check_runs[]
+                    | select(.name == $name and .app.slug == "github-actions")]
+                    | sort_by(.started_at)
+                    | last
+                    | (.conclusion // .status // "missing")' \
+                  <<<"$CHECK_RUNS"
+              )"
+              echo "$CHECK_NAME: $CHECK_STATE"
+              if test "$CHECK_STATE" != "success"; then
+                ALL_SUCCESS=false
+              fi
+              case "$CHECK_STATE" in
+                failure|cancelled|timed_out|action_required|stale|skipped|neutral)
+                  echo "::error::$CHECK_NAME failed for $RELEASE_SHA."
+                  exit 1
+                  ;;
+              esac
+            done
+
+            if test "$ALL_SUCCESS" = "true"; then
+              exit 0
+            fi
+            sleep 20
+          done
+
+          echo "::error::Required checks did not succeed for $RELEASE_SHA within 20 minutes."
+          exit 1
+
+      - name: Reject an already published release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            IS_DRAFT="$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)"
+            test "$IS_DRAFT" = "true" || {
+              echo "::error::Release $RELEASE_TAG is already published and immutable."
+              exit 1
+            }
+          fi
+
+      - name: Create explicit source archive
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          mkdir -p release-source
+          git archive \
+            --format=tar.gz \
+            --prefix="canvink-${RELEASE_VERSION}/" \
+            --output="release-source/canvink-${RELEASE_TAG}-source.tar.gz" \
+            HEAD
+
+      - name: Extract versioned changelog notes
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          mkdir -p release-metadata
+          node scripts/extract-release-notes.mjs \
+            "$RELEASE_VERSION" \
+            CHANGELOG.md \
+            release-metadata/changelog.md
+          test -s release-metadata/changelog.md
+
+      - name: Upload source archive
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-source
+          path: release-source/*
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 0
+
+      - name: Upload licenses and third-party notices
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-legal
+          path: |
+            LICENSE
+            THIRD_PARTY_NOTICES.md
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 0
+
+      - name: Upload release notes metadata
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: metadata-release-notes
+          path: release-metadata/changelog.md
+          if-no-files-found: error
+          retention-days: 3
+
+  linux:
+    name: Build Linux
+    if: ${{ !inputs.publish }}
+    needs:
+      - prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out verified release commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+          persist-credentials: false
+
+      - name: Install Linux bundle dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            dbus-x11 \
+            libappindicator3-dev \
+            librsvg2-dev \
+            libssl-dev \
+            libwebkit2gtk-4.1-dev \
+            patchelf \
+            wmctrl \
+            xvfb
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          check-latest: false
+
+      - name: Install pinned pnpm
+        run: npm install --global pnpm@11.18.0
+
+      - name: Install locked frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Confirm pinned Rust toolchain
+        run: |
+          rustc --version
+          cargo --version
+
+      - name: Build unsigned Linux bundles
+        uses: tauri-apps/tauri-action@2d793bf2c8c505b9b76211601b09aab48922225d # v1.0.0
+        with:
+          tauriScript: pnpm tauri
+          args: --bundles deb,appimage --ci -- --locked
+          retryAttempts: 0
+
+      - name: Launch-smoke packaged Linux applications
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -d '' APPIMAGES < <(
+            find src-tauri/target/release/bundle \
+              -type f \
+              -name '*.AppImage' \
+              -print0
+          )
+          mapfile -d '' DEBS < <(
+            find src-tauri/target/release/bundle \
+              -type f \
+              -name '*.deb' \
+              -print0
+          )
+          test "${#APPIMAGES[@]}" -eq 1
+          test "${#DEBS[@]}" -eq 1
+
+          chmod +x "${APPIMAGES[0]}"
+
+          smoke_gui_package() {
+            local label="$1"
+            local binary="$2"
+            local package_kind="$3"
+            local smoke_root
+            local log_file
+            smoke_root="$(mktemp -d "${RUNNER_TEMP}/canvink-${label}-XXXXXX")"
+            log_file="${RUNNER_TEMP}/canvink-${label}.log"
+            mkdir -p \
+              "${smoke_root}/home" \
+              "${smoke_root}/config" \
+              "${smoke_root}/data" \
+              "${smoke_root}/runtime"
+            chmod 700 "${smoke_root}/runtime"
+
+            dbus-run-session -- xvfb-run -a bash -ceu '
+              label="$1"
+              binary="$2"
+              package_kind="$3"
+              smoke_root="$4"
+              log_file="$5"
+              export HOME="${smoke_root}/home"
+              export XDG_CONFIG_HOME="${smoke_root}/config"
+              export XDG_DATA_HOME="${smoke_root}/data"
+              export XDG_RUNTIME_DIR="${smoke_root}/runtime"
+
+              if test "$package_kind" = "appimage"; then
+                APPIMAGE_EXTRACT_AND_RUN=1 "$binary" >"$log_file" 2>&1 &
+              else
+                "$binary" >"$log_file" 2>&1 &
+              fi
+              app_pid=$!
+              cleanup() {
+                if kill -0 "$app_pid" 2>/dev/null; then
+                  kill -TERM "$app_pid" 2>/dev/null || true
+                  sleep 1
+                  kill -KILL "$app_pid" 2>/dev/null || true
+                fi
+                wait "$app_pid" 2>/dev/null || true
+              }
+              trap cleanup EXIT
+
+              window_seen=false
+              for _ in {1..60}; do
+                if ! kill -0 "$app_pid" 2>/dev/null; then
+                  echo "::error::${label} package exited before opening a window."
+                  cat "$log_file"
+                  exit 1
+                fi
+                if wmctrl -l 2>/dev/null | grep -Fqi "Canvink"; then
+                  window_seen=true
+                  break
+                fi
+                sleep 0.5
+              done
+
+              if test "$window_seen" != "true"; then
+                echo "::error::${label} package did not expose a Canvink window."
+                cat "$log_file"
+                exit 1
+              fi
+            ' -- "$label" "$binary" "$package_kind" "$smoke_root" "$log_file"
+          }
+
+          smoke_gui_package \
+            appimage \
+            "$(realpath "${APPIMAGES[0]}")" \
+            appimage
+
+          mapfile -t DEB_BINARIES < <(
+            dpkg-deb --contents "${DEBS[0]}" |
+              awk '$6 ~ /^\.\/usr\/bin\/[^/]+$/ { print substr($6, 2) }'
+          )
+          test "${#DEB_BINARIES[@]}" -eq 1
+
+          # Installation is the only privileged package operation. The GUI is
+          # always launched below as the unprivileged Actions runner.
+          sudo apt-get install \
+            --yes \
+            --no-install-recommends \
+            "$(realpath "${DEBS[0]}")"
+          test -x "${DEB_BINARIES[0]}"
+          smoke_gui_package deb "${DEB_BINARIES[0]}" deb
+
+      - name: Stage Linux installers
+        shell: bash
+        run: |
+          mkdir -p release-staging
+          mapfile -d '' INSTALLERS < <(
+            find src-tauri/target/release/bundle \
+              -type f \
+              \( -name '*.deb' -o -name '*.AppImage' \) \
+              -print0
+          )
+          test "${#INSTALLERS[@]}" -ge 2
+          cp -- "${INSTALLERS[@]}" release-staging/
+
+      - name: Generate Linux SPDX SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          path: src-tauri/target/release/bundle
+          format: spdx-json
+          output-file: release-staging/sbom-linux.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Upload Linux release payload
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-linux
+          path: release-staging/*
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 0
+
+  windows:
+    name: Build Windows
+    if: ${{ !inputs.publish }}
+    needs:
+      - prepare
+    runs-on: windows-2025
+    timeout-minutes: 90
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out verified release commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          check-latest: false
+
+      - name: Install pinned pnpm
+        run: npm install --global pnpm@11.18.0
+
+      - name: Install locked frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Confirm pinned Rust toolchain
+        run: |
+          rustc --version
+          cargo --version
+
+      - name: Build unsigned Windows bundles
+        uses: tauri-apps/tauri-action@2d793bf2c8c505b9b76211601b09aab48922225d # v1.0.0
+        with:
+          tauriScript: pnpm tauri
+          args: --bundles nsis,msi --ci -- --locked
+          retryAttempts: 0
+
+      - name: Install, launch, and uninstall Windows packages
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Set-StrictMode -Version Latest
+
+          $bundleRoot = (Resolve-Path 'src-tauri/target/release/bundle').Path
+          $nsisInstallers = @(
+            Get-ChildItem -LiteralPath $bundleRoot -Recurse -File -Filter '*.exe'
+          )
+          $msiInstallers = @(
+            Get-ChildItem -LiteralPath $bundleRoot -Recurse -File -Filter '*.msi'
+          )
+          if ($nsisInstallers.Count -ne 1 -or $msiInstallers.Count -ne 1) {
+            throw 'Expected exactly one NSIS installer and one MSI package.'
+          }
+
+          $smokeRoot = Join-Path `
+            $env:RUNNER_TEMP `
+            "canvink-package-smoke-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+          $nsisInstallRoot = Join-Path $smokeRoot 'nsis-installed'
+          New-Item -ItemType Directory -Path $smokeRoot | Out-Null
+          $resolvedRunnerTemp = [IO.Path]::GetFullPath($env:RUNNER_TEMP).TrimEnd('\') + '\'
+          foreach ($path in @($smokeRoot, $nsisInstallRoot)) {
+            $resolvedPath = [IO.Path]::GetFullPath($path)
+            if (-not $resolvedPath.StartsWith(
+              $resolvedRunnerTemp,
+              [StringComparison]::OrdinalIgnoreCase
+            )) {
+              throw "Unsafe disposable-runner path: $resolvedPath"
+            }
+          }
+
+          function Invoke-PackagedLaunchSmoke {
+            param(
+              [Parameter(Mandatory)]
+              [string] $Label,
+              [Parameter(Mandatory)]
+              [string] $Executable
+            )
+
+            $profileRoot = Join-Path $smokeRoot "$Label-profile"
+            $localAppData = Join-Path $profileRoot 'LocalAppData'
+            $roamingAppData = Join-Path $profileRoot 'RoamingAppData'
+            New-Item -ItemType Directory -Path $localAppData, $roamingAppData | Out-Null
+
+            $previousLocalAppData = $env:LOCALAPPDATA
+            $previousAppData = $env:APPDATA
+            $env:LOCALAPPDATA = $localAppData
+            $env:APPDATA = $roamingAppData
+            $process = $null
+            try {
+              # Application launch is deliberately not elevated with RunAs.
+              $process = Start-Process -FilePath $Executable -PassThru
+              $windowSeen = $false
+              for ($attempt = 0; $attempt -lt 60; $attempt++) {
+                Start-Sleep -Milliseconds 500
+                $process.Refresh()
+                if ($process.HasExited) {
+                  throw "$Label installation exited before opening a window."
+                }
+                if (
+                  $process.MainWindowHandle -ne [IntPtr]::Zero -and
+                  $process.MainWindowTitle -match 'Canvink'
+                ) {
+                  $windowSeen = $true
+                  break
+                }
+              }
+              if (-not $windowSeen) {
+                throw "$Label installation did not expose a Canvink window."
+              }
+              if (-not $process.CloseMainWindow()) {
+                throw "$Label installation did not accept a normal window close."
+              }
+              if (-not $process.WaitForExit(15000)) {
+                throw "$Label installation did not exit after its window closed."
+              }
+              if ($process.ExitCode -ne 0) {
+                throw "$Label installation exited with code $($process.ExitCode)."
+              }
+            } finally {
+              if ($null -ne $process -and -not $process.HasExited) {
+                Stop-Process -Id $process.Id
+                $process.WaitForExit(10000)
+              }
+              $env:LOCALAPPDATA = $previousLocalAppData
+              $env:APPDATA = $previousAppData
+            }
+          }
+
+          function Require-InstallerExitCode {
+            param(
+              [Parameter(Mandatory)]
+              [string] $Operation,
+              [Parameter(Mandatory)]
+              [int] $ExitCode
+            )
+            if ($ExitCode -notin @(0, 3010)) {
+              throw "$Operation failed with exit code $ExitCode."
+            }
+          }
+
+          $nsisAppPath = $null
+          $nsisInstalled = $false
+          try {
+            # Tauri NSIS uses currentUser mode. /D must remain the final argument.
+            $nsisInstall = Start-Process `
+              -FilePath $nsisInstallers[0].FullName `
+              -ArgumentList @('/S', "/D=$nsisInstallRoot") `
+              -Wait `
+              -PassThru
+            Require-InstallerExitCode `
+              -Operation 'NSIS silent installation' `
+              -ExitCode $nsisInstall.ExitCode
+            $nsisInstalled = $true
+
+            $nsisApps = @(
+              Get-ChildItem `
+                -LiteralPath $nsisInstallRoot `
+                -Recurse `
+                -File `
+                -Filter 'Canvink.exe'
+            )
+            if ($nsisApps.Count -ne 1) {
+              throw 'NSIS installation did not produce exactly one Canvink.exe.'
+            }
+            $nsisAppPath = $nsisApps[0].FullName
+            Invoke-PackagedLaunchSmoke `
+              -Label 'nsis' `
+              -Executable $nsisAppPath
+          } finally {
+            if ($nsisInstalled) {
+              $uninstallers = @(
+                Get-ChildItem `
+                  -LiteralPath $nsisInstallRoot `
+                  -Recurse `
+                  -File |
+                  Where-Object { $_.Name -match '(?i)uninstall.*\.exe$' }
+              )
+              if ($uninstallers.Count -ne 1) {
+                throw 'NSIS installation did not provide exactly one uninstaller.'
+              }
+              $nsisUninstall = Start-Process `
+                -FilePath $uninstallers[0].FullName `
+                -ArgumentList '/S' `
+                -Wait `
+                -PassThru
+              Require-InstallerExitCode `
+                -Operation 'NSIS silent uninstall' `
+                -ExitCode $nsisUninstall.ExitCode
+              for ($attempt = 0; $attempt -lt 20; $attempt++) {
+                if (-not (Test-Path -LiteralPath $nsisAppPath)) {
+                  break
+                }
+                Start-Sleep -Milliseconds 500
+              }
+              if (Test-Path -LiteralPath $nsisAppPath) {
+                throw 'NSIS silent uninstall left the installed application behind.'
+              }
+            }
+          }
+
+          function Find-MsiCanvinkExecutable {
+            $candidatePaths = [Collections.Generic.List[string]]::new()
+            $registryRoots = @(
+              'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
+              'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall'
+              'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
+            )
+            foreach ($registryRoot in $registryRoots) {
+              if (-not (Test-Path -LiteralPath $registryRoot)) {
+                continue
+              }
+              $entries = Get-ChildItem -LiteralPath $registryRoot |
+                ForEach-Object { Get-ItemProperty -LiteralPath $_.PSPath } |
+                Where-Object {
+                  $null -ne $_.PSObject.Properties['DisplayName'] -and
+                  $_.DisplayName -eq 'Canvink'
+                }
+              foreach ($entry in $entries) {
+                $installLocation = $entry.PSObject.Properties['InstallLocation']
+                if ($null -ne $installLocation -and $installLocation.Value) {
+                  $candidatePaths.Add(
+                    (Join-Path $installLocation.Value 'Canvink.exe')
+                  )
+                }
+                $displayIcon = $entry.PSObject.Properties['DisplayIcon']
+                if ($null -ne $displayIcon -and $displayIcon.Value) {
+                  $candidatePaths.Add(
+                    ($displayIcon.Value -split ',')[0].Trim('"')
+                  )
+                }
+              }
+            }
+            $candidatePaths.Add((Join-Path $env:ProgramFiles 'Canvink\Canvink.exe'))
+            if (${env:ProgramFiles(x86)}) {
+              $candidatePaths.Add(
+                (Join-Path ${env:ProgramFiles(x86)} 'Canvink\Canvink.exe')
+              )
+            }
+
+            $existing = @(
+              $candidatePaths |
+                Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } |
+                ForEach-Object { [IO.Path]::GetFullPath($_) } |
+                Sort-Object -Unique
+            )
+            if ($existing.Count -ne 1) {
+              throw 'MSI installation did not register exactly one Canvink.exe.'
+            }
+            return $existing[0]
+          }
+
+          $msiAppPath = $null
+          $msiLog = Join-Path $smokeRoot 'msi-install.log'
+          $msiInstalled = $false
+          try {
+            $msiInstall = Start-Process `
+              -FilePath "$env:SystemRoot\System32\msiexec.exe" `
+              -ArgumentList @(
+                '/i'
+                "`"$($msiInstallers[0].FullName)`""
+                '/quiet'
+                '/norestart'
+                '/l*v'
+                "`"$msiLog`""
+              ) `
+              -Wait `
+              -PassThru
+            Require-InstallerExitCode `
+              -Operation 'MSI quiet installation' `
+              -ExitCode $msiInstall.ExitCode
+            $msiInstalled = $true
+            $msiAppPath = Find-MsiCanvinkExecutable
+            Invoke-PackagedLaunchSmoke `
+              -Label 'msi' `
+              -Executable $msiAppPath
+          } finally {
+            if ($msiInstalled) {
+              $msiUninstall = Start-Process `
+                -FilePath "$env:SystemRoot\System32\msiexec.exe" `
+                -ArgumentList @(
+                  '/x'
+                  "`"$($msiInstallers[0].FullName)`""
+                  '/quiet'
+                  '/norestart'
+                ) `
+                -Wait `
+                -PassThru
+              Require-InstallerExitCode `
+                -Operation 'MSI quiet uninstall' `
+                -ExitCode $msiUninstall.ExitCode
+              if (Test-Path -LiteralPath $msiAppPath) {
+                throw 'MSI quiet uninstall left the installed application behind.'
+              }
+            }
+          }
+
+      - name: Verify and stage unsigned Windows installers
+        shell: pwsh
+        run: |
+          $installers = Get-ChildItem `
+            -Path 'src-tauri/target/release/bundle' `
+            -Recurse `
+            -File |
+            Where-Object { $_.Extension -in @('.exe', '.msi') }
+
+          if ($installers.Count -lt 2) {
+            throw "Expected both NSIS and MSI installers."
+          }
+
+          foreach ($installer in $installers) {
+            $signature = Get-AuthenticodeSignature -LiteralPath $installer.FullName
+            if ($signature.Status -ne 'NotSigned') {
+              throw "Unsigned release invariant failed for $($installer.Name): $($signature.Status)"
+            }
+          }
+
+          New-Item -ItemType Directory -Path 'release-staging' -Force | Out-Null
+          Copy-Item -LiteralPath $installers.FullName -Destination 'release-staging'
+
+      - name: Generate Windows SPDX SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          path: src-tauri/target/release/bundle
+          format: spdx-json
+          output-file: release-staging/sbom-windows.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Upload Windows release payload
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-windows
+          path: release-staging/*
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 0
+
+  draft:
+    name: Create and verify draft
+    if: ${{ !inputs.publish }}
+    needs:
+      - prepare
+      - linux
+      - windows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      artifact-metadata: write
+      attestations: write
+      contents: write
+      id-token: write
+    outputs:
+      asset_count: ${{ steps.verify-draft.outputs.asset_count }}
+      draft_id: ${{ steps.verify-draft.outputs.draft_id }}
+      manifest_sha256: ${{ steps.verify-draft.outputs.manifest_sha256 }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_SHA: ${{ needs.prepare.outputs.sha }}
+      RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+      RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+
+    steps:
+      - name: Download native bundles and source archive
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: release-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Download release notes metadata
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: metadata-release-notes
+          path: release-metadata
+
+      - name: Validate release payload
+        shell: bash
+        run: |
+          shopt -s nullglob
+          EXE=(release-assets/*.exe)
+          MSI=(release-assets/*.msi)
+          DEB=(release-assets/*.deb)
+          APPIMAGE=(release-assets/*.AppImage)
+          SOURCE=(release-assets/*-source.tar.gz)
+          SBOM=(release-assets/sbom-*.spdx.json)
+
+          test "${#EXE[@]}" -ge 1
+          test "${#MSI[@]}" -ge 1
+          test "${#DEB[@]}" -ge 1
+          test "${#APPIMAGE[@]}" -ge 1
+          test "${#SOURCE[@]}" -eq 1
+          test "${#SBOM[@]}" -eq 2
+          test -s release-assets/LICENSE
+          test -s release-assets/THIRD_PARTY_NOTICES.md
+
+          if find release-assets -type l -print -quit | grep -q .; then
+            echo "::error::Release payload must not contain symbolic links."
+            exit 1
+          fi
+
+          if find release-assets -type f \
+            \( -name '*.sig' -o -name 'latest.json' \) \
+            -print -quit | grep -q .; then
+            echo "::error::Unsigned releases must not contain updater signatures or manifests."
+            exit 1
+          fi
+
+      - name: Record signing status and checksums
+        shell: bash
+        run: |
+          jq -n \
+            --arg tag "$RELEASE_TAG" \
+            --arg version "$RELEASE_VERSION" \
+            --arg commit "$RELEASE_SHA" \
+            '{
+              schemaVersion: 1,
+              tag: $tag,
+              version: $version,
+              commit: $commit
+            }' > release-assets/RELEASE-METADATA.json
+          jq -e \
+            --arg tag "$RELEASE_TAG" \
+            --arg version "$RELEASE_VERSION" \
+            --arg commit "$RELEASE_SHA" \
+            '
+              type == "object" and
+              keys == ["commit", "schemaVersion", "tag", "version"] and
+              .schemaVersion == 1 and
+              .tag == $tag and
+              .version == $version and
+              .commit == $commit
+            ' \
+            release-assets/RELEASE-METADATA.json >/dev/null
+
+          {
+            echo "Canvink ${RELEASE_TAG}"
+            echo
+            echo "Signing status: UNSIGNED"
+            echo "Windows installers are not Authenticode-signed."
+            echo "Tauri updater signing is disabled and no updater artifacts are included."
+            echo "Verify downloads with SHA256SUMS and GitHub artifact attestations."
+          } > release-assets/SIGNING-STATUS.txt
+
+          (
+            cd release-assets
+            find . -maxdepth 1 -type f ! -name SHA256SUMS -print0 |
+              sort -z |
+              xargs -0 sha256sum > SHA256SUMS
+            sha256sum --check SHA256SUMS
+          )
+
+      - name: Attest release provenance
+        uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.2.0
+        with:
+          subject-path: release-assets/*
+
+      - name: Attest Linux SBOM
+        uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.2.0
+        with:
+          subject-path: |
+            release-assets/*.AppImage
+            release-assets/*.deb
+          sbom-path: release-assets/sbom-linux.spdx.json
+
+      - name: Attest Windows SBOM
+        uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.2.0
+        with:
+          subject-path: |
+            release-assets/*.exe
+            release-assets/*.msi
+          sbom-path: release-assets/sbom-windows.spdx.json
+
+      - name: Create or refresh verified draft
+        shell: bash
+        run: |
+          if ! gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" >/dev/null 2>&1; then
+            gh api \
+              --method POST \
+              "repos/${GITHUB_REPOSITORY}/git/refs" \
+              -f "ref=refs/tags/${RELEASE_TAG}" \
+              -f "sha=${RELEASE_SHA}"
+          fi
+
+          TAG_OBJECT="$(
+            gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}"
+          )"
+          TAG_SHA="$(jq -r '.object.sha' <<<"$TAG_OBJECT")"
+          TAG_TYPE="$(jq -r '.object.type' <<<"$TAG_OBJECT")"
+          if test "$TAG_TYPE" = "tag"; then
+            TAG_SHA="$(
+              gh api "repos/${GITHUB_REPOSITORY}/git/tags/${TAG_SHA}" \
+                --jq '.object.sha'
+            )"
+          fi
+          test "$TAG_SHA" = "$RELEASE_SHA"
+
+          {
+            echo "Canvink ${RELEASE_TAG} is a public alpha release of the open, local-first mixed-media notebook."
+            echo
+            cat release-metadata/changelog.md
+            echo
+            echo "## Packages and verification"
+            echo
+            echo "- Windows: unsigned NSIS and MSI packages, built on GitHub's Windows 2025 runner."
+            echo "- Linux: unsigned AppImage and deb packages, built on GitHub's Ubuntu 24.04 runner."
+            echo "- AppImage and deb packages opened a Canvink window under isolated Linux display and profile state."
+            echo "- NSIS and MSI passed quiet installation, installed-app launch, normal window close, and quiet uninstall on the disposable Windows runner."
+            echo "- Frontend tests, Rust tests, linting, dependency policy, CodeQL, checksums, SBOMs, launch smokes, and provenance attestations gate publication."
+            echo "- This alpha has no sync, collaboration, encryption, OCR, mobile app, or complete OneNote importer."
+            echo "- Schema v1 is the first public format. Keep backups because compatibility can still change during 0.x."
+            echo
+            echo "## Signing status"
+            echo
+            echo "This public alpha is intentionally **unsigned**."
+            echo "Windows may display an unknown-publisher warning."
+            echo "The Tauri updater is disabled, so this release contains no updater manifest or updater signatures."
+            echo
+            echo "Verify each download with \`SHA256SUMS\` and GitHub artifact attestations:"
+            echo
+            echo "\`\`\`console"
+            echo "gh attestation verify <file> --repo ${GITHUB_REPOSITORY}"
+            echo "\`\`\`"
+            echo
+            echo "Source: https://github.com/${GITHUB_REPOSITORY}/tree/${RELEASE_TAG}"
+            echo
+            echo "Built with AI assistance and reviewed under the same testing, licensing, and security requirements as other contributions."
+          } > release-notes.md
+
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            IS_DRAFT="$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)"
+            test "$IS_DRAFT" = "true"
+            gh release edit "$RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "Canvink ${RELEASE_TAG}" \
+              --notes-file release-notes.md
+          else
+            gh release create "$RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --draft \
+              --verify-tag \
+              --target "$RELEASE_SHA" \
+              --title "Canvink ${RELEASE_TAG}" \
+              --notes-file release-notes.md
+          fi
+
+          gh release upload "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --clobber \
+            release-assets/*
+
+      - name: Re-download and verify draft assets
+        id: verify-draft
+        shell: bash
+        run: |
+          mkdir downloaded-assets
+          gh release download "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --dir downloaded-assets
+
+          LOCAL_COUNT="$(find release-assets -maxdepth 1 -type f | wc -l)"
+          REMOTE_COUNT="$(find downloaded-assets -maxdepth 1 -type f | wc -l)"
+          test "$LOCAL_COUNT" = "$REMOTE_COUNT"
+
+          (
+            cd downloaded-assets
+            sha256sum --check SHA256SUMS
+          )
+          jq -e \
+            --arg tag "$RELEASE_TAG" \
+            --arg version "$RELEASE_VERSION" \
+            --arg commit "$RELEASE_SHA" \
+            '
+              type == "object" and
+              keys == ["commit", "schemaVersion", "tag", "version"] and
+              .schemaVersion == 1 and
+              .tag == $tag and
+              .version == $version and
+              .commit == $commit
+            ' \
+            downloaded-assets/RELEASE-METADATA.json >/dev/null
+
+          DRAFT_JSON="$(
+            gh release view "$RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --json databaseId,isDraft,tagName
+          )"
+          IS_DRAFT="$(jq -r .isDraft <<<"$DRAFT_JSON")"
+          test "$IS_DRAFT" = "true"
+          test "$(jq -r .tagName <<<"$DRAFT_JSON")" = "$RELEASE_TAG"
+          echo "asset_count=$REMOTE_COUNT" >> "$GITHUB_OUTPUT"
+          echo "draft_id=$(jq -r .databaseId <<<"$DRAFT_JSON")" >> "$GITHUB_OUTPUT"
+          echo "manifest_sha256=$(sha256sum downloaded-assets/SHA256SUMS | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
+
+      - name: Record exact promotion inputs
+        env:
+          DRAFT_ID: ${{ steps.verify-draft.outputs.draft_id }}
+          MANIFEST_SHA256: ${{ steps.verify-draft.outputs.manifest_sha256 }}
+        shell: bash
+        run: |
+          {
+            echo "## Verified draft remains unpublished"
+            echo
+            echo "Manually synthetic-test this exact draft before promotion."
+            echo
+            echo "- Tag: \`$RELEASE_TAG\`"
+            echo "- Draft database ID: \`$DRAFT_ID\`"
+            echo "- SHA256SUMS SHA-256: \`$MANIFEST_SHA256\`"
+            echo
+            echo "To promote without rebuilding, dispatch this workflow with"
+            echo "\`publish: true\` and provide the exact draft ID and manifest digest above."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  publish:
+    name: Promote exact prior draft
+    if: ${{ inputs.publish }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: release
+    permissions:
+      contents: write
+    env:
+      EXPECTED_DRAFT_ID: ${{ inputs.draft_id }}
+      EXPECTED_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ inputs.tag }}
+      SITE_URL: ${{ vars.VERCEL_PRODUCTION_URL }}
+      VERCEL_ALLOWED_HOSTS: ${{ vars.VERCEL_ALLOWED_HOSTS }}
+
+    steps:
+      - name: Validate exact prior draft and release commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+            echo "::error::Release tag must be exact SemVer with a v prefix."
+            exit 1
+          }
+          RELEASE_VERSION="${RELEASE_TAG#v}"
+          [[ "$EXPECTED_DRAFT_ID" =~ ^[0-9]+$ ]] || {
+            echo "::error::publish=true requires the exact prior draft database ID."
+            exit 1
+          }
+          [[ "$EXPECTED_MANIFEST_SHA256" =~ ^[0-9a-fA-F]{64}$ ]] || {
+            echo "::error::publish=true requires the prior SHA256SUMS digest."
+            exit 1
+          }
+          EXPECTED_MANIFEST_SHA256="${EXPECTED_MANIFEST_SHA256,,}"
+
+          DRAFT_JSON="$(
+            gh release view "$RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --json databaseId,isDraft,tagName
+          )"
+          test "$(jq -r .databaseId <<<"$DRAFT_JSON")" = "$EXPECTED_DRAFT_ID"
+          test "$(jq -r .isDraft <<<"$DRAFT_JSON")" = "true"
+          test "$(jq -r .tagName <<<"$DRAFT_JSON")" = "$RELEASE_TAG"
+
+          TAG_OBJECT="$(
+            gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}"
+          )"
+          TAG_SHA="$(jq -r '.object.sha' <<<"$TAG_OBJECT")"
+          TAG_TYPE="$(jq -r '.object.type' <<<"$TAG_OBJECT")"
+          if test "$TAG_TYPE" = "tag"; then
+            TAG_SHA="$(
+              gh api "repos/${GITHUB_REPOSITORY}/git/tags/${TAG_SHA}" \
+                --jq '.object.sha'
+            )"
+          fi
+          [[ "$TAG_SHA" =~ ^[0-9a-f]{40}$ ]]
+
+          DEFAULT_BRANCH="$(
+            gh repo view "$GITHUB_REPOSITORY" \
+              --json defaultBranchRef \
+              --jq .defaultBranchRef.name
+          )"
+          DEFAULT_SHA="$(
+            gh api "repos/${GITHUB_REPOSITORY}/commits/${DEFAULT_BRANCH}" \
+              --jq .sha
+          )"
+          test "$TAG_SHA" = "$DEFAULT_SHA" || {
+            echo "::error::The tested draft tag is no longer the exact default-branch head."
+            exit 1
+          }
+          echo "RELEASE_SHA=$TAG_SHA" >> "$GITHUB_ENV"
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> "$GITHUB_ENV"
+
+          mkdir promoted-draft-assets
+          gh release download "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --dir promoted-draft-assets
+          test "$(
+            sha256sum promoted-draft-assets/SHA256SUMS | cut -d ' ' -f 1
+          )" = "$EXPECTED_MANIFEST_SHA256"
+          (
+            cd promoted-draft-assets
+            sha256sum --check SHA256SUMS
+          )
+          jq -e \
+            --arg tag "$RELEASE_TAG" \
+            --arg version "$RELEASE_VERSION" \
+            --arg commit "$TAG_SHA" \
+            '
+              type == "object" and
+              keys == ["commit", "schemaVersion", "tag", "version"] and
+              .schemaVersion == 1 and
+              .tag == $tag and
+              .version == $version and
+              .commit == $commit
+            ' \
+            promoted-draft-assets/RELEASE-METADATA.json >/dev/null
+          EXPECTED_FILE_COUNT="$(
+            awk 'END { print NR + 1 }' promoted-draft-assets/SHA256SUMS
+          )"
+          ACTUAL_FILE_COUNT="$(
+            find promoted-draft-assets -maxdepth 1 -type f | wc -l
+          )"
+          test "$ACTUAL_FILE_COUNT" = "$EXPECTED_FILE_COUNT"
+          if find promoted-draft-assets -type l -print -quit | grep -q .; then
+            echo "::error::Draft assets must not contain symbolic links."
+            exit 1
+          fi
+
+      - name: Recheck canonical deployment and publish exact draft
+        shell: bash
+        run: |
+          set -euo pipefail
+          CURRENT_DRAFT_ID="$(
+            gh release view "$RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --json databaseId,isDraft \
+              --jq 'select(.isDraft == true) | .databaseId'
+          )"
+          test "$CURRENT_DRAFT_ID" = "$EXPECTED_DRAFT_ID"
+
+          mkdir final-promotion-check
+          gh release download "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --dir final-promotion-check
+          test "$(
+            sha256sum final-promotion-check/SHA256SUMS | cut -d ' ' -f 1
+          )" = "$EXPECTED_MANIFEST_SHA256"
+          (
+            cd final-promotion-check
+            sha256sum --check SHA256SUMS
+          )
+          jq -e \
+            --arg tag "$RELEASE_TAG" \
+            --arg version "$RELEASE_VERSION" \
+            --arg commit "$RELEASE_SHA" \
+            '
+              type == "object" and
+              keys == ["commit", "schemaVersion", "tag", "version"] and
+              .schemaVersion == 1 and
+              .tag == $tag and
+              .version == $version and
+              .commit == $commit
+            ' \
+            final-promotion-check/RELEASE-METADATA.json >/dev/null
+          EXPECTED_FILE_COUNT="$(
+            awk 'END { print NR + 1 }' final-promotion-check/SHA256SUMS
+          )"
+          ACTUAL_FILE_COUNT="$(
+            find final-promotion-check -maxdepth 1 -type f | wc -l
+          )"
+          test "$ACTUAL_FILE_COUNT" = "$EXPECTED_FILE_COUNT"
+          if find final-promotion-check -type l -print -quit | grep -q .; then
+            echo "::error::Draft assets must not contain symbolic links."
+            exit 1
+          fi
+
+          python3 - <<'PY'
+          import ipaddress
+          import json
+          import os
+          import re
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+
+          site = os.environ.get("SITE_URL", "").strip()
+          allowed_raw = os.environ.get("VERCEL_ALLOWED_HOSTS", "").strip()
+          release_sha = os.environ.get("RELEASE_SHA", "").strip()
+          release_version = os.environ.get("RELEASE_VERSION", "").strip()
+          if not site:
+              raise SystemExit("VERCEL_PRODUCTION_URL is required")
+          if not allowed_raw:
+              raise SystemExit("VERCEL_ALLOWED_HOSTS is required")
+          if not re.fullmatch(r"[0-9a-f]{40}", release_sha):
+              raise SystemExit("Release SHA must be a full lowercase commit SHA")
+          if not re.fullmatch(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)", release_version):
+              raise SystemExit("Release version must be exact stable semantic version")
+
+          allowed = {host.strip().lower() for host in allowed_raw.split(",") if host.strip()}
+          if not allowed:
+              raise SystemExit("VERCEL_ALLOWED_HOSTS contains no hostnames")
+          hostname_pattern = re.compile(r"[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?")
+          for host in allowed:
+              if (
+                  not hostname_pattern.fullmatch(host)
+                  or "*" in host
+                  or ".." in host
+                  or host == "localhost"
+                  or host.endswith(".localhost")
+              ):
+                  raise SystemExit(f"Invalid exact allowlisted hostname: {host}")
+              try:
+                  ipaddress.ip_address(host)
+              except ValueError:
+                  pass
+              else:
+                  raise SystemExit(f"IP-address allowlist entries are forbidden: {host}")
+
+          parsed = urllib.parse.urlparse(site)
+          if (
+              parsed.scheme != "https"
+              or parsed.username is not None
+              or parsed.password is not None
+              or parsed.hostname is None
+              or parsed.hostname.lower() not in allowed
+              or parsed.port not in (None, 443)
+              or parsed.path not in ("", "/")
+              or parsed.params
+              or parsed.query
+              or parsed.fragment
+          ):
+              raise SystemExit("Canonical production URL is not an exact allowlisted HTTPS host")
+          try:
+              ipaddress.ip_address(parsed.hostname)
+          except ValueError:
+              pass
+          else:
+              raise SystemExit("IP-address production URLs are forbidden")
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, request, file_pointer, code, message, headers, new_url):
+                  return None
+
+          version_url = urllib.parse.urljoin(site, "/version.json")
+          request = urllib.request.Request(
+              version_url,
+              headers={
+                  "Cache-Control": "no-cache",
+                  "User-Agent": "canvink-release-promotion/1",
+              },
+          )
+          try:
+              with urllib.request.build_opener(NoRedirect).open(request, timeout=15) as response:
+                  if response.status != 200:
+                      raise SystemExit(f"version.json returned HTTP {response.status}")
+                  payload = json.load(response)
+          except urllib.error.HTTPError as error:
+              raise SystemExit(
+                  f"Canonical version.json must not redirect and returned HTTP {error.code}"
+              ) from error
+
+          if not isinstance(payload, dict):
+              raise SystemExit("Canonical version.json must be a JSON object")
+          if payload.get("version") != release_version:
+              raise SystemExit(
+                  f"Canonical deployment version {payload.get('version')!r} does not match {release_version}"
+              )
+          git_metadata = payload.get("git")
+          deployed_sha = (
+              payload.get("commit")
+              or payload.get("sha")
+              or payload.get("gitCommitSha")
+              or (git_metadata.get("sha") if isinstance(git_metadata, dict) else None)
+          )
+          if deployed_sha != release_sha:
+              raise SystemExit(
+                  f"Canonical deployment commit {deployed_sha!r} does not match {release_sha}"
+              )
+          print(f"Canonical production verified: {release_version} at {release_sha}")
+          PY
+
+          mkdir publication-assets
+          gh release download "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --dir publication-assets
+          test "$(
+            sha256sum publication-assets/SHA256SUMS | cut -d ' ' -f 1
+          )" = "$EXPECTED_MANIFEST_SHA256"
+          (
+            cd publication-assets
+            sha256sum --check SHA256SUMS
+          )
+          jq -e \
+            --arg tag "$RELEASE_TAG" \
+            --arg version "$RELEASE_VERSION" \
+            --arg commit "$RELEASE_SHA" \
+            '
+              type == "object" and
+              keys == ["commit", "schemaVersion", "tag", "version"] and
+              .schemaVersion == 1 and
+              .tag == $tag and
+              .version == $version and
+              .commit == $commit
+            ' \
+            publication-assets/RELEASE-METADATA.json >/dev/null
+          PUBLICATION_EXPECTED_FILE_COUNT="$(
+            awk 'END { print NR + 1 }' publication-assets/SHA256SUMS
+          )"
+          PUBLICATION_ACTUAL_FILE_COUNT="$(
+            find publication-assets -maxdepth 1 -type f | wc -l
+          )"
+          test "$PUBLICATION_ACTUAL_FILE_COUNT" = "$PUBLICATION_EXPECTED_FILE_COUNT"
+          if find publication-assets -type l -print -quit | grep -q .; then
+            echo "::error::Draft assets must not contain symbolic links."
+            exit 1
+          fi
+
+          FINAL_DRAFT_ID="$(
+            gh release view "$RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --json databaseId,isDraft \
+              --jq 'select(.isDraft == true) | .databaseId'
+          )"
+          test "$FINAL_DRAFT_ID" = "$EXPECTED_DRAFT_ID"
+
+          FINAL_TAG_OBJECT="$(
+            gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}"
+          )"
+          FINAL_TAG_SHA="$(jq -r '.object.sha' <<<"$FINAL_TAG_OBJECT")"
+          FINAL_TAG_TYPE="$(jq -r '.object.type' <<<"$FINAL_TAG_OBJECT")"
+          if test "$FINAL_TAG_TYPE" = "tag"; then
+            FINAL_TAG_SHA="$(
+              gh api "repos/${GITHUB_REPOSITORY}/git/tags/${FINAL_TAG_SHA}" \
+                --jq '.object.sha'
+            )"
+          fi
+          FINAL_DEFAULT_BRANCH="$(
+            gh repo view "$GITHUB_REPOSITORY" \
+              --json defaultBranchRef \
+              --jq .defaultBranchRef.name
+          )"
+          FINAL_DEFAULT_SHA="$(
+            gh api "repos/${GITHUB_REPOSITORY}/commits/${FINAL_DEFAULT_BRANCH}" \
+              --jq .sha
+          )"
+          test "$FINAL_TAG_SHA" = "$RELEASE_SHA"
+          test "$FINAL_DEFAULT_SHA" = "$RELEASE_SHA"
+
+          gh release edit "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --draft=false \
+            --latest

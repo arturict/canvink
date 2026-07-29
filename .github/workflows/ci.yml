@@ -1,0 +1,138 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          check-latest: false
+
+      - name: Install pinned pnpm
+        run: npm install --global pnpm@11.18.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type-check
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Verify Cargo release marker
+        run: pnpm release-marker:check
+
+      - name: Enforce npm dependency license policy
+        run: pnpm licenses:npm
+
+      - name: Build production site
+        run: pnpm build
+
+      - name: Verify third-party notices
+        run: pnpm notices:check
+
+      - name: Smoke-test built site
+        run: node scripts/smoke-site.mjs dist
+
+  rust:
+    name: Rust
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            libappindicator3-dev \
+            librsvg2-dev \
+            libssl-dev \
+            libwebkit2gtk-4.1-dev \
+            patchelf
+
+      - name: Activate pinned Rust toolchain
+        run: |
+          rustc --version
+          cargo --version
+          rustup component list --installed
+
+      - name: Restore Rust CI cache
+        uses: Swatinem/rust-cache@23869a5bd66c73db3c0ac40331f3206eb23791dc # v2.9.1
+        with:
+          workspaces: src-tauri -> target
+          cache-all-crates: true
+          cache-on-failure: false
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Check formatting
+        run: cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
+
+      - name: Lint with warnings denied
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features --locked -- -D warnings
+
+      - name: Test Rust workspace
+        run: cargo test --manifest-path src-tauri/Cargo.toml --all-features --locked
+
+      - name: Install pinned Rust security tools
+        run: |
+          cargo install --locked cargo-audit --version 0.22.2
+          cargo install --locked cargo-deny --version 0.20.2
+
+      - name: Audit Rust dependencies
+        run: cargo audit --file src-tauri/Cargo.lock --deny warnings
+
+      - name: Enforce Rust dependency policy
+        run: cargo deny --manifest-path src-tauri/Cargo.toml --config .github/cargo-deny.toml check licenses advisories bans sources
+
+  required:
+    name: required
+    if: always()
+    needs:
+      - frontend
+      - rust
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+
+    steps:
+      - name: Verify required jobs
+        env:
+          FRONTEND_RESULT: ${{ needs.frontend.result }}
+          RUST_RESULT: ${{ needs.rust.result }}
+        run: |
+          test "$FRONTEND_RESULT" = "success"
+          test "$RUST_RESULT" = "success"

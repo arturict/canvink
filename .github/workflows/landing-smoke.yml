@@ -1,0 +1,89 @@
+name: Landing Smoke
+
+on:
+  deployment_status:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: landing-smoke-${{ github.event.deployment.id || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: >-
+      ${{
+        (
+          github.event_name == 'workflow_dispatch' ||
+          (
+            github.event.deployment.creator.login == 'vercel[bot]' &&
+            github.event.deployment.environment == 'Production'
+          )
+        ) &&
+        'Vercel deployment' ||
+        'Ignored non-production deployment'
+      }}
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+      github.event.deployment.creator.login == 'vercel[bot]' &&
+      github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out trusted smoke test
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          check-latest: false
+
+      - name: Install pinned pnpm
+        run: npm install --global pnpm@11.18.0
+
+      - name: Install locked smoke dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Require canonical production configuration
+        env:
+          EXPECTED_COMMIT: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.deployment.sha }}
+          SITE_URL: ${{ vars.VERCEL_PRODUCTION_URL }}
+          VERCEL_ALLOWED_HOSTS: ${{ vars.VERCEL_ALLOWED_HOSTS }}
+        shell: bash
+        run: |
+          test -n "$SITE_URL" || {
+            echo "::error::Repository variable VERCEL_PRODUCTION_URL is required."
+            exit 1
+          }
+          test -n "$VERCEL_ALLOWED_HOSTS" || {
+            echo "::error::Repository variable VERCEL_ALLOWED_HOSTS is required."
+            exit 1
+          }
+          [[ "$EXPECTED_COMMIT" =~ ^[0-9a-fA-F]{40}$ ]] || {
+            echo "::error::The deployment must provide one full commit SHA."
+            exit 1
+          }
+
+      - name: HTTP smoke-test canonical deployment
+        env:
+          EXPECTED_COMMIT: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.deployment.sha }}
+          SITE_URL: ${{ vars.VERCEL_PRODUCTION_URL }}
+          VERCEL_ALLOWED_HOSTS: ${{ vars.VERCEL_ALLOWED_HOSTS }}
+        run: node scripts/smoke-site.mjs "$SITE_URL"
+
+      - name: Browser smoke-test canonical deployment
+        env:
+          ALLOWED_HOSTS: ${{ vars.VERCEL_ALLOWED_HOSTS }}
+          SITE_URL: ${{ vars.VERCEL_PRODUCTION_URL }}
+        run: pnpm smoke:browser "$SITE_URL"

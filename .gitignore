@@ -1,0 +1,39 @@
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+src-tauri/target/
+src-tauri/gen/
+
+# Test and tool output
+playwright-report/
+test-results/
+*.log
+pnpm-debug.log*
+
+# Local configuration
+.env
+.env.*
+!.env.example
+.vercel/
+
+# Local databases and notebook data
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.canvink
+
+# Credentials and signing material
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini

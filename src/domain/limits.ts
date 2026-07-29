@@ -1,0 +1,12 @@
+export const MAX_WORKSPACE_IMPORT_BYTES = 64 * 1024 * 1024;
+export const MAX_MARKDOWN_IMPORT_BYTES = 2 * 1024 * 1024;
+export const MAX_WORKSPACE_ESTIMATED_BYTES = 192 * 1024 * 1024;
+export const MAX_IMAGE_FILE_BYTES = 12 * 1024 * 1024;
+export const MAX_PDF_FILE_BYTES = 32 * 1024 * 1024;
+export const MAX_IMAGE_PIXELS = 40_000_000;
+export const MAX_PDF_PAGES = 500;
+export const MAX_ASSET_DATA_URL_CHARS = 17 * 1024 * 1024;
+export const MAX_TEXT_CHARS = 2 * 1024 * 1024;
+export const MAX_POINTS_PER_STROKE = 200_000;
+export const MAX_TITLE_BYTES = 16 * 1024;
+export const MAX_PAGE_DEPTH = 64;

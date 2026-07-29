@@ -88,7 +88,7 @@ An unsigned checksum proves consistency with a downloaded checksum file only if 
 
 Tauri 2.11 currently brings the GTK3 Linux stack and `glib` 0.18 into Linux builds. RustSec advisory `RUSTSEC-2024-0429` covers unsound iterator implementations in `glib::VariantStrIter`; the patched `glib` line starts at 0.20. Canvink does not call the affected API directly, and the dependency cannot be upgraded independently of Tauri's Linux stack.
 
-CI therefore carries one exact exception for `RUSTSEC-2024-0429`. It still fails on other vulnerability advisories, yanked crates, forbidden sources, license violations, and dependency bans. It also fails when this exception stops matching, so the exception must be removed instead of silently becoming stale.
+CI therefore carries one exact exception for `RUSTSEC-2024-0429`. It still fails on other vulnerability and unsoundness advisories, yanked crates, forbidden sources, license violations, and dependency bans. It also fails when this exception stops matching, so the exception must be removed instead of silently becoming stale.
 
 Review this exception on every Tauri upgrade and in the weekly dependency review. Remove it as soon as the supported Tauri Linux stack uses `glib` 0.20 or newer.
 

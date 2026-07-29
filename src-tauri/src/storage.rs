@@ -299,7 +299,7 @@ fn load_workspace_from(connection: &Connection) -> Result<WorkspaceState, Storag
              FROM notebooks
              ORDER BY sort_order, id",
         )?;
-        statement
+        let rows = statement
             .query_map([], |row| {
                 Ok(StoredNotebook {
                     id: row.get(0)?,
@@ -309,7 +309,8 @@ fn load_workspace_from(connection: &Connection) -> Result<WorkspaceState, Storag
                     extra_json: row.get(4)?,
                 })
             })?
-            .collect::<rusqlite::Result<Vec<_>>>()?
+            .collect::<rusqlite::Result<Vec<_>>>()?;
+        rows
     };
 
     for stored_notebook in notebook_rows {
@@ -320,7 +321,7 @@ fn load_workspace_from(connection: &Connection) -> Result<WorkspaceState, Storag
                  WHERE notebook_id = ?1
                  ORDER BY sort_order, id",
             )?;
-            statement
+            let rows = statement
                 .query_map([&stored_notebook.id], |row| {
                     Ok(StoredSection {
                         id: row.get(0)?,
@@ -330,7 +331,8 @@ fn load_workspace_from(connection: &Connection) -> Result<WorkspaceState, Storag
                         extra_json: row.get(4)?,
                     })
                 })?
-                .collect::<rusqlite::Result<Vec<_>>>()?
+                .collect::<rusqlite::Result<Vec<_>>>()?;
+            rows
         };
 
         let mut sections = Vec::with_capacity(section_rows.len());
@@ -343,7 +345,7 @@ fn load_workspace_from(connection: &Connection) -> Result<WorkspaceState, Storag
                      WHERE section_id = ?1
                      ORDER BY sort_order, id",
                 )?;
-                statement
+                let rows = statement
                     .query_map([&stored_section.id], |row| {
                         Ok(StoredPage {
                             id: row.get(0)?,
@@ -356,7 +358,8 @@ fn load_workspace_from(connection: &Connection) -> Result<WorkspaceState, Storag
                             extra_json: row.get(7)?,
                         })
                     })?
-                    .collect::<rusqlite::Result<Vec<_>>>()?
+                    .collect::<rusqlite::Result<Vec<_>>>()?;
+                rows
             };
 
             let mut pages = Vec::with_capacity(page_rows.len());
@@ -369,7 +372,7 @@ fn load_workspace_from(connection: &Connection) -> Result<WorkspaceState, Storag
                          WHERE page_id = ?1
                          ORDER BY sort_order, id",
                     )?;
-                    statement
+                    let rows = statement
                         .query_map([&stored_page.id], |row| {
                             Ok(StoredElement {
                                 id: row.get(0)?,
@@ -385,7 +388,8 @@ fn load_workspace_from(connection: &Connection) -> Result<WorkspaceState, Storag
                                 data_json: row.get(10)?,
                             })
                         })?
-                        .collect::<rusqlite::Result<Vec<_>>>()?
+                        .collect::<rusqlite::Result<Vec<_>>>()?;
+                    rows
                 };
 
                 let elements = element_rows

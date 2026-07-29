@@ -36,7 +36,7 @@ impl From<StorageError> for CommandError {
 }
 
 #[tauri::command]
-pub async fn load_workspace(
+async fn load_workspace(
     database: tauri::State<'_, Database>,
 ) -> Result<WorkspaceState, CommandError> {
     let database = database.inner().clone();
@@ -47,7 +47,7 @@ pub async fn load_workspace(
 }
 
 #[tauri::command]
-pub async fn save_workspace(
+async fn save_workspace(
     database: tauri::State<'_, Database>,
     workspace: WorkspaceState,
 ) -> Result<WorkspaceState, CommandError> {

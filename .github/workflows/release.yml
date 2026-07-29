@@ -206,7 +206,7 @@ jobs:
             libssl-dev \
             libwebkit2gtk-4.1-dev \
             patchelf \
-            wmctrl \
+            xdotool \
             xvfb
 
       - name: Set up Node.js
@@ -304,7 +304,7 @@ jobs:
                   cat "$log_file"
                   exit 1
                 fi
-                if wmctrl -l 2>/dev/null | grep -Fqi "Canvink"; then
+                if xdotool search --name "Canvink" >/dev/null 2>&1; then
                   window_seen=true
                   break
                 fi

@@ -250,8 +250,16 @@ jobs:
               -name '*.deb' \
               -print0
           )
-          test "${#APPIMAGES[@]}" -eq 1
-          test "${#DEBS[@]}" -eq 1
+          if test "${#APPIMAGES[@]}" -ne 1; then
+            echo "::error::Expected exactly one AppImage, found ${#APPIMAGES[@]}."
+            find src-tauri/target/release/bundle -type f -name '*.AppImage' -print
+            exit 1
+          fi
+          if test "${#DEBS[@]}" -ne 1; then
+            echo "::error::Expected exactly one DEB, found ${#DEBS[@]}."
+            find src-tauri/target/release/bundle -type f -name '*.deb' -print
+            exit 1
+          fi
 
           chmod +x "${APPIMAGES[0]}"
 
@@ -261,8 +269,10 @@ jobs:
             local package_kind="$3"
             local smoke_root
             local log_file
+            local xvfb_error
             smoke_root="$(mktemp -d "${RUNNER_TEMP}/canvink-${label}-XXXXXX")"
             log_file="${RUNNER_TEMP}/canvink-${label}.log"
+            xvfb_error="${RUNNER_TEMP}/canvink-${label}-xvfb.log"
             mkdir -p \
               "${smoke_root}/home" \
               "${smoke_root}/config" \
@@ -270,7 +280,7 @@ jobs:
               "${smoke_root}/runtime"
             chmod 700 "${smoke_root}/runtime"
 
-            dbus-run-session -- xvfb-run -a bash -ceu '
+            if ! dbus-run-session -- xvfb-run -a -e "$xvfb_error" bash -ceu '
               label="$1"
               binary="$2"
               package_kind="$3"
@@ -316,19 +326,38 @@ jobs:
                 cat "$log_file"
                 exit 1
               fi
-            ' -- "$label" "$binary" "$package_kind" "$smoke_root" "$log_file"
+            ' -- "$label" "$binary" "$package_kind" "$smoke_root" "$log_file"; then
+              echo "::error::${label} package smoke wrapper failed."
+              if test -s "$xvfb_error"; then
+                echo "xvfb-run output:"
+                cat "$xvfb_error"
+              fi
+              if test -s "$log_file"; then
+                echo "${label} application output:"
+                cat "$log_file"
+              fi
+              return 1
+            fi
           }
 
+          echo "::notice::Starting AppImage launch smoke."
           smoke_gui_package \
             appimage \
             "$(realpath "${APPIMAGES[0]}")" \
             appimage
+          echo "::notice::AppImage launch smoke passed."
 
           mapfile -t DEB_BINARIES < <(
-            dpkg-deb --contents "${DEBS[0]}" |
-              awk '$6 ~ /^\.\/usr\/bin\/[^/]+$/ { print substr($6, 2) }'
+            dpkg-deb --fsys-tarfile "${DEBS[0]}" |
+              tar --list --file - |
+              sed -nE 's#^(\./)?usr/bin/([^/]+)$#/usr/bin/\2#p'
           )
-          test "${#DEB_BINARIES[@]}" -eq 1
+          if test "${#DEB_BINARIES[@]}" -ne 1; then
+            echo "::error::Expected exactly one executable below /usr/bin in the DEB, found ${#DEB_BINARIES[@]}."
+            dpkg-deb --contents "${DEBS[0]}"
+            exit 1
+          fi
+          echo "::notice::Resolved DEB executable: ${DEB_BINARIES[0]}"
 
           # Installation is the only privileged package operation. The GUI is
           # always launched below as the unprivileged Actions runner.
@@ -336,8 +365,14 @@ jobs:
             --yes \
             --no-install-recommends \
             "$(realpath "${DEBS[0]}")"
-          test -x "${DEB_BINARIES[0]}"
+          if ! test -x "${DEB_BINARIES[0]}"; then
+            echo "::error::Installed DEB executable is missing: ${DEB_BINARIES[0]}"
+            dpkg-deb --contents "${DEBS[0]}"
+            exit 1
+          fi
+          echo "::notice::Starting DEB launch smoke."
           smoke_gui_package deb "${DEB_BINARIES[0]}" deb
+          echo "::notice::DEB launch smoke passed."
 
       - name: Stage Linux installers
         shell: bash

@@ -86,11 +86,13 @@ An unsigned checksum proves consistency with a downloaded checksum file only if 
 
 ### Tracked Linux platform advisory
 
-Tauri 2.11 currently brings the GTK3 Linux stack and `glib` 0.18 into Linux builds. RustSec advisory `RUSTSEC-2024-0429` covers unsound iterator implementations in `glib::VariantStrIter`; the patched `glib` line starts at 0.20. Canvink does not call the affected API directly, and the dependency cannot be upgraded independently of Tauri's Linux stack.
+Tauri 2.11 currently brings the GTK3 Linux stack and `glib` 0.18 into Linux builds. RustSec advisory `RUSTSEC-2024-0429` covers unsound iterator implementations in `glib::VariantStrIter`; the currently released patched `glib` line starts at 0.20. An upgrade to `glib` 0.20 cannot be made independently inside Tauri's GTK3 stack.
 
-CI therefore carries one exact exception for `RUSTSEC-2024-0429`. It still fails on other vulnerability and unsoundness advisories, yanked crates, forbidden sources, license violations, and dependency bans. It also fails when this exception stops matching, so the exception must be removed instead of silently becoming stale.
+A source reachability review on 2026-07-29 for the dependency graph locked by commit `5bd4dcbdee20c018d2a7ca868cf38cb1f1ab145f` found the affected iterator calls only inside `glib` itself, including its documentation and tests. No call was found in Canvink, Tauri, Wry, or Tao. This is evidence for the reviewed graph, not proof that an indirect path can never exist.
 
-Review this exception on every Tauri upgrade and in the weekly dependency review. Remove it as soon as the supported Tauri Linux stack uses `glib` 0.20 or newer.
+CI therefore carries one exact exception for `RUSTSEC-2024-0429` in `cargo-deny`, while `cargo audit` continues to report it. CI still fails on other vulnerability and unsoundness advisories, yanked crates, forbidden sources, license violations, and dependency bans. It also fails when this exception stops matching, so the exception must be removed instead of silently becoming stale.
+
+Review this exception on every Tauri upgrade and in the weekly dependency review. Remove it as soon as the supported Tauri Linux stack resolves to any officially patched `glib` release. Track the upstream [0.18 backport](https://github.com/gtk-rs/gtk-rs-core/pull/2009) and [0.18.6 release request](https://github.com/gtk-rs/gtk-rs-core/issues/2010); do not pin an unreviewed fork as a substitute.
 
 ## Vulnerability reporting
 

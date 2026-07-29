@@ -20,10 +20,6 @@ jobs:
     name: required
     runs-on: ubuntu-24.04
     timeout-minutes: 60
-    env:
-      # Changes the full cache key while retaining the toolchain-level restore
-      # prefix, so the first lean cache can reuse the previous dependency cache.
-      RUST_CACHE_POLICY: lean-v1
 
     steps:
       - name: Check out repository

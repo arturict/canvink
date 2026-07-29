@@ -7,10 +7,11 @@ behind the first cost-reduction pass. The reliability contract in
 ## Measured baseline
 
 The baseline uses successful hosted runs from the repository, not local timing.
-GitHub rounds hosted-runner usage per job, so short aggregation jobs still cost
-one billed minute.
+Canvink is public, so standard GitHub-hosted runners currently have no billable
+Actions-minute cost. The table rounds each job up to a whole Linux
+runner-minute equivalent to compare compute and queue pressure, not invoices.
 
-| Workflow | Observed jobs | Observed wall time | Estimated billed Linux minutes |
+| Workflow | Observed jobs | Observed wall time | Rounded Linux runner-minute equivalents |
 | --- | ---: | ---: | ---: |
 | CI, warm Rust cache | Frontend 47 s, Rust 73 s, required 5 s | 80 s elapsed in parallel | 4 |
 | CI, cold Rust cache | Frontend 46 s, Rust 592 s, required 4 s | 606 s elapsed in parallel | 12 |
@@ -19,8 +20,8 @@ one billed minute.
 | OpenSSF Scorecard | One 50 s job | 50 s | 1 |
 
 The single Rust cache was 966 MiB. It included dependency targets, installed
-security-tool binaries, and, because `cache-all-crates` was enabled, build
-intermediates for CI tooling.
+security-tool binaries, and, because `cache-all-crates` was enabled, registry
+entries and source archives for non-workspace CI-tool dependencies.
 
 Four GitHub Actions Dependabot pull requests were opened in the same update
 window. Each independently triggered CI, CodeQL, and Dependency Review.
@@ -39,14 +40,18 @@ and release metadata.
   languages.
 - The Rust cache uses the default dependency-only policy. Installed
   `cargo-audit` and `cargo-deny` binaries remain cacheable, while their
-  unnecessary build intermediates do not. A policy marker creates a new full
-  key but retains the old toolchain-level restore prefix for a warm migration.
+  non-workspace registry entries and source archives do not. A
+  `package.metadata.ci` policy value in `Cargo.toml` rotates the
+  manifest-derived full key while retaining the old toolchain-level restore
+  prefix for a warm migration.
 - Dependabot groups explicitly match all minor and patch updates in each
   intended group. Major updates and security updates remain separately
   reviewable.
-- Scorecard runs weekly, when branch protection changes, or when manually
-  requested. Running the same scan on every main push was redundant because
-  CI and CodeQL already protect each commit.
+- Scorecard runs weekly, when branch protection changes, when manually
+  requested, and on main pushes that change workflows, container definitions,
+  dependency manifests or lockfiles, licensing, security policy, or contributor
+  governance. Application-only pushes do not repeat the repository posture
+  scan.
 - Scorecard and release handoff artifacts expire after one day. Successful
   release payloads are copied into the GitHub draft in the same workflow, so
   Actions storage is only an intra-run handoff and short failure-diagnostics
@@ -63,16 +68,17 @@ state.
 | Event | Before | After | Expected saving |
 | --- | ---: | ---: | ---: |
 | Ordinary warm-cache PR | 11 min | about 7 min | about 4 min, 36% |
-| Ordinary main push | 12 min | about 7 min | about 5 min, 42% |
+| Application-only main push | 12 min | about 7 min | about 5 min, 42% |
+| Security-posture main push | 12 min | about 8 min | about 4 min, 33% |
 | Four simultaneous Actions update PRs | about 44 min | about 7 min as one group | about 37 min, 84% |
 | One successful draft's transient artifact retention | 96 MB for 3 days | 96 MB for 1 day | 67% fewer MB-days |
 | Scorecard artifact retention | 17 KB for 5 days | 17 KB for 1 day | 80% fewer MB-days |
 
 The first main run after merging will report the exact lean Rust-cache size.
 No cache-size saving is claimed before that measurement. The new policy is
-expected to remove CI-tool build intermediates while retaining the dependency
-targets that reduced a cold Rust job from roughly 10 minutes to roughly
-1 minute.
+expected to remove non-workspace CI-tool registry entries and source archives
+while retaining the installed tool binaries and dependency targets that
+reduced a cold Rust job from roughly 10 minutes to roughly 1 minute.
 
 ## Trade-offs
 
@@ -81,7 +87,7 @@ targets that reduced a cold Rust job from roughly 10 minutes to roughly
   earlier frontend failure.
 - The two CodeQL jobs run sequentially so the protected `CodeQL` result can
   include Rust without a third aggregation runner. Expected elapsed time grows,
-  while billed minutes fall and coverage stays unchanged.
+  while rounded runner-minute equivalents fall and coverage stays unchanged.
 - One-day release handoff retention means a failed draft build must be rerun
   after a day. Successful draft assets and attestations remain on the draft
   release and are unaffected.
@@ -89,6 +95,6 @@ targets that reduced a cold Rust job from roughly 10 minutes to roughly
   branch protection requires `required`, `CodeQL`, and `Dependency Review` for
   every pull request, and the release workflow requires exact checks on the
   current main SHA. Skipping an entire required workflow would leave checks
-  pending or weaken the release proof. The safe trigger reduction in this pass
-  is limited to the redundant Scorecard push event and grouped dependency
-  updates.
+  pending or weaken the release proof. The safe path filter is limited to
+  Scorecard's non-required main-push trigger, and dependency updates are
+  grouped before they create redundant check suites.

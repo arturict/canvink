@@ -113,7 +113,10 @@ jobs:
           cargo install --locked cargo-deny --version 0.20.2
 
       - name: Audit Rust dependencies
-        run: cargo audit --file src-tauri/Cargo.lock --deny warnings
+        run: >-
+          cargo audit
+          --file src-tauri/Cargo.lock
+          --ignore RUSTSEC-2024-0429
 
       - name: Enforce Rust dependency policy
         run: cargo deny --manifest-path src-tauri/Cargo.toml --config .github/cargo-deny.toml check licenses advisories bans sources

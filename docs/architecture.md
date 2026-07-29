@@ -67,6 +67,18 @@ The hosted `/app` route stores the same logical workspace in IndexedDB. The brow
 
 IndexedDB is a demo adapter, not a fallback cloud service. Clearing site data can delete its contents.
 
+## Interaction and recovery states
+
+The default workspace opens a blank `Quick note`. Example and template pages are present in separate sections instead of taking over the active page. A non-modal guide can be skipped and reopened. Its dismissed state and interface text-size choice are optional browser UI preferences, not part of notebook content.
+
+Schema v1 always keeps at least one notebook, one section in each notebook, and one page in each section. Creation supplies that next level, validation rejects empty containers, and trash actions protect the last container. Notebook and section empty states are therefore structurally unreachable; the actionable blank-page state is the first empty content surface.
+
+On first initialization, the generated workspace is fully written before the interface reports `Saved locally`. Later edits use the existing debounced snapshot save. A failed save remains visible with `Retry save` and `Download rescue copy` actions. The rescue copy contains the current in-memory workspace. Reload can restore only the last successful local save because the alpha has no crash journal or version history.
+
+The browser build observes connectivity only to explain its boundary. An already loaded tab can continue editing and writing IndexedDB while the browser reports offline. There is no service worker, so an offline reload is not promised. The desktop editor does not need the hosted site for ordinary editing.
+
+Search scans the currently loaded workspace snapshot. The UI does not claim an indexing phase, and the desktop FTS table is not currently queried by the React search flow. There is no device sync or cross-device conflict model. The browser Web Lock prevents a second tab from becoming another writer instead of attempting a merge.
+
 ## Landing page and application
 
 The landing page and web demo share the Vite build but have separate routes. Static deployment on Vercel hosts the landing experience. The desktop app loads packaged assets and does not depend on the hosted site for ordinary editing.

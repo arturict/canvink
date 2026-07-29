@@ -72,6 +72,7 @@ function section(title: string, pages: Page[]): Section {
 
 export function createDefaultWorkspace(): WorkspaceState {
   const now = timestamp();
+  const quickNotePage = page('Quick note', 'free', []);
   const welcomePage = page('Start here', 'free', [
     textElement('Welcome to Canvink', 92, 88, {
       width: 650,
@@ -142,7 +143,8 @@ export function createDefaultWorkspace(): WorkspaceState {
       color: '#53615b',
     }),
   ]);
-  const notesSection = section('Notes', [welcomePage, ideasPage]);
+  const notesSection = section('Notes', [quickNotePage]);
+  const examplesSection = section('Examples', [welcomePage, ideasPage]);
   const templatesSection = section('Templates', [meetingPage]);
   const notebook = {
     id: createId('notebook'),
@@ -150,7 +152,7 @@ export function createDefaultWorkspace(): WorkspaceState {
     color: '#d7653b',
     createdAt: now,
     updatedAt: now,
-    sections: [notesSection, templatesSection],
+    sections: [notesSection, examplesSection, templatesSection],
   };
 
   return {
@@ -160,6 +162,6 @@ export function createDefaultWorkspace(): WorkspaceState {
     trash: [],
     activeNotebookId: notebook.id,
     activeSectionId: notesSection.id,
-    activePageId: welcomePage.id,
+    activePageId: quickNotePage.id,
   };
 }

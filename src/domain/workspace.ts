@@ -16,7 +16,8 @@ import {
 } from './types';
 
 const SEARCH_LIMIT = 40;
-const EMPTY_WORKSPACE_FIELDS = new Set([
+const CANONICAL_EMPTY_WORKSPACE_TIMESTAMP = '1970-01-01T00:00:00.000Z';
+const CANONICAL_EMPTY_WORKSPACE_FIELDS = new Set([
   'schemaVersion',
   'updatedAt',
   'notebooks',
@@ -34,6 +35,31 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function isCanonicalEmptyWorkspace(
+  value: Record<string, unknown>,
+): boolean {
+  return (
+    value.schemaVersion === WORKSPACE_SCHEMA_VERSION &&
+    value.updatedAt === CANONICAL_EMPTY_WORKSPACE_TIMESTAMP &&
+    Array.isArray(value.notebooks) &&
+    value.notebooks.length === 0 &&
+    Array.isArray(value.trash) &&
+    value.trash.length === 0 &&
+    value.activeNotebookId === '' &&
+    value.activeSectionId === '' &&
+    value.activePageId === '' &&
+    Object.keys(value).every((key) =>
+      CANONICAL_EMPTY_WORKSPACE_FIELDS.has(key),
+    ) &&
+    Object.keys(value).length === CANONICAL_EMPTY_WORKSPACE_FIELDS.size
+  );
+}
+
+export type StoredWorkspaceResolution = {
+  workspace: WorkspaceState;
+  storageState: 'uninitialized' | 'existing';
+};
+
 export function getActiveContext(workspace: WorkspaceState): ActiveContext | null {
   const notebook =
     workspace.notebooks.find((item) => item.id === workspace.activeNotebookId) ??
@@ -48,13 +74,24 @@ export function getActiveContext(workspace: WorkspaceState): ActiveContext | nul
   return notebook && section && page ? { notebook, section, page } : null;
 }
 
-export function normalizeWorkspace(value: unknown): WorkspaceState {
-  if (value === undefined || value === null) {
-    return createDefaultWorkspace();
+export function normalizeStoredWorkspace(
+  value: unknown,
+): StoredWorkspaceResolution {
+  if (value === undefined) {
+    return {
+      workspace: createDefaultWorkspace(),
+      storageState: 'uninitialized',
+    };
   }
 
   if (!isRecord(value)) {
     throw new Error('Stored Canvink data is malformed and was not changed.');
+  }
+  if (isCanonicalEmptyWorkspace(value)) {
+    return {
+      workspace: createDefaultWorkspace(),
+      storageState: 'uninitialized',
+    };
   }
   if (value.schemaVersion !== WORKSPACE_SCHEMA_VERSION) {
     throw new Error(
@@ -65,28 +102,9 @@ export function normalizeWorkspace(value: unknown): WorkspaceState {
     throw new Error('Stored Canvink notebooks are malformed and were not changed.');
   }
   if (value.notebooks.length === 0) {
-    const hasEmptyTrash = Array.isArray(value.trash) && value.trash.length === 0;
-    const hasUnknownFields = Object.keys(value).some(
-      (key) => !EMPTY_WORKSPACE_FIELDS.has(key),
+    throw new Error(
+      'Stored Canvink data is non-empty but has no usable notebook. It was not changed.',
     );
-    const hasValidEmptySelection = [
-      value.activeNotebookId,
-      value.activeSectionId,
-      value.activePageId,
-    ].every((id) => id === '');
-    const hasTimestamp = typeof value.updatedAt === 'string';
-
-    if (
-      !hasEmptyTrash ||
-      hasUnknownFields ||
-      !hasValidEmptySelection ||
-      !hasTimestamp
-    ) {
-      throw new Error(
-        'Stored Canvink data is non-empty but has no usable notebook. It was not changed.',
-      );
-    }
-    return createDefaultWorkspace();
   }
 
   assertWorkspaceShape(value);
@@ -97,13 +115,20 @@ export function normalizeWorkspace(value: unknown): WorkspaceState {
   }
 
   return {
-    ...candidate,
-    schemaVersion: WORKSPACE_SCHEMA_VERSION,
-    trash: Array.isArray(candidate.trash) ? candidate.trash : [],
-    activeNotebookId: context.notebook.id,
-    activeSectionId: context.section.id,
-    activePageId: context.page.id,
+    workspace: {
+      ...candidate,
+      schemaVersion: WORKSPACE_SCHEMA_VERSION,
+      trash: Array.isArray(candidate.trash) ? candidate.trash : [],
+      activeNotebookId: context.notebook.id,
+      activeSectionId: context.section.id,
+      activePageId: context.page.id,
+    },
+    storageState: 'existing',
   };
+}
+
+export function normalizeWorkspace(value: unknown): WorkspaceState {
+  return normalizeStoredWorkspace(value).workspace;
 }
 
 export function activatePage(

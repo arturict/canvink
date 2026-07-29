@@ -10,10 +10,11 @@ The project is for people who like the freedom of a spatial notebook but want un
 ## What the alpha includes
 
 - A notebook, section, and page hierarchy
+- A blank Quick note start, optional resumable guide, and keyboard-accessible text capture
 - Free-canvas and A4 page modes
 - Pressure-aware vector ink built with `perfect-freehand`
 - Freely positioned ink, text, image, and PDF objects rendered with Konva
-- Basic text search, autosave, trash, and page export foundations
+- Basic text search, local autosave, persistent save retry, rescue export, trash, and page export foundations
 - A Tauri 2 desktop shell with SQLite as the authoritative desktop store
 - A browser demo that persists locally in IndexedDB
 - A public landing page and web demo built with React, TypeScript, and Vite
@@ -31,6 +32,8 @@ The hosted browser build is a demo, not a cloud notebook. Its content stays in t
 
 For durable use, prefer the desktop build and maintain backups. Desktop data is stored locally in SQLite. It is not encrypted by Canvink in the current alpha.
 
+An already open browser tab can keep editing and saving to IndexedDB while the browser reports offline. Canvink does not ship a service worker in this alpha, so reopening or reloading the hosted demo while offline is not promised. A failed save remains visible with a retry action and a JSON rescue-copy download. Reload restores the last successful save, not an unsaved crash draft.
+
 ## Build from source
 
 ### Prerequisites
@@ -43,8 +46,11 @@ Install dependencies and run the web app:
 
 ```bash
 pnpm install
+pnpm exec playwright install chromium
 pnpm dev
 ```
+
+The Playwright command installs the local Chromium binary used by `pnpm test:e2e`. On a supported Linux development or CI host, use `pnpm exec playwright install --with-deps chromium` to install its operating-system dependencies too.
 
 The landing page is served at `/` and the notebook at `/app`.
 
@@ -59,6 +65,7 @@ Run the quality gates:
 ```bash
 pnpm check
 pnpm test
+pnpm test:e2e
 pnpm build
 ```
 

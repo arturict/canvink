@@ -24,6 +24,7 @@
     "notices:check": "node scripts/generate-third-party-notices.mjs --check",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm release-marker:check && pnpm licenses:npm && pnpm build",
     "test": "vitest run && node --test scripts/*.test.mjs",
+    "test:e2e": "playwright test",
     "test:watch": "vitest",
     "preview": "vite preview",
     "smoke:browser": "node scripts/smoke-browser.mjs",

@@ -6,6 +6,7 @@ import {
   appendPage,
   createPage,
   getActiveContext,
+  normalizeStoredWorkspace,
   normalizeWorkspace,
   pageToMarkdown,
   renameNotebook,
@@ -16,13 +17,28 @@ import {
   trashPage,
 } from './workspace';
 
+function activateDefaultExample() {
+  const workspace = createDefaultWorkspace();
+  const notebook = workspace.notebooks[0];
+  const section = notebook.sections.find((item) => item.title === 'Examples')!;
+  const page = section.pages.find((item) => item.title === 'Start here')!;
+  return activatePage(workspace, notebook.id, section.id, page.id);
+}
+
 describe('workspace model', () => {
   it('creates a usable nested default workspace', () => {
     const workspace = createDefaultWorkspace();
     const context = getActiveContext(workspace);
 
     expect(context?.notebook.title).toBe('My notebook');
-    expect(context?.page.elements.length).toBeGreaterThan(0);
+    expect(context?.section.title).toBe('Notes');
+    expect(context?.page.title).toBe('Quick note');
+    expect(context?.page.elements).toEqual([]);
+    expect(workspace.notebooks[0].sections.map((section) => section.title)).toEqual([
+      'Notes',
+      'Examples',
+      'Templates',
+    ]);
   });
 
   it('renames notebooks and sections without changing their identities', () => {
@@ -47,21 +63,39 @@ describe('workspace model', () => {
     expect(renamedContext.section.title).toBe('Research');
   });
 
-  it('creates welcome data only for a missing or truly empty first-run store', () => {
-    expect(getActiveContext(normalizeWorkspace(undefined))?.page.title).toBe('Start here');
-    expect(
-      getActiveContext(
-        normalizeWorkspace({
-          schemaVersion: 1,
-          updatedAt: '1970-01-01T00:00:00.000Z',
-          notebooks: [],
-          trash: [],
-          activeNotebookId: '',
-          activeSectionId: '',
-          activePageId: '',
-        }),
-      )?.page.title,
-    ).toBe('Start here');
+  it('distinguishes a missing or canonical empty first-run store from existing data', () => {
+    const missing = normalizeStoredWorkspace(undefined);
+    const canonicalEmpty = normalizeStoredWorkspace({
+      schemaVersion: 1,
+      updatedAt: '1970-01-01T00:00:00.000Z',
+      notebooks: [],
+      trash: [],
+      activeNotebookId: '',
+      activeSectionId: '',
+      activePageId: '',
+    });
+    const existing = normalizeStoredWorkspace(createDefaultWorkspace());
+
+    expect(missing.storageState).toBe('uninitialized');
+    expect(getActiveContext(missing.workspace)?.page.title).toBe('Quick note');
+    expect(canonicalEmpty.storageState).toBe('uninitialized');
+    expect(getActiveContext(canonicalEmpty.workspace)?.page.title).toBe('Quick note');
+    expect(existing.storageState).toBe('existing');
+  });
+
+  it('rejects null and non-canonical empty records instead of initializing over them', () => {
+    expect(() => normalizeStoredWorkspace(null)).toThrow(/malformed/);
+    expect(() =>
+      normalizeStoredWorkspace({
+        schemaVersion: 1,
+        updatedAt: '2026-07-29T00:00:00.000Z',
+        notebooks: [],
+        trash: [],
+        activeNotebookId: '',
+        activeSectionId: '',
+        activePageId: '',
+      }),
+    ).toThrow(/non-empty/);
   });
 
   it('rejects a newer schema instead of replacing it', () => {
@@ -173,7 +207,7 @@ describe('workspace model', () => {
   });
 
   it('restores an element at its original canvas stacking position', () => {
-    const workspace = createDefaultWorkspace();
+    const workspace = activateDefaultExample();
     const context = getActiveContext(workspace)!;
     const originalIds = context.page.elements.map((element) => element.id);
     const target = context.page.elements[1];
@@ -194,10 +228,11 @@ describe('workspace model', () => {
               (rest) => [item, ...rest],
             ),
           );
-    const seed = createDefaultWorkspace();
+    const seed = activateDefaultExample();
     const seedContext = getActiveContext(seed)!;
     const originalIds = seedContext.page.elements.map((element) => element.id);
     const targetIds = originalIds.slice(0, 3);
+    expect(targetIds).toHaveLength(3);
 
     for (const deleteOrder of permutations(targetIds)) {
       let trashed = seed;
@@ -222,9 +257,10 @@ describe('workspace model', () => {
   });
 
   it('restores an original stack below elements added while it was trashed', () => {
-    const seed = createDefaultWorkspace();
+    const seed = activateDefaultExample();
     const context = getActiveContext(seed)!;
     const originalIds = context.page.elements.map((element) => element.id);
+    expect(originalIds.length).toBeGreaterThan(0);
     let emptied = seed;
     for (const elementId of originalIds) {
       emptied = trashElement(emptied, context.page.id, elementId);
@@ -251,7 +287,7 @@ describe('workspace model', () => {
   });
 
   it('keeps a trashed element when its destination page is unavailable', () => {
-    const workspace = createDefaultWorkspace();
+    const workspace = activateDefaultExample();
     const context = getActiveContext(workspace)!;
     const element = context.page.elements[0];
     const withoutElement = trashElement(workspace, context.page.id, element.id);
@@ -502,7 +538,7 @@ describe('workspace model', () => {
   });
 
   it('does not mutate or retarget a workspace when an append destination disappeared', () => {
-    const workspace = createDefaultWorkspace();
+    const workspace = activateDefaultExample();
     const page = createPage('Late import');
     const existingElement = getActiveContext(workspace)!.page.elements[0];
 
@@ -553,7 +589,7 @@ describe('workspace model', () => {
   });
 
   it('exports readable markdown from text objects', () => {
-    const context = getActiveContext(createDefaultWorkspace())!;
+    const context = getActiveContext(activateDefaultExample())!;
     const markdown = pageToMarkdown(context);
 
     expect(markdown).toContain('# Start here');

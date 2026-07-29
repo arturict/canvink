@@ -1,15 +1,23 @@
 import { FileText, Image as ImageIcon, SlidersHorizontal, Trash2, Type } from 'lucide-react';
+import type { Ref } from 'react';
 import { MAX_TEXT_CHARS } from '../domain/limits';
 import type { PageElement } from '../domain/types';
 
 interface InspectorProps {
   element: PageElement | null;
+  textInputRef?: Ref<HTMLTextAreaElement>;
   onUpdate: (patch: Partial<PageElement>) => void;
   onDelete: () => void;
   onClose: () => void;
 }
 
-export default function Inspector({ element, onUpdate, onDelete, onClose }: InspectorProps) {
+export default function Inspector({
+  element,
+  textInputRef,
+  onUpdate,
+  onDelete,
+  onClose,
+}: InspectorProps) {
   if (!element) return null;
 
   return (
@@ -37,9 +45,11 @@ export default function Inspector({ element, onUpdate, onDelete, onClose }: Insp
           <label className="field">
             <span>Text</span>
             <textarea
+              ref={textInputRef}
               value={element.text}
               maxLength={MAX_TEXT_CHARS}
               rows={8}
+              placeholder="Write your note"
               onChange={(event) => onUpdate({ text: event.target.value })}
               autoFocus
             />

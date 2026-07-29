@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createDefaultWorkspace } from '../domain/sample';
-import { getActiveContext } from '../domain/workspace';
+import { activatePage, getActiveContext } from '../domain/workspace';
 import type {
   ImageElement,
   Notebook,
@@ -23,7 +23,13 @@ describe('portable files', () => {
   });
 
   it('computes pressure-sample bounds without mutating them', () => {
-    const context = getActiveContext(createDefaultWorkspace())!;
+    const workspace = createDefaultWorkspace();
+    const notebook = workspace.notebooks[0];
+    const section = notebook.sections.find((item) => item.title === 'Examples')!;
+    const page = section.pages.find((item) => item.title === 'Start here')!;
+    const context = getActiveContext(
+      activatePage(workspace, notebook.id, section.id, page.id),
+    )!;
     const stroke = context.page.elements.find((element) => element.kind === 'stroke');
     expect(stroke?.kind).toBe('stroke');
     if (!stroke || stroke.kind !== 'stroke') return;

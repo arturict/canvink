@@ -3,6 +3,7 @@ import {
   memo,
   useEffect,
   useImperativeHandle,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -203,6 +204,24 @@ function elementCursor(tool: EditorTool): string {
   return 'crosshair';
 }
 
+function accessibleElementSummary(element: PageElement): string {
+  if (element.kind === 'text') {
+    const text = element.text.trim();
+    return text ? `Text: ${text}` : 'Empty text note';
+  }
+  if (element.kind === 'stroke') {
+    const tool = element.tool === 'highlighter' ? 'Highlighter' : 'Pen';
+    return `${tool} stroke with ${element.points.length} points`;
+  }
+  if (element.kind === 'image') {
+    const alt = element.alt.trim();
+    return alt
+      ? `Image: ${alt}. File: ${element.name}`
+      : `Image without alt text: ${element.name}`;
+  }
+  return `PDF preview: ${element.sourceName}, ${element.pageCount} pages`;
+}
+
 const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function CanvasEditor(
   {
     page,
@@ -219,6 +238,7 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
   const stageRef = useRef<Konva.Stage>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
+  const canvasDescriptionId = useId();
   const activePointerRef = useRef<number | null>(null);
   const draftPointsRef = useRef<InkPoint[]>([]);
   const draftRef = useRef<StrokeElement | null>(null);
@@ -354,7 +374,7 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
         y: point.y,
         width: 360,
         height: 100,
-        text: 'Start typing…',
+        text: '',
         color: brush.color,
         fontSize: 22,
         fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
@@ -448,11 +468,30 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
 
   return (
     <div
+      id="page-editor"
       className={`canvas-page canvas-page--${page.mode}`}
       style={{ width: dimensions.width, height: dimensions.height, cursor: elementCursor(tool) }}
       data-page-mode={page.mode}
       data-editor-tool={tool}
+      role="region"
+      tabIndex={0}
+      aria-label={`Canvas editor for ${page.title.trim() || 'Untitled page'}`}
+      aria-describedby={canvasDescriptionId}
     >
+      <p id={canvasDescriptionId} className="sr-only">
+        {page.elements.length === 0
+          ? 'This page has no canvas objects.'
+          : `${page.elements.length} canvas ${
+              page.elements.length === 1 ? 'object' : 'objects'
+            }. Use the object selector above to inspect an object.`}
+      </p>
+      {page.elements.length > 0 ? (
+        <ul className="sr-only" aria-label="Canvas objects">
+          {page.elements.map((element) => (
+            <li key={element.id}>{accessibleElementSummary(element)}</li>
+          ))}
+        </ul>
+      ) : null}
       <Stage
         ref={stageRef}
         width={dimensions.width}

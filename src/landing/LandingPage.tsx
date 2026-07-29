@@ -18,11 +18,12 @@ const repositoryUrl = "https://github.com/arturict/canvink";
 const releaseUrl = `${repositoryUrl}/releases/latest`;
 
 const alphaFeatures = [
+  "Blank quick note, optional guide, and focused text capture",
   "Notebook, section, page, and subpage hierarchy",
   "Free canvas and printable A4 page modes",
   "Pressure-aware pen and highlighter",
   "Movable text, images, and PDF previews",
-  "Local autosave, search, trash, and portable export",
+  "Local autosave with retry and rescue export, search, and trash",
 ];
 
 export function LandingPage() {
@@ -63,9 +64,9 @@ export function LandingPage() {
             <span>Your canvas.</span>
           </h1>
           <p className="hero-lede">
-            Canvink is the open notebook where handwriting, movable text, images,
-            and PDF previews live together on one page. No required account. No
-            cloud lock-in.
+            Capture a thought on a blank local page, then organize it when useful.
+            Handwriting, movable text, images, and PDF previews can live together.
+            No required account. No cloud lock-in.
           </p>
           <div className="hero-actions">
             <a className="primary-cta" href="/app">
@@ -89,7 +90,7 @@ export function LandingPage() {
           </p>
         </div>
 
-        <div className="product-frame" aria-label="Canvink product preview">
+        <div className="product-frame" aria-hidden="true">
           <div className="window-bar">
             <span />
             <span />
@@ -272,7 +273,7 @@ export function LandingPage() {
           <p>
             This is an early, local-only release, not a finished OneNote
             replacement. The goal is to validate the mixed-object page and its
-            storage model before adding sync.
+            storage model before deciding which future capabilities belong.
           </p>
           <a href="/app" className="text-link">
             Open the demo <ArrowRight size={17} />
@@ -286,8 +287,9 @@ export function LandingPage() {
             </div>
           ))}
           <div className="future-item">
-            <span>Next</span>
-            Encrypted sync, native attachment storage, OCR, and importers
+            <span>Not in this alpha</span>
+            Sync, native attachment storage, OCR, and broader importers remain
+            research directions, not commitments
           </div>
         </div>
       </section>
@@ -298,8 +300,8 @@ export function LandingPage() {
         </div>
         <h2>Bring one real notebook.</h2>
         <p>
-          Try the alpha, inspect the source, and tell us where the first five
-          minutes break.
+          Try the alpha, inspect the source, and tell us where the capture flow
+          breaks.
         </p>
         <div className="hero-actions closing-actions">
           <a className="primary-cta" href="/app">

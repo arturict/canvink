@@ -63,6 +63,26 @@ jobs:
       - name: Smoke-test built site
         run: node scripts/smoke-site.mjs dist
 
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run browser end-to-end tests
+        id: browser_e2e
+        env:
+          PLAYWRIGHT_PREBUILT: "true"
+        run: pnpm test:e2e
+
+      - name: Upload Playwright failure diagnostics
+        if: ${{ failure() && steps.browser_e2e.outcome == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Install Linux build dependencies
         run: |
           sudo apt-get update

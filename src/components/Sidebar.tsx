@@ -1,4 +1,10 @@
-import { useMemo, useState, type CSSProperties } from 'react';
+import {
+  forwardRef,
+  useId,
+  useMemo,
+  useState,
+  type CSSProperties,
+} from 'react';
 import {
   BookOpen,
   ChevronDown,
@@ -13,12 +19,14 @@ import {
 } from 'lucide-react';
 import type { Notebook, Page, Section } from '../domain/types';
 
-interface SidebarProps {
+export interface SidebarProps {
   notebooks: Notebook[];
   activeNotebookId: string;
   activeSectionId: string;
   activePageId: string;
   trashCount: number;
+  id?: string;
+  modal?: boolean;
   onClose: () => void;
   onActivatePage: (notebookId: string, sectionId: string, pageId: string) => void;
   onActivateNotebook: (notebookId: string) => void;
@@ -58,10 +66,12 @@ function PageTree({
 }: PageTreeProps) {
   const children = pages.filter((page) => page.parentPageId === parentPageId);
 
+  if (children.length === 0) return null;
+
   return (
-    <>
+    <div role="list">
       {children.map((page) => (
-        <div key={page.id}>
+        <div key={page.id} role="listitem">
           <div
             className={`page-row ${activePageId === page.id ? 'is-active' : ''}`}
             style={{ '--page-depth': depth } as CSSProperties}
@@ -70,6 +80,7 @@ function PageTree({
               type="button"
               className="page-row__target"
               onClick={() => onActivate(notebookId, sectionId, page.id)}
+              aria-current={activePageId === page.id ? 'page' : undefined}
             >
               <FileText size={14} />
               <span>{page.title}</span>
@@ -106,31 +117,37 @@ function PageTree({
           />
         </div>
       ))}
-    </>
+    </div>
   );
 }
 
-export default function Sidebar({
-  notebooks,
-  activeNotebookId,
-  activeSectionId,
-  activePageId,
-  trashCount,
-  onClose,
-  onActivatePage,
-  onActivateNotebook,
-  onAddNotebook,
-  onRenameNotebook,
-  onAddSection,
-  onRenameSection,
-  onAddPage,
-  onTrashNotebook,
-  onTrashSection,
-  onTrashPage,
-  onOpenTrash,
-}: SidebarProps) {
+const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar(
+  {
+    notebooks,
+    activeNotebookId,
+    activeSectionId,
+    activePageId,
+    trashCount,
+    id = 'notebook-navigation',
+    modal = false,
+    onClose,
+    onActivatePage,
+    onActivateNotebook,
+    onAddNotebook,
+    onRenameNotebook,
+    onAddSection,
+    onRenameSection,
+    onAddPage,
+    onTrashNotebook,
+    onTrashSection,
+    onTrashPage,
+    onOpenTrash,
+  },
+  ref,
+) {
   const activeNotebook = notebooks.find((item) => item.id === activeNotebookId) ?? notebooks[0];
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => new Set());
+  const sectionListId = useId();
   const safeRootPageIds = useMemo(() => {
     const roots = new Map<string, Set<string>>();
     for (const section of activeNotebook.sections) {
@@ -157,7 +174,14 @@ export default function Sidebar({
   };
 
   return (
-    <aside className="notebook-sidebar" aria-label="Notebook navigation">
+    <div
+      ref={ref}
+      id={id}
+      className="notebook-sidebar"
+      aria-label="Notebook navigation"
+      aria-modal={modal || undefined}
+      role={modal ? 'dialog' : 'navigation'}
+    >
       <div className="sidebar-brand">
         <span className="brand-mark">
           <BookOpen size={17} />
@@ -216,9 +240,10 @@ export default function Sidebar({
         </button>
       </div>
 
-      <div className="section-list">
-        {activeNotebook.sections.map((section: Section) => {
+      <div className="section-list" role="list" aria-label="Sections">
+        {activeNotebook.sections.map((section: Section, sectionIndex) => {
           const collapsed = collapsedSections.has(section.id);
+          const sectionPagesId = `${sectionListId}-pages-${sectionIndex}`;
           const rootIds = safeRootPageIds.get(section.id) ?? new Set<string>();
           const normalizedPages = section.pages.map((page) =>
             rootIds.has(page.id) ? { ...page, parentPageId: undefined } : page,
@@ -227,9 +252,15 @@ export default function Sidebar({
             <section
               className={`section-block ${activeSectionId === section.id ? 'is-current' : ''}`}
               key={section.id}
+              role="listitem"
             >
               <div className="section-row">
-                <button type="button" onClick={() => toggleSection(section.id)}>
+                <button
+                  type="button"
+                  onClick={() => toggleSection(section.id)}
+                  aria-expanded={!collapsed}
+                  aria-controls={sectionPagesId}
+                >
                   {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
                   <span>{section.title}</span>
                   <small>{section.pages.length}</small>
@@ -252,29 +283,27 @@ export default function Sidebar({
                   <Trash2 size={12} />
                 </button>
               </div>
-              {!collapsed ? (
-                <div className="page-tree">
-                  <PageTree
-                    pages={normalizedPages}
-                    activePageId={activePageId}
-                    sectionId={section.id}
-                    notebookId={activeNotebook.id}
-                    onActivate={onActivatePage}
-                    onAddSubpage={(parentPageId) => onAddPage(section.id, parentPageId)}
-                    onTrash={onTrashPage}
-                  />
-                  <button
-                    type="button"
-                    className="add-page"
-                    onClick={() => {
-                      onAddPage(section.id);
-                    }}
-                  >
-                    <Plus size={14} />
-                    New page
-                  </button>
-                </div>
-              ) : null}
+              <div id={sectionPagesId} className="page-tree" hidden={collapsed}>
+                <PageTree
+                  pages={normalizedPages}
+                  activePageId={activePageId}
+                  sectionId={section.id}
+                  notebookId={activeNotebook.id}
+                  onActivate={onActivatePage}
+                  onAddSubpage={(parentPageId) => onAddPage(section.id, parentPageId)}
+                  onTrash={onTrashPage}
+                />
+                <button
+                  type="button"
+                  className="add-page"
+                  onClick={() => {
+                    onAddPage(section.id);
+                  }}
+                >
+                  <Plus size={14} />
+                  New page
+                </button>
+              </div>
             </section>
           );
         })}
@@ -285,6 +314,8 @@ export default function Sidebar({
         Trash
         <span>{trashCount}</span>
       </button>
-    </aside>
+    </div>
   );
-}
+});
+
+export default Sidebar;

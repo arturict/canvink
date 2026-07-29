@@ -1,5 +1,5 @@
 import { get, set } from 'idb-keyval';
-import { normalizeWorkspace } from '../domain/workspace';
+import { normalizeStoredWorkspace } from '../domain/workspace';
 import { assertWorkspaceShape } from '../domain/validation';
 import type { WorkspaceState } from '../domain/types';
 import { validateWorkspaceAssetPreviews } from '../io/files';
@@ -75,15 +75,21 @@ export async function loadWorkspace(): Promise<{
   if (hasTauriRuntime()) {
     const { invoke } = await import('@tauri-apps/api/core');
     const value = await invoke<unknown>('load_workspace');
-    const workspace = normalizeWorkspace(value);
+    const { workspace, storageState } = normalizeStoredWorkspace(value);
     await validateWorkspaceAssetPreviews(workspace);
+    if (storageState === 'uninitialized') {
+      await saveWorkspace(workspace);
+    }
     return { workspace, backend: 'tauri' };
   }
 
   await acquireBrowserWriteLock();
   const value = await get<unknown>(STORAGE_KEY);
-  const workspace = normalizeWorkspace(value);
+  const { workspace, storageState } = normalizeStoredWorkspace(value);
   await validateWorkspaceAssetPreviews(workspace);
+  if (storageState === 'uninitialized') {
+    await saveWorkspace(workspace);
+  }
   return {
     workspace,
     backend: 'indexeddb',

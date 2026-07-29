@@ -37,7 +37,7 @@ importers:
         version: 19.2.8(react@19.2.8)
       react-konva:
         specifier: 19.2.5
-        version: 19.2.5(@types/react@19.2.14)(konva@10.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        version: 19.2.5(@types/react@19.2.17)(konva@10.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
     devDependencies:
       '@eslint/js':
         specifier: 10.0.1
@@ -49,11 +49,11 @@ importers:
         specifier: 2.11.4
         version: 2.11.4
       '@types/react':
-        specifier: 19.2.14
-        version: 19.2.14
+        specifier: 19.2.17
+        version: 19.2.17
       '@types/react-dom':
         specifier: 19.2.3
-        version: 19.2.3(@types/react@19.2.14)
+        version: 19.2.3(@types/react@19.2.17)
       '@vitejs/plugin-react':
         specifier: 6.0.4
         version: 6.0.4(vite@8.1.5)
@@ -545,8 +545,8 @@ packages:
     peerDependencies:
       '@types/react': '*'
 
-  '@types/react@19.2.14':
-    resolution: {integrity: sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==}
+  '@types/react@19.2.17':
+    resolution: {integrity: sha512-MXfmqaVPEVgkBT/aY0aGCkRWWtByiYQXo3xdQ8r5RzuFrPiRn8Gar2tQdXSUQ2GKV3bkXckek89V8wQBY2Q/Aw==}
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
@@ -1745,19 +1745,19 @@ snapshots:
   '@types/raf@3.4.3':
     optional: true
 
-  '@types/react-dom@19.2.3(@types/react@19.2.14)':
+  '@types/react-dom@19.2.3(@types/react@19.2.17)':
     dependencies:
-      '@types/react': 19.2.14
+      '@types/react': 19.2.17
 
-  '@types/react-reconciler@0.28.9(@types/react@19.2.14)':
+  '@types/react-reconciler@0.28.9(@types/react@19.2.17)':
     dependencies:
-      '@types/react': 19.2.14
+      '@types/react': 19.2.17
 
-  '@types/react-reconciler@0.33.0(@types/react@19.2.14)':
+  '@types/react-reconciler@0.33.0(@types/react@19.2.17)':
     dependencies:
-      '@types/react': 19.2.14
+      '@types/react': 19.2.17
 
-  '@types/react@19.2.14':
+  '@types/react@19.2.17':
     dependencies:
       csstype: 3.2.3
 
@@ -2149,9 +2149,9 @@ snapshots:
 
   isexe@2.0.0: {}
 
-  its-fine@2.0.0(@types/react@19.2.14)(react@19.2.8):
+  its-fine@2.0.0(@types/react@19.2.17)(react@19.2.8):
     dependencies:
-      '@types/react-reconciler': 0.28.9(@types/react@19.2.14)
+      '@types/react-reconciler': 0.28.9(@types/react@19.2.17)
       react: 19.2.8
     transitivePeerDependencies:
       - '@types/react'
@@ -2335,10 +2335,10 @@ snapshots:
       react: 19.2.8
       scheduler: 0.27.0
 
-  react-konva@19.2.5(@types/react@19.2.14)(konva@10.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  react-konva@19.2.5(@types/react@19.2.17)(konva@10.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
-      '@types/react-reconciler': 0.33.0(@types/react@19.2.14)
-      its-fine: 2.0.0(@types/react@19.2.14)(react@19.2.8)
+      '@types/react-reconciler': 0.33.0(@types/react@19.2.17)
+      its-fine: 2.0.0(@types/react@19.2.17)(react@19.2.8)
       konva: 10.3.0
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)

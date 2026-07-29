@@ -17,21 +17,13 @@ concurrency:
 permissions: {}
 
 jobs:
-  analyze:
-    name: Analyze (${{ matrix.language }})
+  rust:
+    name: CodeQL (Rust)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       contents: read
       security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language:
-          - actions
-          - javascript-typescript
-          - rust
 
     steps:
       - name: Check out repository
@@ -42,26 +34,42 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@c54b30b7df092240050e69945842bc67aee0f0f4 # v4.37.3
         with:
-          languages: ${{ matrix.language }}
+          languages: rust
           build-mode: none
           queries: security-extended
 
-      - name: Analyze
+      - name: Analyze Rust
         uses: github/codeql-action/analyze@c54b30b7df092240050e69945842bc67aee0f0f4 # v4.37.3
         with:
-          category: /language:${{ matrix.language }}
+          category: /language:rust
 
-  required:
+  source:
     name: CodeQL
     if: always()
     needs:
-      - analyze
+      - rust
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    permissions: {}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
 
     steps:
-      - name: Verify all language analyses
+      - name: Require successful Rust analysis
         env:
-          ANALYZE_RESULT: ${{ needs.analyze.result }}
-        run: test "$ANALYZE_RESULT" = "success"
+          RUST_RESULT: ${{ needs.rust.result }}
+        run: test "$RUST_RESULT" = "success"
+
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@c54b30b7df092240050e69945842bc67aee0f0f4 # v4.37.3
+        with:
+          languages: actions,javascript-typescript
+          queries: security-extended
+
+      - name: Analyze Actions and JavaScript
+        uses: github/codeql-action/analyze@c54b30b7df092240050e69945842bc67aee0f0f4 # v4.37.3

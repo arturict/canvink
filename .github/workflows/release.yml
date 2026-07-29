@@ -157,7 +157,7 @@ jobs:
           name: release-source
           path: release-source/*
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 1
           compression-level: 0
 
       - name: Upload licenses and third-party notices
@@ -168,7 +168,7 @@ jobs:
             LICENSE
             THIRD_PARTY_NOTICES.md
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 1
           compression-level: 0
 
       - name: Upload release notes metadata
@@ -177,7 +177,7 @@ jobs:
           name: metadata-release-notes
           path: release-metadata/changelog.md
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 1
 
   linux:
     name: Build Linux
@@ -402,7 +402,7 @@ jobs:
           name: release-linux
           path: release-staging/*
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 1
           compression-level: 0
 
   windows:
@@ -743,7 +743,7 @@ jobs:
           name: release-windows
           path: release-staging/*
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 1
           compression-level: 0
 
   draft:

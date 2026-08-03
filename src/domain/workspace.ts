@@ -2,7 +2,7 @@ import { createId } from './ids';
 import { MAX_PAGE_DEPTH, MAX_TITLE_BYTES } from './limits';
 import { createDefaultWorkspace } from './sample';
 import { truncateUtf8 } from './strings';
-import { formattedText } from './textFormatting';
+import { markdownText } from './textFormatting';
 import { assertWorkspaceShape } from './validation';
 import {
   WORKSPACE_SCHEMA_VERSION,
@@ -1016,7 +1016,7 @@ export function searchWorkspace(
 export function pageToMarkdown(context: ActiveContext): string {
   const text = context.page.elements
     .filter((element): element is Extract<PageElement, { kind: 'text' }> => element.kind === 'text')
-    .map((element) => formattedText(element).trim())
+    .map((element) => markdownText(element).trim())
     .filter(Boolean)
     .join('\n\n');
   const checklists = context.page.elements

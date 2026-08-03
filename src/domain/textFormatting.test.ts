@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { TextElement } from './types';
-import { formattedText } from './textFormatting';
+import { formattedText, markdownText } from './textFormatting';
 
 function element(text: string, listStyle?: TextElement['listStyle']): TextElement {
   return {
@@ -26,8 +26,17 @@ describe('formatted text', () => {
     expect(formattedText(element('Alpha\n\nBeta', 'bullet'))).toBe(
       '• Alpha\n\n• Beta',
     );
-    expect(formattedText(element('Alpha\nBeta', 'numbered'))).toBe(
-      '1. Alpha\n2. Beta',
+    expect(formattedText(element('Alpha\n\nBeta', 'numbered'))).toBe(
+      '1. Alpha\n\n2. Beta',
+    );
+  });
+
+  it('uses Markdown list markers for portable text export', () => {
+    expect(markdownText(element('Alpha\n\nBeta', 'bullet'))).toBe(
+      '- Alpha\n\n- Beta',
+    );
+    expect(markdownText(element('Alpha\n\nBeta', 'numbered'))).toBe(
+      '1. Alpha\n\n2. Beta',
     );
   });
 

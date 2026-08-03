@@ -4,7 +4,7 @@
 
 Canvink 0.x is a local-first public alpha. It has no required account, cloud sync, collaboration service, or application telemetry. These choices reduce exposure, but they do not make the application encrypted or independently audited.
 
-Desktop notes are stored locally in SQLite. Browser-demo notes are stored in the current origin's IndexedDB. Both are plaintext from Canvink's perspective.
+Desktop notes are stored locally in SQLite. Browser-demo notes are stored in the current origin's IndexedDB. A temporary crash-recovery draft is stored separately in browser or desktop-webview IndexedDB until a matching authoritative save clears it. All of these stores are plaintext from Canvink's perspective.
 
 ## Assets to protect
 
@@ -37,7 +37,9 @@ The hosted demo is not suitable for the only copy of sensitive or important note
 
 ### Hosting
 
-The landing page and browser demo may be hosted by Vercel. The hosting platform and network intermediaries can observe normal request metadata such as IP address, time, route, and user agent. Canvink must not send notebook scenes to marketing analytics, telemetry, or AI services.
+The landing page and browser app may be hosted by Vercel or by an operator using the documented static container. The hosting platform, self-host operator, reverse proxy, and network intermediaries can observe normal request metadata such as IP address, time, route, and user agent. They do not receive notebook scenes from Canvink. A self-host deployment must use one stable HTTPS origin because IndexedDB does not move between origins.
+
+The production browser build uses a same-origin service worker for the application shell. It caches only navigation responses and content-hashed static assets. It does not cache notebook exports, imported documents, external URLs, or IndexedDB content. A compromised deployment can still serve malicious replacement code that reads same-origin browser storage, so operators must protect TLS, image provenance, and upgrades.
 
 ### Imported content
 
@@ -48,6 +50,7 @@ Images, PDFs, filenames, and pasted text are untrusted. Parsers can contain vuln
 | Threat | Current or required control | Remaining risk |
 | --- | --- | --- |
 | Lost or corrupt local data | Transactional SQLite snapshot and schema versioning | Alpha recovery and backup tooling is limited |
+| Interrupted autosave | Versioned recovery draft, strict validation, explicit restore or discard, portable draft download | Recovery is not history or an external backup and disappears with browser or webview site data |
 | Malicious PDF or image | Local parsing, browser sandbox, dependency updates, bounded input | Parser defects and denial of service remain possible |
 | Webview to native escalation | Narrow Tauri commands and least-privilege capabilities | Native surface needs continued review |
 | Cross-site scripting | React text rendering, no trusted note HTML, restrictive content policy where supported | Dependency or application bugs can still introduce XSS |

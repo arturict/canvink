@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createDefaultWorkspace } from '../domain/sample';
-import { getActiveContext } from '../domain/workspace';
+import { activatePage, getActiveContext } from '../domain/workspace';
 import type {
   ImageElement,
   Notebook,
@@ -23,7 +23,13 @@ describe('portable files', () => {
   });
 
   it('computes pressure-sample bounds without mutating them', () => {
-    const context = getActiveContext(createDefaultWorkspace())!;
+    const workspace = createDefaultWorkspace();
+    const notebook = workspace.notebooks[0];
+    const section = notebook.sections.find((item) => item.title === 'Examples')!;
+    const page = section.pages.find((item) => item.title === 'Start here')!;
+    const context = getActiveContext(
+      activatePage(workspace, notebook.id, section.id, page.id),
+    )!;
     const stroke = context.page.elements.find((element) => element.kind === 'stroke');
     expect(stroke?.kind).toBe('stroke');
     if (!stroke || stroke.kind !== 'stroke') return;
@@ -57,6 +63,30 @@ describe('portable files', () => {
     const contents = new TextDecoder('latin1').decode(bytes);
 
     expect(contents).toContain('/Subtype /Image');
+  });
+
+  it('fails PDF export instead of silently dropping an unsupported image', async () => {
+    const context = getActiveContext(createDefaultWorkspace())!;
+    const now = new Date().toISOString();
+    context.page.elements = [
+      {
+        id: 'unsupported-pdf-image',
+        kind: 'image',
+        x: 40,
+        y: 40,
+        width: 100,
+        height: 100,
+        dataUrl: 'data:image/svg+xml;base64,PHN2Zy8+',
+        name: 'unsupported.svg',
+        alt: 'Unsupported image',
+        createdAt: now,
+        updatedAt: now,
+      },
+    ];
+
+    await expect(createPagePdf(context)).rejects.toThrow(
+      'Unsupported PDF image preview format.',
+    );
   });
 
   it.each(['element', 'page', 'section', 'notebook'] as const)(

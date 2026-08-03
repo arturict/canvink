@@ -1,8 +1,11 @@
 import {
   forwardRef,
   memo,
+  useCallback,
   useEffect,
   useImperativeHandle,
+  useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -21,9 +24,10 @@ import {
 } from 'react-konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import { createId } from '../domain/ids';
-import { MAX_POINTS_PER_STROKE } from '../domain/limits';
+import { MAX_POINTS_PER_STROKE, MAX_TEXT_CHARS } from '../domain/limits';
 import type {
   BrushSettings,
+  ChecklistElement,
   EditorTool,
   ImageElement,
   InkPoint,
@@ -32,12 +36,15 @@ import type {
   PdfElement,
   StrokeElement,
 } from '../domain/types';
+import { formattedText } from '../domain/textFormatting';
+import { accessibleElementSummary } from './accessibility';
 import { A4_PAGE, FREE_PAGE } from './constants';
 import { getStrokeOutline, strokeToSvgPath } from './ink';
 
 export interface CanvasEditorHandle {
   toPngDataUrl: (pixelRatio?: number) => string;
   dimensions: () => { width: number; height: number };
+  editText: (elementId: string) => void;
 }
 
 interface CanvasEditorProps {
@@ -46,9 +53,10 @@ interface CanvasEditorProps {
   brush: BrushSettings;
   selectedElementId: string | null;
   onSelectElement: (elementId: string | null) => void;
-  onAddElement: (element: PageElement) => void;
+  onAddElement: (element: PageElement) => boolean;
   onUpdateElement: (elementId: string, patch: Partial<PageElement>) => void;
   onDeleteElement: (elementId: string) => void;
+  onToolChange: (tool: EditorTool) => void;
 }
 
 interface CanvasAssetProps {
@@ -58,6 +66,125 @@ interface CanvasAssetProps {
   onSelect: () => void;
   onUpdate: (patch: Partial<PageElement>) => void;
 }
+
+interface CanvasChecklistProps {
+  element: ChecklistElement;
+  selected: boolean;
+  selectable: boolean;
+  onSelect: () => void;
+  onUpdate: (patch: Partial<PageElement>) => void;
+}
+
+const CanvasChecklist = memo(function CanvasChecklist({
+  element,
+  selected,
+  selectable,
+  onSelect,
+  onUpdate,
+}: CanvasChecklistProps) {
+  const lineHeight = Math.max(30, element.fontSize * 1.55);
+  const contentHeight = Math.max(64, element.items.length * lineHeight + 22);
+  const height = Math.max(element.height, contentHeight);
+
+  return (
+    <Group
+      id={`element-${element.id}`}
+      elementId={element.id}
+      x={element.x}
+      y={element.y}
+      width={element.width}
+      height={height}
+      draggable={selectable}
+      listening={selectable}
+      onClick={onSelect}
+      onTap={onSelect}
+      onDragEnd={(event) => onUpdate({ x: event.target.x(), y: event.target.y() })}
+      onTransformEnd={(event) => {
+        const node = event.target;
+        const scaleX = node.scaleX();
+        const scaleY = node.scaleY();
+        node.scaleX(1);
+        node.scaleY(1);
+        onUpdate({
+          x: node.x(),
+          y: node.y(),
+          width: Math.max(220, element.width * scaleX),
+          height: Math.max(contentHeight, height * scaleY),
+        });
+      }}
+    >
+      <Rect
+        width={element.width}
+        height={height}
+        fill="#fffefa"
+        stroke={selected ? '#d7653b' : '#d9ddd7'}
+        strokeWidth={selected ? 1.5 : 1}
+        cornerRadius={10}
+        shadowColor="#1e2925"
+        shadowBlur={selected ? 12 : 5}
+        shadowOpacity={selected ? 0.14 : 0.06}
+        shadowOffsetY={3}
+      />
+      {element.items.map((item, index) => (
+        <Group key={item.id} y={12 + index * lineHeight}>
+          <Rect
+            x={12}
+            y={4}
+            width={18}
+            height={18}
+            cornerRadius={4}
+            fill={item.checked ? '#3f6859' : '#ffffff'}
+            stroke={item.checked ? '#3f6859' : '#87978f'}
+            strokeWidth={1.5}
+            onClick={(event) => {
+              event.cancelBubble = true;
+              onUpdate({
+                items: element.items.map((candidate) =>
+                  candidate.id === item.id
+                    ? { ...candidate, checked: !candidate.checked }
+                    : candidate,
+                ),
+              });
+            }}
+            onTap={(event) => {
+              event.cancelBubble = true;
+              onUpdate({
+                items: element.items.map((candidate) =>
+                  candidate.id === item.id
+                    ? { ...candidate, checked: !candidate.checked }
+                    : candidate,
+                ),
+              });
+            }}
+          />
+          {item.checked ? (
+            <KonvaText
+              x={14}
+              y={3}
+              width={14}
+              text="✓"
+              fill="#ffffff"
+              fontSize={15}
+              listening={false}
+              align="center"
+            />
+          ) : null}
+          <KonvaText
+            x={40}
+            y={2}
+            width={Math.max(80, element.width - 54)}
+            text={item.text || 'New task'}
+            fill={element.color}
+            fontSize={element.fontSize}
+            textDecoration={item.checked ? 'line-through' : undefined}
+            opacity={item.checked ? 0.62 : 1}
+            wrap="word"
+          />
+        </Group>
+      ))}
+    </Group>
+  );
+});
 
 function useLoadedImage(source: string): HTMLImageElement | undefined {
   const [image, setImage] = useState<HTMLImageElement>();
@@ -198,7 +325,7 @@ function deduplicateSamples(points: InkPoint[]): InkPoint[] {
 
 function elementCursor(tool: EditorTool): string {
   if (tool === 'select') return 'default';
-  if (tool === 'text') return 'text';
+  if (tool === 'text' || tool === 'checklist') return 'text';
   if (tool === 'eraser') return 'cell';
   return 'crosshair';
 }
@@ -213,20 +340,35 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
     onAddElement,
     onUpdateElement,
     onDeleteElement,
+    onToolChange,
   },
   ref,
 ) {
+  const canvasPageRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
+  const inlineTextEditorRef = useRef<HTMLTextAreaElement>(null);
+  const canvasDescriptionId = useId();
+  const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const activePointerRef = useRef<number | null>(null);
   const draftPointsRef = useRef<InkPoint[]>([]);
   const draftRef = useRef<StrokeElement | null>(null);
   const erasedDuringGestureRef = useRef(new Set<string>());
+  const finishPointerRef = useRef<(event: PointerEvent, cancelled?: boolean) => void>(
+    () => undefined,
+  );
   const dimensions = page.mode === 'a4' ? A4_PAGE : FREE_PAGE;
   const selectedElement = page.elements.find(
     (element) => element.id === selectedElementId,
   );
+  const editingTextElement =
+    selectedElement?.kind === 'text' && selectedElement.id === editingTextId
+      ? selectedElement
+      : null;
+  const beginTextEditing = useCallback((elementId: string) => {
+    setEditingTextId(elementId);
+  }, []);
 
   useImperativeHandle(
     ref,
@@ -236,24 +378,41 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
         if (!stage) return '';
         const transformer = transformerRef.current;
         const transformerWasVisible = transformer?.visible() ?? false;
+        const editingNode = editingTextId
+          ? stage.findOne(
+              (node: Konva.Node) => node.getAttr('elementId') === editingTextId,
+            )
+          : undefined;
+        const editingNodeWasVisible = editingNode?.visible();
         try {
           transformer?.visible(false);
-          transformer?.getLayer()?.draw();
+          editingNode?.visible(true);
+          stage.draw();
           return stage.toDataURL({ pixelRatio, mimeType: 'image/png' });
         } finally {
           transformer?.visible(transformerWasVisible);
-          transformer?.getLayer()?.draw();
+          if (editingNode && editingNodeWasVisible !== undefined) {
+            editingNode.visible(editingNodeWasVisible);
+          }
+          stage.draw();
         }
       },
       dimensions: () => dimensions,
+      editText: beginTextEditing,
     }),
-    [dimensions],
+    [beginTextEditing, dimensions, editingTextId],
   );
 
   useEffect(() => {
     const transformer = transformerRef.current;
     const stage = stageRef.current;
-    if (!transformer || !stage || !selectedElementId || tool !== 'select') {
+    if (
+      !transformer ||
+      !stage ||
+      !selectedElementId ||
+      tool !== 'select' ||
+      editingTextId === selectedElementId
+    ) {
       transformer?.nodes([]);
       transformer?.getLayer()?.batchDraw();
       return;
@@ -264,7 +423,13 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
     );
     transformer.nodes(selectedNode ? [selectedNode] : []);
     transformer.getLayer()?.batchDraw();
-  }, [page.elements, selectedElementId, tool]);
+  }, [editingTextId, page.elements, selectedElementId, tool]);
+
+  useLayoutEffect(() => {
+    if (editingTextId && editingTextId === selectedElementId) {
+      inlineTextEditorRef.current?.focus();
+    }
+  }, [editingTextId, selectedElementId]);
 
   const gridLines = useMemo(() => {
     const lines: Array<{ points: number[]; major: boolean }> = [];
@@ -324,9 +489,7 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
   const handlePointerDown = (event: KonvaEventObject<PointerEvent>) => {
     const nativeEvent = event.evt;
     const stage = stageRef.current;
-    if (!stage || (nativeEvent.pointerType === 'touch' && (tool === 'pen' || tool === 'highlighter'))) {
-      return;
-    }
+    if (!stage) return;
 
     const elementId = findElementId(event.target);
     if (tool === 'select') {
@@ -338,12 +501,17 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
       erasedDuringGestureRef.current.clear();
       activePointerRef.current = nativeEvent.pointerId;
       eraseTarget(event.target);
-      stage.container().setPointerCapture?.(nativeEvent.pointerId);
+      try {
+        stage.container().setPointerCapture?.(nativeEvent.pointerId);
+      } catch {
+        // Window-level pointer completion still closes the gesture.
+      }
       nativeEvent.preventDefault();
       return;
     }
 
     if (tool === 'text') {
+      nativeEvent.preventDefault();
       const [point] = pointerSamples(nativeEvent);
       if (!point) return;
       const createdAt = new Date().toISOString();
@@ -354,7 +522,7 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
         y: point.y,
         width: 360,
         height: 100,
-        text: 'Start typing…',
+        text: '',
         color: brush.color,
         fontSize: 22,
         fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
@@ -362,15 +530,51 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
         createdAt,
         updatedAt: createdAt,
       };
-      onAddElement(element);
+      if (!onAddElement(element)) return;
       onSelectElement(element.id);
+      onToolChange('select');
+      beginTextEditing(element.id);
+      return;
+    }
+
+    if (tool === 'checklist') {
+      nativeEvent.preventDefault();
+      const [point] = pointerSamples(nativeEvent);
+      if (!point) return;
+      const createdAt = new Date().toISOString();
+      const element: ChecklistElement = {
+        id: createId('checklist'),
+        kind: 'checklist',
+        x: point.x,
+        y: point.y,
+        width: 420,
+        height: 96,
+        color: brush.color,
+        fontSize: 20,
+        items: [
+          {
+            id: createId('check'),
+            text: 'New task',
+            checked: false,
+          },
+        ],
+        createdAt,
+        updatedAt: createdAt,
+      };
+      if (!onAddElement(element)) return;
+      onSelectElement(element.id);
+      onToolChange('select');
       return;
     }
 
     if (tool !== 'pen' && tool !== 'highlighter') return;
     nativeEvent.preventDefault();
-    stage.container().setPointerCapture?.(nativeEvent.pointerId);
     activePointerRef.current = nativeEvent.pointerId;
+    try {
+      stage.container().setPointerCapture?.(nativeEvent.pointerId);
+    } catch {
+      // Window-level pointer completion still closes the gesture.
+    }
     const points = pointerSamples(nativeEvent).slice(0, MAX_POINTS_PER_STROKE);
     draftPointsRef.current = points;
     const createdAt = new Date().toISOString();
@@ -413,12 +617,15 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
     }
   };
 
-  const finishPointer = (event: KonvaEventObject<PointerEvent>, cancelled = false) => {
-    const nativeEvent = event.evt;
+  const finishPointer = (nativeEvent: PointerEvent, cancelled = false) => {
     if (activePointerRef.current !== nativeEvent.pointerId) return;
     const stage = stageRef.current;
-    if (stage?.container().hasPointerCapture?.(nativeEvent.pointerId)) {
-      stage.container().releasePointerCapture(nativeEvent.pointerId);
+    try {
+      if (stage?.container().hasPointerCapture?.(nativeEvent.pointerId)) {
+        stage.container().releasePointerCapture(nativeEvent.pointerId);
+      }
+    } catch {
+      // The browser may release capture before the bubbled completion event.
     }
 
     const draft = draftRef.current;
@@ -446,21 +653,57 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
     paintDraft(null);
   };
 
+  useLayoutEffect(() => {
+    finishPointerRef.current = finishPointer;
+  });
+
+  useEffect(() => {
+    const handlePointerUp = (event: PointerEvent) => finishPointerRef.current(event);
+    const handlePointerCancel = (event: PointerEvent) =>
+      finishPointerRef.current(event, true);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerCancel);
+    return () => {
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerCancel);
+    };
+  }, []);
+
   return (
     <div
+      ref={canvasPageRef}
+      id="page-editor"
       className={`canvas-page canvas-page--${page.mode}`}
       style={{ width: dimensions.width, height: dimensions.height, cursor: elementCursor(tool) }}
       data-page-mode={page.mode}
       data-editor-tool={tool}
+      role="region"
+      tabIndex={0}
+      aria-label={`Canvas editor for ${page.title.trim() || 'Untitled page'}`}
+      aria-describedby={canvasDescriptionId}
     >
+      <p id={canvasDescriptionId} className="sr-only">
+        {page.elements.length === 0
+          ? 'This page has no canvas objects.'
+          : `${page.elements.length} canvas ${
+              page.elements.length === 1 ? 'object' : 'objects'
+            }. Use the object selector above to inspect an object.`}
+      </p>
+      {page.elements.length > 0 ? (
+        <ul className="sr-only" aria-label="Canvas objects">
+          {page.elements.map((element) => (
+            <li key={element.id}>{accessibleElementSummary(element)}</li>
+          ))}
+        </ul>
+      ) : null}
       <Stage
         ref={stageRef}
         width={dimensions.width}
         height={dimensions.height}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
-        onPointerUp={(event) => finishPointer(event)}
-        onPointerCancel={(event) => finishPointer(event, true)}
+        onPointerUp={(event) => finishPointer(event.evt)}
+        onPointerCancel={(event) => finishPointer(event.evt, true)}
       >
         <Layer listening={false}>
           <Rect width={dimensions.width} height={dimensions.height} fill="#fffefa" name="page-bg" />
@@ -514,19 +757,47 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
                   y={element.y}
                   width={element.width}
                   height={element.height}
-                  text={element.text}
+                  text={formattedText(element)}
                   fill={element.color}
                   fontSize={element.fontSize}
                   fontFamily={element.fontFamily}
-                  fontStyle={element.fontWeight >= 600 ? 'bold' : 'normal'}
+                  fontStyle={[
+                    element.fontWeight >= 600 ? 'bold' : '',
+                    element.fontStyle === 'italic' ? 'italic' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ') || 'normal'}
+                  textDecoration={
+                    element.textDecoration && element.textDecoration !== 'none'
+                      ? element.textDecoration
+                      : undefined
+                  }
+                  align={element.textAlign ?? 'left'}
                   lineHeight={1.35}
                   wrap="word"
+                  visible={editingTextId !== element.id}
                   draggable={tool === 'select'}
                   onClick={
                     tool === 'select' ? () => onSelectElement(element.id) : undefined
                   }
                   onTap={
                     tool === 'select' ? () => onSelectElement(element.id) : undefined
+                  }
+                  onDblClick={
+                    tool === 'select'
+                      ? () => {
+                          onSelectElement(element.id);
+                          beginTextEditing(element.id);
+                        }
+                      : undefined
+                  }
+                  onDblTap={
+                    tool === 'select'
+                      ? () => {
+                          onSelectElement(element.id);
+                          beginTextEditing(element.id);
+                        }
+                      : undefined
                   }
                   onDragEnd={(moveEvent) =>
                     onUpdateElement(element.id, {
@@ -547,6 +818,19 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
                       height: Math.max(42, element.height * scaleY),
                     });
                   }}
+                />
+              );
+            }
+
+            if (element.kind === 'checklist') {
+              return (
+                <CanvasChecklist
+                  key={element.id}
+                  element={element}
+                  selected={element.id === selectedElementId}
+                  selectable={tool === 'select'}
+                  onSelect={() => onSelectElement(element.id)}
+                  onUpdate={(patch) => onUpdateElement(element.id, patch)}
                 />
               );
             }
@@ -598,6 +882,62 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
         height={dimensions.height}
         aria-hidden="true"
       />
+      {editingTextElement ? (
+        <textarea
+          ref={inlineTextEditorRef}
+          className="canvas-inline-text-editor"
+          data-testid="canvas-inline-text-editor"
+          aria-label="Edit text on page"
+          value={editingTextElement.text}
+          maxLength={MAX_TEXT_CHARS}
+          placeholder="Write your note"
+          spellCheck
+          style={{
+            left: editingTextElement.x,
+            top: editingTextElement.y,
+            width: editingTextElement.width,
+            height: editingTextElement.height,
+            color: editingTextElement.color,
+            fontSize: editingTextElement.fontSize,
+            fontFamily: editingTextElement.fontFamily,
+            fontWeight: editingTextElement.fontWeight,
+            fontStyle: editingTextElement.fontStyle ?? 'normal',
+            textDecoration:
+              editingTextElement.textDecoration === 'none'
+                ? undefined
+                : editingTextElement.textDecoration,
+            textAlign: editingTextElement.textAlign ?? 'left',
+          }}
+          onChange={(event) => {
+            const availableHeight = Math.max(
+              editingTextElement.height,
+              dimensions.height - Math.max(0, editingTextElement.y),
+            );
+            const height = Math.min(
+              availableHeight,
+              Math.max(editingTextElement.height, event.currentTarget.scrollHeight),
+            );
+            onUpdateElement(editingTextElement.id, {
+              text: event.currentTarget.value,
+              height,
+            });
+          }}
+          onBlur={() =>
+            setEditingTextId((current) =>
+              current === editingTextElement.id ? null : current,
+            )
+          }
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' && !event.nativeEvent.isComposing) {
+              event.preventDefault();
+              event.stopPropagation();
+              setEditingTextId(null);
+              canvasPageRef.current?.focus();
+            }
+          }}
+          onPointerDown={(event) => event.stopPropagation()}
+        />
+      ) : null}
     </div>
   );
 });

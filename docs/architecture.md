@@ -67,9 +67,23 @@ The hosted `/app` route stores the same logical workspace in IndexedDB. The brow
 
 IndexedDB is a demo adapter, not a fallback cloud service. Clearing site data can delete its contents.
 
+## Interaction and recovery states
+
+The default workspace opens a blank `Quick note`. Example and template pages are present in separate sections instead of taking over the active page. A non-modal guide can be skipped and reopened. Its dismissed state and interface text-size choice are optional browser UI preferences, not part of notebook content.
+
+Schema v1 always keeps at least one notebook, one section in each notebook, and one page in each section. Creation supplies that next level, validation rejects empty containers, and trash actions protect the last container. Notebook and section empty states are therefore structurally unreachable; the actionable blank-page state is the first empty content surface.
+
+On first initialization, the generated workspace is fully written before the interface reports `Saved locally`. Later edits use a debounced snapshot save. A failed save remains visible with `Retry save` and `Download rescue copy` actions. The rescue copy contains the current in-memory workspace.
+
+During the debounce window, a second versioned snapshot is written to a recovery key in IndexedDB. In the desktop runtime this recovery key belongs to the packaged webview and remains separate from the authoritative SQLite database. A successful authoritative save clears only recovery data from the same editing session at or before the committed revision, so it cannot erase a newer draft. On startup, a structurally valid recovery snapshot that differs from the authoritative workspace blocks editing until the user restores it, downloads it, or explicitly keeps the saved copy. It never silently replaces saved data. This is crash-draft recovery, not page history or a backup schedule, and clearing browser or webview site data can remove it.
+
+The browser build observes connectivity only to explain its boundary. Its production build registers a same-origin service worker on secure origins and localhost. The worker caches the application shell and content-hashed static assets, but it never handles notebook content. After the worker has installed and activated, the interface can reopen offline and load the last successfully saved workspace from IndexedDB. A first visit still requires the server, and this cache is neither sync nor crash recovery. The desktop editor does not need the hosted site for ordinary editing.
+
+Search scans the currently loaded workspace snapshot. The UI does not claim an indexing phase, and the desktop FTS table is not currently queried by the React search flow. There is no device sync or cross-device conflict model. The browser Web Lock prevents a second tab from becoming another writer instead of attempting a merge, and the blocked tab presents this as a specific safe-write conflict rather than a generic load error.
+
 ## Landing page and application
 
-The landing page and web demo share the Vite build but have separate routes. Static deployment on Vercel hosts the landing experience. The desktop app loads packaged assets and does not depend on the hosted site for ordinary editing.
+The landing page and browser app share the Vite build but have separate routes. The same static artifact can run on Vercel or in the documented rootless self-host container. The container has no notebook volume because browser content remains in each origin's IndexedDB. The desktop app loads packaged assets and does not depend on the hosted site for ordinary editing.
 
 The deployment platform can observe normal request metadata for hosted pages. That does not make notebook content telemetry, and the application must not transmit notebook scenes to analytics or marketing services.
 

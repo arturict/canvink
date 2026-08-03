@@ -1,20 +1,35 @@
 import { describe, expect, it } from 'vitest';
-import { createDefaultWorkspace } from './sample';
+import {
+  BUNDLED_START_PAGE_ID,
+  createDefaultWorkspace,
+  findBundledStartPage,
+} from './sample';
 import {
   activatePage,
   addPageElement,
   appendPage,
   createPage,
+  duplicatePage,
   getActiveContext,
+  normalizeStoredWorkspace,
   normalizeWorkspace,
   pageToMarkdown,
   renameNotebook,
   renameSection,
+  reorderPage,
   restoreTrashEntry,
   searchWorkspace,
   trashElement,
   trashPage,
 } from './workspace';
+
+function activateDefaultExample() {
+  const workspace = createDefaultWorkspace();
+  const notebook = workspace.notebooks[0];
+  const section = notebook.sections.find((item) => item.title === 'Examples')!;
+  const page = section.pages.find((item) => item.title === 'Start here')!;
+  return activatePage(workspace, notebook.id, section.id, page.id);
+}
 
 describe('workspace model', () => {
   it('creates a usable nested default workspace', () => {
@@ -22,7 +37,48 @@ describe('workspace model', () => {
     const context = getActiveContext(workspace);
 
     expect(context?.notebook.title).toBe('My notebook');
-    expect(context?.page.elements.length).toBeGreaterThan(0);
+    expect(context?.section.title).toBe('Notes');
+    expect(context?.page.title).toBe('Quick note');
+    expect(context?.page.elements).toEqual([]);
+    expect(workspace.notebooks[0].sections.map((section) => section.title)).toEqual([
+      'Notes',
+      'Examples',
+      'Templates',
+    ]);
+    expect(findBundledStartPage(workspace)?.page.id).toBe(BUNDLED_START_PAGE_ID);
+  });
+
+  it('finds the bundled example even when an earlier user page has the same title', () => {
+    const workspace = createDefaultWorkspace();
+    const notesSection = workspace.notebooks[0].sections[0];
+    notesSection.pages.unshift({
+      ...createPage('Start here', 'free'),
+      id: 'page-user-start-here',
+    });
+
+    const example = findBundledStartPage(workspace);
+
+    expect(example?.section.title).toBe('Examples');
+    expect(example?.page.id).toBe(BUNDLED_START_PAGE_ID);
+  });
+
+  it('keeps the bundled marker across renames and recognizes only the signed legacy fixture', () => {
+    const renamedWorkspace = createDefaultWorkspace();
+    const renamedExample = findBundledStartPage(renamedWorkspace)!;
+    renamedExample.page.title = 'My renamed example';
+    expect(findBundledStartPage(renamedWorkspace)?.page.id).toBe(
+      BUNDLED_START_PAGE_ID,
+    );
+
+    const legacyWorkspace = createDefaultWorkspace();
+    const legacyExample = findBundledStartPage(legacyWorkspace)!;
+    legacyExample.page.id = 'page-legacy-random-id';
+    expect(findBundledStartPage(legacyWorkspace)?.page.id).toBe(
+      'page-legacy-random-id',
+    );
+
+    legacyExample.page.elements = [];
+    expect(findBundledStartPage(legacyWorkspace)).toBeNull();
   });
 
   it('renames notebooks and sections without changing their identities', () => {
@@ -47,21 +103,39 @@ describe('workspace model', () => {
     expect(renamedContext.section.title).toBe('Research');
   });
 
-  it('creates welcome data only for a missing or truly empty first-run store', () => {
-    expect(getActiveContext(normalizeWorkspace(undefined))?.page.title).toBe('Start here');
-    expect(
-      getActiveContext(
-        normalizeWorkspace({
-          schemaVersion: 1,
-          updatedAt: '1970-01-01T00:00:00.000Z',
-          notebooks: [],
-          trash: [],
-          activeNotebookId: '',
-          activeSectionId: '',
-          activePageId: '',
-        }),
-      )?.page.title,
-    ).toBe('Start here');
+  it('distinguishes a missing or canonical empty first-run store from existing data', () => {
+    const missing = normalizeStoredWorkspace(undefined);
+    const canonicalEmpty = normalizeStoredWorkspace({
+      schemaVersion: 1,
+      updatedAt: '1970-01-01T00:00:00.000Z',
+      notebooks: [],
+      trash: [],
+      activeNotebookId: '',
+      activeSectionId: '',
+      activePageId: '',
+    });
+    const existing = normalizeStoredWorkspace(createDefaultWorkspace());
+
+    expect(missing.storageState).toBe('uninitialized');
+    expect(getActiveContext(missing.workspace)?.page.title).toBe('Quick note');
+    expect(canonicalEmpty.storageState).toBe('uninitialized');
+    expect(getActiveContext(canonicalEmpty.workspace)?.page.title).toBe('Quick note');
+    expect(existing.storageState).toBe('existing');
+  });
+
+  it('rejects null and non-canonical empty records instead of initializing over them', () => {
+    expect(() => normalizeStoredWorkspace(null)).toThrow(/malformed/);
+    expect(() =>
+      normalizeStoredWorkspace({
+        schemaVersion: 1,
+        updatedAt: '2026-07-29T00:00:00.000Z',
+        notebooks: [],
+        trash: [],
+        activeNotebookId: '',
+        activeSectionId: '',
+        activePageId: '',
+      }),
+    ).toThrow(/non-empty/);
   });
 
   it('rejects a newer schema instead of replacing it', () => {
@@ -173,7 +247,7 @@ describe('workspace model', () => {
   });
 
   it('restores an element at its original canvas stacking position', () => {
-    const workspace = createDefaultWorkspace();
+    const workspace = activateDefaultExample();
     const context = getActiveContext(workspace)!;
     const originalIds = context.page.elements.map((element) => element.id);
     const target = context.page.elements[1];
@@ -194,10 +268,11 @@ describe('workspace model', () => {
               (rest) => [item, ...rest],
             ),
           );
-    const seed = createDefaultWorkspace();
+    const seed = activateDefaultExample();
     const seedContext = getActiveContext(seed)!;
     const originalIds = seedContext.page.elements.map((element) => element.id);
     const targetIds = originalIds.slice(0, 3);
+    expect(targetIds).toHaveLength(3);
 
     for (const deleteOrder of permutations(targetIds)) {
       let trashed = seed;
@@ -222,9 +297,10 @@ describe('workspace model', () => {
   });
 
   it('restores an original stack below elements added while it was trashed', () => {
-    const seed = createDefaultWorkspace();
+    const seed = activateDefaultExample();
     const context = getActiveContext(seed)!;
     const originalIds = context.page.elements.map((element) => element.id);
+    expect(originalIds.length).toBeGreaterThan(0);
     let emptied = seed;
     for (const elementId of originalIds) {
       emptied = trashElement(emptied, context.page.id, elementId);
@@ -251,7 +327,7 @@ describe('workspace model', () => {
   });
 
   it('keeps a trashed element when its destination page is unavailable', () => {
-    const workspace = createDefaultWorkspace();
+    const workspace = activateDefaultExample();
     const context = getActiveContext(workspace)!;
     const element = context.page.elements[0];
     const withoutElement = trashElement(workspace, context.page.id, element.id);
@@ -502,7 +578,7 @@ describe('workspace model', () => {
   });
 
   it('does not mutate or retarget a workspace when an append destination disappeared', () => {
-    const workspace = createDefaultWorkspace();
+    const workspace = activateDefaultExample();
     const page = createPage('Late import');
     const existingElement = getActiveContext(workspace)!.page.elements[0];
 
@@ -553,10 +629,213 @@ describe('workspace model', () => {
   });
 
   it('exports readable markdown from text objects', () => {
-    const context = getActiveContext(createDefaultWorkspace())!;
+    const context = getActiveContext(activateDefaultExample())!;
     const markdown = pageToMarkdown(context);
 
     expect(markdown).toContain('# Start here');
     expect(markdown).toContain('Welcome to Canvink');
+  });
+
+  it('duplicates a page with independent element and checklist item identities', () => {
+    const workspace = createDefaultWorkspace();
+    const context = getActiveContext(workspace)!;
+    context.page.tags = ['todo', 'important'];
+    context.page.taskState = 'open';
+    context.page.elements = [
+      {
+        id: 'checklist-source',
+        kind: 'checklist',
+        x: 20,
+        y: 30,
+        width: 320,
+        height: 180,
+        color: '#1f2937',
+        fontSize: 16,
+        items: [
+          { id: 'check-source-1', text: 'Prepare notes', checked: false },
+          { id: 'check-source-2', text: 'Share summary', checked: true },
+        ],
+        createdAt: workspace.updatedAt,
+        updatedAt: workspace.updatedAt,
+      },
+    ];
+
+    const duplicated = duplicatePage(
+      workspace,
+      context.notebook.id,
+      context.section.id,
+      context.page.id,
+    );
+    const duplicate = getActiveContext(duplicated)!.page;
+    const checklist = duplicate.elements[0];
+
+    expect(duplicate.title).toBe('Quick note copy');
+    expect(duplicate.id).not.toBe(context.page.id);
+    expect(duplicate.tags).toEqual(['todo', 'important']);
+    expect(duplicate.taskState).toBe('open');
+    expect(checklist.id).not.toBe('checklist-source');
+    expect(checklist.kind).toBe('checklist');
+    if (checklist.kind !== 'checklist') return;
+    expect(checklist.items.map((item) => item.id)).not.toEqual([
+      'check-source-1',
+      'check-source-2',
+    ]);
+    expect(checklist.items.map((item) => item.text)).toEqual([
+      'Prepare notes',
+      'Share summary',
+    ]);
+  });
+
+  it('reorders only sibling pages and preserves their parent relationship', () => {
+    const workspace = createDefaultWorkspace();
+    const context = getActiveContext(workspace)!;
+    const withFirst = appendPage(
+      workspace,
+      context.notebook.id,
+      context.section.id,
+      createPage('First sibling'),
+    );
+    const withSecond = appendPage(
+      withFirst,
+      context.notebook.id,
+      context.section.id,
+      createPage('Second sibling'),
+    );
+    const secondId = withSecond.activePageId;
+
+    const reordered = reorderPage(
+      withSecond,
+      context.notebook.id,
+      context.section.id,
+      secondId,
+      'up',
+    );
+    const titles = reordered.notebooks[0].sections[0].pages
+      .filter((page) => !page.parentPageId)
+      .map((page) => page.title);
+
+    expect(titles).toEqual(['Quick note', 'Second sibling', 'First sibling']);
+    expect(
+      reordered.notebooks[0].sections[0].pages.find((page) => page.id === secondId)
+        ?.parentPageId,
+    ).toBeUndefined();
+  });
+
+  it('finds tagged tasks and checklist content without broadening unknown filters', () => {
+    const workspace = createDefaultWorkspace();
+    const context = getActiveContext(workspace)!;
+    context.page.tags = ['todo'];
+    context.page.taskState = 'open';
+    context.page.elements = [
+      {
+        id: 'checklist-search',
+        kind: 'checklist',
+        x: 20,
+        y: 30,
+        width: 320,
+        height: 180,
+        color: '#1f2937',
+        fontSize: 16,
+        items: [
+          { id: 'check-search-1', text: 'Book customer interview', checked: false },
+        ],
+        createdAt: workspace.updatedAt,
+        updatedAt: workspace.updatedAt,
+      },
+    ];
+
+    expect(searchWorkspace(workspace, 'tag:todo is:open')).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: 'page', pageId: context.page.id }),
+      ]),
+    );
+    expect(searchWorkspace(workspace, 'customer interview')).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: 'checklist', pageId: context.page.id }),
+      ]),
+    );
+    expect(searchWorkspace(workspace, 'is:future')).toEqual([]);
+  });
+
+  it('exports page metadata, formatted lists, and checklists to Markdown', () => {
+    const workspace = createDefaultWorkspace();
+    const context = getActiveContext(workspace)!;
+    context.page.tags = ['idea'];
+    context.page.taskState = 'done';
+    context.page.elements = [
+      {
+        id: 'text-list',
+        kind: 'text',
+        x: 10,
+        y: 10,
+        width: 300,
+        height: 100,
+        text: 'Alpha\nBeta',
+        listStyle: 'numbered',
+        color: '#000000',
+        fontSize: 16,
+        fontFamily: 'sans-serif',
+        fontWeight: 400,
+        createdAt: workspace.updatedAt,
+        updatedAt: workspace.updatedAt,
+      },
+      {
+        id: 'checklist-markdown',
+        kind: 'checklist',
+        x: 10,
+        y: 120,
+        width: 300,
+        height: 100,
+        color: '#000000',
+        fontSize: 16,
+        items: [
+          { id: 'check-markdown-1', text: 'Complete beta', checked: true },
+        ],
+        createdAt: workspace.updatedAt,
+        updatedAt: workspace.updatedAt,
+      },
+    ];
+
+    const markdown = pageToMarkdown(context);
+
+    expect(markdown).toContain('Tags: idea');
+    expect(markdown).toContain('Task: done');
+    expect(markdown).toContain('1. Alpha\n2. Beta');
+    expect(markdown).toContain('- [x] Complete beta');
+  });
+
+  it('rejects malformed checklist identities and page task metadata', () => {
+    const duplicateItems = structuredClone(createDefaultWorkspace());
+    const duplicateContext = getActiveContext(duplicateItems)!;
+    duplicateContext.page.elements = [
+      {
+        id: 'checklist-invalid',
+        kind: 'checklist',
+        x: 0,
+        y: 0,
+        width: 200,
+        height: 100,
+        color: '#000000',
+        fontSize: 16,
+        items: [
+          { id: 'duplicate-item', text: 'One', checked: false },
+          { id: 'duplicate-item', text: 'Two', checked: true },
+        ],
+        createdAt: duplicateItems.updatedAt,
+        updatedAt: duplicateItems.updatedAt,
+      },
+    ];
+    const invalidMetadata = structuredClone(createDefaultWorkspace()) as unknown as {
+      notebooks: Array<{
+        sections: Array<{ pages: Array<{ tags: string[]; taskState: string }> }>;
+      }>;
+    };
+    invalidMetadata.notebooks[0].sections[0].pages[0].tags = ['todo', 'todo'];
+    invalidMetadata.notebooks[0].sections[0].pages[0].taskState = 'waiting';
+
+    expect(() => normalizeWorkspace(duplicateItems)).toThrow(/duplicates an item ID/);
+    expect(() => normalizeWorkspace(invalidMetadata)).toThrow(
+      /unsupported or duplicated/,
+    );
   });
 });

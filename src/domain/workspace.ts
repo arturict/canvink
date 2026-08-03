@@ -2,6 +2,7 @@ import { createId } from './ids';
 import { MAX_PAGE_DEPTH, MAX_TITLE_BYTES } from './limits';
 import { createDefaultWorkspace } from './sample';
 import { truncateUtf8 } from './strings';
+import { markdownText } from './textFormatting';
 import { assertWorkspaceShape } from './validation';
 import {
   WORKSPACE_SCHEMA_VERSION,
@@ -16,7 +17,8 @@ import {
 } from './types';
 
 const SEARCH_LIMIT = 40;
-const EMPTY_WORKSPACE_FIELDS = new Set([
+const CANONICAL_EMPTY_WORKSPACE_TIMESTAMP = '1970-01-01T00:00:00.000Z';
+const CANONICAL_EMPTY_WORKSPACE_FIELDS = new Set([
   'schemaVersion',
   'updatedAt',
   'notebooks',
@@ -34,6 +36,31 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function isCanonicalEmptyWorkspace(
+  value: Record<string, unknown>,
+): boolean {
+  return (
+    value.schemaVersion === WORKSPACE_SCHEMA_VERSION &&
+    value.updatedAt === CANONICAL_EMPTY_WORKSPACE_TIMESTAMP &&
+    Array.isArray(value.notebooks) &&
+    value.notebooks.length === 0 &&
+    Array.isArray(value.trash) &&
+    value.trash.length === 0 &&
+    value.activeNotebookId === '' &&
+    value.activeSectionId === '' &&
+    value.activePageId === '' &&
+    Object.keys(value).every((key) =>
+      CANONICAL_EMPTY_WORKSPACE_FIELDS.has(key),
+    ) &&
+    Object.keys(value).length === CANONICAL_EMPTY_WORKSPACE_FIELDS.size
+  );
+}
+
+export type StoredWorkspaceResolution = {
+  workspace: WorkspaceState;
+  storageState: 'uninitialized' | 'existing';
+};
+
 export function getActiveContext(workspace: WorkspaceState): ActiveContext | null {
   const notebook =
     workspace.notebooks.find((item) => item.id === workspace.activeNotebookId) ??
@@ -48,13 +75,24 @@ export function getActiveContext(workspace: WorkspaceState): ActiveContext | nul
   return notebook && section && page ? { notebook, section, page } : null;
 }
 
-export function normalizeWorkspace(value: unknown): WorkspaceState {
-  if (value === undefined || value === null) {
-    return createDefaultWorkspace();
+export function normalizeStoredWorkspace(
+  value: unknown,
+): StoredWorkspaceResolution {
+  if (value === undefined) {
+    return {
+      workspace: createDefaultWorkspace(),
+      storageState: 'uninitialized',
+    };
   }
 
   if (!isRecord(value)) {
     throw new Error('Stored Canvink data is malformed and was not changed.');
+  }
+  if (isCanonicalEmptyWorkspace(value)) {
+    return {
+      workspace: createDefaultWorkspace(),
+      storageState: 'uninitialized',
+    };
   }
   if (value.schemaVersion !== WORKSPACE_SCHEMA_VERSION) {
     throw new Error(
@@ -65,28 +103,9 @@ export function normalizeWorkspace(value: unknown): WorkspaceState {
     throw new Error('Stored Canvink notebooks are malformed and were not changed.');
   }
   if (value.notebooks.length === 0) {
-    const hasEmptyTrash = Array.isArray(value.trash) && value.trash.length === 0;
-    const hasUnknownFields = Object.keys(value).some(
-      (key) => !EMPTY_WORKSPACE_FIELDS.has(key),
+    throw new Error(
+      'Stored Canvink data is non-empty but has no usable notebook. It was not changed.',
     );
-    const hasValidEmptySelection = [
-      value.activeNotebookId,
-      value.activeSectionId,
-      value.activePageId,
-    ].every((id) => id === '');
-    const hasTimestamp = typeof value.updatedAt === 'string';
-
-    if (
-      !hasEmptyTrash ||
-      hasUnknownFields ||
-      !hasValidEmptySelection ||
-      !hasTimestamp
-    ) {
-      throw new Error(
-        'Stored Canvink data is non-empty but has no usable notebook. It was not changed.',
-      );
-    }
-    return createDefaultWorkspace();
   }
 
   assertWorkspaceShape(value);
@@ -97,13 +116,20 @@ export function normalizeWorkspace(value: unknown): WorkspaceState {
   }
 
   return {
-    ...candidate,
-    schemaVersion: WORKSPACE_SCHEMA_VERSION,
-    trash: Array.isArray(candidate.trash) ? candidate.trash : [],
-    activeNotebookId: context.notebook.id,
-    activeSectionId: context.section.id,
-    activePageId: context.page.id,
+    workspace: {
+      ...candidate,
+      schemaVersion: WORKSPACE_SCHEMA_VERSION,
+      trash: Array.isArray(candidate.trash) ? candidate.trash : [],
+      activeNotebookId: context.notebook.id,
+      activeSectionId: context.section.id,
+      activePageId: context.page.id,
+    },
+    storageState: 'existing',
   };
+}
+
+export function normalizeWorkspace(value: unknown): WorkspaceState {
+  return normalizeStoredWorkspace(value).workspace;
 }
 
 export function activatePage(
@@ -353,6 +379,111 @@ export function appendPage(
     activeNotebookId: notebookId,
     activeSectionId: sectionId,
     activePageId: page.id,
+  };
+}
+
+export function duplicatePage(
+  workspace: WorkspaceState,
+  notebookId: string,
+  sectionId: string,
+  pageId: string,
+): WorkspaceState {
+  const notebook = workspace.notebooks.find((item) => item.id === notebookId);
+  const section = notebook?.sections.find((item) => item.id === sectionId);
+  const sourceIndex = section?.pages.findIndex((item) => item.id === pageId) ?? -1;
+  const source = sourceIndex >= 0 ? section?.pages[sourceIndex] : undefined;
+  if (!notebook || !section || !source) return workspace;
+
+  const duplicatedAt = now();
+  const duplicate: Page = {
+    ...source,
+    id: createId('page'),
+    title: truncateUtf8(`${source.title || 'Untitled page'} copy`, MAX_TITLE_BYTES),
+    createdAt: duplicatedAt,
+    updatedAt: duplicatedAt,
+    tags: source.tags ? [...source.tags] : undefined,
+    elements: source.elements.map((element) => ({
+      ...element,
+      id: createId(element.kind),
+      createdAt: duplicatedAt,
+      updatedAt: duplicatedAt,
+      ...(element.kind === 'checklist'
+        ? {
+            items: element.items.map((item) => ({
+              ...item,
+              id: createId('check'),
+            })),
+          }
+        : {}),
+    })) as PageElement[],
+  };
+
+  const pages = [...section.pages];
+  pages.splice(sourceIndex + 1, 0, duplicate);
+  return {
+    ...workspace,
+    updatedAt: duplicatedAt,
+    notebooks: workspace.notebooks.map((candidateNotebook) =>
+      candidateNotebook.id === notebookId
+        ? {
+            ...candidateNotebook,
+            updatedAt: duplicatedAt,
+            sections: candidateNotebook.sections.map((candidateSection) =>
+              candidateSection.id === sectionId
+                ? { ...candidateSection, updatedAt: duplicatedAt, pages }
+                : candidateSection,
+            ),
+          }
+        : candidateNotebook,
+    ),
+    activeNotebookId: notebookId,
+    activeSectionId: sectionId,
+    activePageId: duplicate.id,
+  };
+}
+
+export function reorderPage(
+  workspace: WorkspaceState,
+  notebookId: string,
+  sectionId: string,
+  pageId: string,
+  direction: 'up' | 'down',
+): WorkspaceState {
+  const notebook = workspace.notebooks.find((item) => item.id === notebookId);
+  const section = notebook?.sections.find((item) => item.id === sectionId);
+  const page = section?.pages.find((item) => item.id === pageId);
+  if (!notebook || !section || !page) return workspace;
+
+  const siblings = section.pages.filter(
+    (candidate) => candidate.parentPageId === page.parentPageId,
+  );
+  const siblingIndex = siblings.findIndex((candidate) => candidate.id === pageId);
+  const targetSibling = siblings[siblingIndex + (direction === 'up' ? -1 : 1)];
+  if (!targetSibling) return workspace;
+
+  const pages = [...section.pages];
+  const pageIndex = pages.findIndex((candidate) => candidate.id === pageId);
+  const targetIndex = pages.findIndex(
+    (candidate) => candidate.id === targetSibling.id,
+  );
+  [pages[pageIndex], pages[targetIndex]] = [pages[targetIndex], pages[pageIndex]];
+  const updatedAt = now();
+  return {
+    ...workspace,
+    updatedAt,
+    notebooks: workspace.notebooks.map((candidateNotebook) =>
+      candidateNotebook.id === notebookId
+        ? {
+            ...candidateNotebook,
+            updatedAt,
+            sections: candidateNotebook.sections.map((candidateSection) =>
+              candidateSection.id === sectionId
+                ? { ...candidateSection, updatedAt, pages }
+                : candidateSection,
+            ),
+          }
+        : candidateNotebook,
+    ),
   };
 }
 
@@ -758,8 +889,25 @@ export function searchWorkspace(
   workspace: WorkspaceState,
   rawQuery: string,
 ): WorkspaceSearchResult[] {
-  const query = rawQuery.trim().toLocaleLowerCase();
-  if (!query) return [];
+  const normalizedQuery = rawQuery.trim().toLocaleLowerCase();
+  if (!normalizedQuery) return [];
+
+  const tokens = normalizedQuery.split(/\s+/);
+  const isTagFilter = (token: string) =>
+    token.startsWith('tag:') && token.length > 'tag:'.length;
+  const isTaskFilter = (token: string) =>
+    token === 'is:open' || token === 'is:done';
+  const tagFilters = tokens
+    .filter(isTagFilter)
+    .map((token) => token.slice(4))
+    .filter(Boolean);
+  const taskFilter = tokens
+    .find(isTaskFilter)
+    ?.slice(3);
+  const query = tokens
+    .filter((token) => !isTagFilter(token) && !isTaskFilter(token))
+    .join(' ');
+  const hasStructuredFilters = tagFilters.length > 0 || Boolean(taskFilter);
 
   const results: WorkspaceSearchResult[] = [];
   const matches = (value: string) => value.toLocaleLowerCase().includes(query);
@@ -770,7 +918,7 @@ export function searchWorkspace(
   for (const notebook of workspace.notebooks) {
     const firstSection = notebook.sections.find((section) => section.pages.length > 0);
     const firstNotebookPage = firstSection?.pages[0];
-    if (matches(notebook.title) && firstSection && firstNotebookPage) {
+    if (!hasStructuredFilters && matches(notebook.title) && firstSection && firstNotebookPage) {
       push({
         id: `notebook:${notebook.id}`,
         kind: 'notebook',
@@ -784,7 +932,7 @@ export function searchWorkspace(
 
     for (const section of notebook.sections) {
       const firstSectionPage = section.pages[0];
-      if (matches(section.title) && firstSectionPage) {
+      if (!hasStructuredFilters && matches(section.title) && firstSectionPage) {
         push({
           id: `section:${section.id}`,
           kind: 'section',
@@ -797,25 +945,60 @@ export function searchWorkspace(
       }
 
       for (const page of section.pages) {
-        if (matches(page.title)) {
+        const pageTags = page.tags ?? [];
+        const passesTags = tagFilters.every((tag) =>
+          pageTags.some((pageTag) => pageTag === tag),
+        );
+        const passesTask = !taskFilter || page.taskState === taskFilter;
+        if (!passesTags || !passesTask) continue;
+
+        const metadata = [...pageTags, page.taskState ?? ''].join(' ');
+        if (!query || matches(page.title) || matches(metadata)) {
           push({
             id: `page:${page.id}`,
             kind: 'page',
             title: page.title,
-            excerpt: `${notebook.title} / ${section.title}`,
+            excerpt: [
+              `${notebook.title} / ${section.title}`,
+              pageTags.length ? pageTags.join(', ') : '',
+              page.taskState ? `task ${page.taskState}` : '',
+            ]
+              .filter(Boolean)
+              .join(' · '),
             notebookId: notebook.id,
             sectionId: section.id,
             pageId: page.id,
           });
         }
         for (const element of page.elements) {
-          if (element.kind === 'text' && matches(element.text)) {
+          if (query && element.kind === 'text' && matches(element.text)) {
             const excerpt = element.text.replace(/\s+/g, ' ').slice(0, 110);
             push({
               id: `text:${element.id}`,
               kind: 'text',
               title: page.title,
               excerpt,
+              notebookId: notebook.id,
+              sectionId: section.id,
+              pageId: page.id,
+              elementId: element.id,
+            });
+          }
+          if (
+            query &&
+            element.kind === 'checklist' &&
+            element.items.some((item) => matches(item.text))
+          ) {
+            const matchingItems = element.items
+              .filter((item) => matches(item.text))
+              .map((item) => `${item.checked ? 'Done' : 'Open'}: ${item.text}`)
+              .join(' · ')
+              .slice(0, 110);
+            push({
+              id: `checklist:${element.id}`,
+              kind: 'checklist',
+              title: page.title,
+              excerpt: matchingItems,
               notebookId: notebook.id,
               sectionId: section.id,
               pageId: page.id,
@@ -833,9 +1016,18 @@ export function searchWorkspace(
 export function pageToMarkdown(context: ActiveContext): string {
   const text = context.page.elements
     .filter((element): element is Extract<PageElement, { kind: 'text' }> => element.kind === 'text')
-    .map((element) => element.text.trim())
+    .map((element) => markdownText(element).trim())
     .filter(Boolean)
     .join('\n\n');
+  const checklists = context.page.elements
+    .filter(
+      (element): element is Extract<PageElement, { kind: 'checklist' }> =>
+        element.kind === 'checklist',
+    )
+    .flatMap((element) =>
+      element.items.map((item) => `- [${item.checked ? 'x' : ' '}] ${item.text}`),
+    )
+    .join('\n');
   const assets = context.page.elements.filter(
     (element) => element.kind === 'image' || element.kind === 'pdf',
   );
@@ -850,8 +1042,11 @@ export function pageToMarkdown(context: ActiveContext): string {
     '',
     `Notebook: ${context.notebook.title}`,
     `Section: ${context.section.title}`,
+    context.page.tags?.length ? `Tags: ${context.page.tags.join(', ')}` : '',
+    context.page.taskState ? `Task: ${context.page.taskState}` : '',
     '',
     text,
+    checklists,
     assetLines.length ? '\n## Attachments\n\n' + assetLines.join('\n') : '',
     '',
   ]

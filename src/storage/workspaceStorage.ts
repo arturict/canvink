@@ -1,5 +1,5 @@
 import { get, set } from 'idb-keyval';
-import { normalizeWorkspace } from '../domain/workspace';
+import { normalizeStoredWorkspace } from '../domain/workspace';
 import { assertWorkspaceShape } from '../domain/validation';
 import type { WorkspaceState } from '../domain/types';
 import { validateWorkspaceAssetPreviews } from '../io/files';
@@ -13,6 +13,19 @@ let browserWriteLockAcquisition: Promise<void> | undefined;
 let browserWriteLockLifetime: Promise<unknown> | undefined;
 
 export type StorageBackend = 'tauri' | 'indexeddb';
+export type WorkspaceOpenFailureCode =
+  | 'writer-conflict'
+  | 'coordination-unavailable';
+
+export class WorkspaceOpenError extends Error {
+  constructor(
+    public readonly code: WorkspaceOpenFailureCode,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'WorkspaceOpenError';
+  }
+}
 
 function hasTauriRuntime(): boolean {
   return typeof window !== 'undefined' && typeof window.__TAURI_INTERNALS__ !== 'undefined';
@@ -27,7 +40,8 @@ function acquireBrowserWriteLock(): Promise<void> {
   if (browserWriteLockAcquisition) return browserWriteLockAcquisition;
   if (typeof navigator === 'undefined' || !('locks' in navigator)) {
     return Promise.reject(
-      new Error(
+      new WorkspaceOpenError(
+        'coordination-unavailable',
         'This browser cannot safely coordinate local writes. Use a current browser with Web Locks support or install the desktop app.',
       ),
     );
@@ -42,7 +56,8 @@ function acquireBrowserWriteLock(): Promise<void> {
         if (!lock) {
           settled = true;
           reject(
-            new Error(
+            new WorkspaceOpenError(
+              'writer-conflict',
               'Canvink is already open in another browser tab. Close that tab, then reload this one to edit safely.',
             ),
           );
@@ -75,15 +90,21 @@ export async function loadWorkspace(): Promise<{
   if (hasTauriRuntime()) {
     const { invoke } = await import('@tauri-apps/api/core');
     const value = await invoke<unknown>('load_workspace');
-    const workspace = normalizeWorkspace(value);
+    const { workspace, storageState } = normalizeStoredWorkspace(value);
     await validateWorkspaceAssetPreviews(workspace);
+    if (storageState === 'uninitialized') {
+      await saveWorkspace(workspace);
+    }
     return { workspace, backend: 'tauri' };
   }
 
   await acquireBrowserWriteLock();
   const value = await get<unknown>(STORAGE_KEY);
-  const workspace = normalizeWorkspace(value);
+  const { workspace, storageState } = normalizeStoredWorkspace(value);
   await validateWorkspaceAssetPreviews(workspace);
+  if (storageState === 'uninitialized') {
+    await saveWorkspace(workspace);
+  }
   return {
     workspace,
     backend: 'indexeddb',

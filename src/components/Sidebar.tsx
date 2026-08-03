@@ -1,11 +1,22 @@
-import { useMemo, useState, type CSSProperties } from 'react';
 import {
+  forwardRef,
+  useId,
+  useMemo,
+  useState,
+  type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
+} from 'react';
+import {
+  ArrowDown,
+  ArrowUp,
   BookOpen,
   ChevronDown,
   ChevronRight,
   FilePlus2,
   FileText,
   FolderPlus,
+  Copy,
+  MoreHorizontal,
   Pencil,
   Plus,
   Trash2,
@@ -13,12 +24,14 @@ import {
 } from 'lucide-react';
 import type { Notebook, Page, Section } from '../domain/types';
 
-interface SidebarProps {
+export interface SidebarProps {
   notebooks: Notebook[];
   activeNotebookId: string;
   activeSectionId: string;
   activePageId: string;
   trashCount: number;
+  id?: string;
+  modal?: boolean;
   onClose: () => void;
   onActivatePage: (notebookId: string, sectionId: string, pageId: string) => void;
   onActivateNotebook: (notebookId: string) => void;
@@ -30,6 +43,12 @@ interface SidebarProps {
   onTrashNotebook: () => void;
   onTrashSection: (sectionId: string) => void;
   onTrashPage: (sectionId: string, pageId: string) => void;
+  onDuplicatePage: (sectionId: string, pageId: string) => void;
+  onReorderPage: (
+    sectionId: string,
+    pageId: string,
+    direction: 'up' | 'down',
+  ) => void;
   onOpenTrash: () => void;
 }
 
@@ -43,6 +62,12 @@ interface PageTreeProps {
   onActivate: SidebarProps['onActivatePage'];
   onAddSubpage: (parentPageId: string) => void;
   onTrash: (sectionId: string, pageId: string) => void;
+  onDuplicate: (sectionId: string, pageId: string) => void;
+  onReorder: (
+    sectionId: string,
+    pageId: string,
+    direction: 'up' | 'down',
+  ) => void;
 }
 
 function PageTree({
@@ -55,13 +80,24 @@ function PageTree({
   onActivate,
   onAddSubpage,
   onTrash,
+  onDuplicate,
+  onReorder,
 }: PageTreeProps) {
   const children = pages.filter((page) => page.parentPageId === parentPageId);
+  const runPageAction = (
+    event: ReactMouseEvent<HTMLButtonElement>,
+    action: () => void,
+  ) => {
+    event.currentTarget.closest('details')?.removeAttribute('open');
+    action();
+  };
+
+  if (children.length === 0) return null;
 
   return (
-    <>
-      {children.map((page) => (
-        <div key={page.id}>
+    <div role="list">
+      {children.map((page, index) => (
+        <div key={page.id} role="listitem">
           <div
             className={`page-row ${activePageId === page.id ? 'is-active' : ''}`}
             style={{ '--page-depth': depth } as CSSProperties}
@@ -70,28 +106,66 @@ function PageTree({
               type="button"
               className="page-row__target"
               onClick={() => onActivate(notebookId, sectionId, page.id)}
+              aria-current={activePageId === page.id ? 'page' : undefined}
             >
               <FileText size={14} />
               <span>{page.title}</span>
               <small>{page.mode === 'a4' ? 'A4' : 'Free'}</small>
             </button>
-            <div className="row-actions">
-              <button
-                type="button"
-                title={`Add subpage below ${page.title}`}
-                onClick={() => onAddSubpage(page.id)}
-              >
-                <FilePlus2 size={13} />
-              </button>
-              <button
-                type="button"
-                title={`Move ${page.title} to trash`}
-                disabled={pages.length === 1}
-                onClick={() => onTrash(sectionId, page.id)}
-              >
-                <Trash2 size={13} />
-              </button>
-            </div>
+            <details className="page-row__menu">
+              <summary aria-label={`Actions for ${page.title}`}>
+                <MoreHorizontal size={14} />
+              </summary>
+              <div className="page-row__menu-popover">
+                <button
+                  type="button"
+                  onClick={(event) =>
+                    runPageAction(event, () => onAddSubpage(page.id))
+                  }
+                >
+                  <FilePlus2 size={13} /> Add subpage
+                </button>
+                <button
+                  type="button"
+                  onClick={(event) =>
+                    runPageAction(event, () => onDuplicate(sectionId, page.id))
+                  }
+                >
+                  <Copy size={13} /> Duplicate
+                </button>
+                <button
+                  type="button"
+                  disabled={index === 0}
+                  onClick={(event) =>
+                    runPageAction(event, () =>
+                      onReorder(sectionId, page.id, 'up'),
+                    )
+                  }
+                >
+                  <ArrowUp size={13} /> Move up
+                </button>
+                <button
+                  type="button"
+                  disabled={index === children.length - 1}
+                  onClick={(event) =>
+                    runPageAction(event, () =>
+                      onReorder(sectionId, page.id, 'down'),
+                    )
+                  }
+                >
+                  <ArrowDown size={13} /> Move down
+                </button>
+                <button
+                  type="button"
+                  disabled={pages.length === 1}
+                  onClick={(event) =>
+                    runPageAction(event, () => onTrash(sectionId, page.id))
+                  }
+                >
+                  <Trash2 size={13} /> Move to trash
+                </button>
+              </div>
+            </details>
           </div>
           <PageTree
             pages={pages}
@@ -103,34 +177,44 @@ function PageTree({
             onActivate={onActivate}
             onAddSubpage={onAddSubpage}
             onTrash={onTrash}
+            onDuplicate={onDuplicate}
+            onReorder={onReorder}
           />
         </div>
       ))}
-    </>
+    </div>
   );
 }
 
-export default function Sidebar({
-  notebooks,
-  activeNotebookId,
-  activeSectionId,
-  activePageId,
-  trashCount,
-  onClose,
-  onActivatePage,
-  onActivateNotebook,
-  onAddNotebook,
-  onRenameNotebook,
-  onAddSection,
-  onRenameSection,
-  onAddPage,
-  onTrashNotebook,
-  onTrashSection,
-  onTrashPage,
-  onOpenTrash,
-}: SidebarProps) {
+const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar(
+  {
+    notebooks,
+    activeNotebookId,
+    activeSectionId,
+    activePageId,
+    trashCount,
+    id = 'notebook-navigation',
+    modal = false,
+    onClose,
+    onActivatePage,
+    onActivateNotebook,
+    onAddNotebook,
+    onRenameNotebook,
+    onAddSection,
+    onRenameSection,
+    onAddPage,
+    onTrashNotebook,
+    onTrashSection,
+    onTrashPage,
+    onDuplicatePage,
+    onReorderPage,
+    onOpenTrash,
+  },
+  ref,
+) {
   const activeNotebook = notebooks.find((item) => item.id === activeNotebookId) ?? notebooks[0];
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => new Set());
+  const sectionListId = useId();
   const safeRootPageIds = useMemo(() => {
     const roots = new Map<string, Set<string>>();
     for (const section of activeNotebook.sections) {
@@ -157,7 +241,14 @@ export default function Sidebar({
   };
 
   return (
-    <aside className="notebook-sidebar" aria-label="Notebook navigation">
+    <div
+      ref={ref}
+      id={id}
+      className="notebook-sidebar"
+      aria-label="Notebook navigation"
+      aria-modal={modal || undefined}
+      role={modal ? 'dialog' : 'navigation'}
+    >
       <div className="sidebar-brand">
         <span className="brand-mark">
           <BookOpen size={17} />
@@ -216,9 +307,10 @@ export default function Sidebar({
         </button>
       </div>
 
-      <div className="section-list">
-        {activeNotebook.sections.map((section: Section) => {
+      <div className="section-list" role="list" aria-label="Sections">
+        {activeNotebook.sections.map((section: Section, sectionIndex) => {
           const collapsed = collapsedSections.has(section.id);
+          const sectionPagesId = `${sectionListId}-pages-${sectionIndex}`;
           const rootIds = safeRootPageIds.get(section.id) ?? new Set<string>();
           const normalizedPages = section.pages.map((page) =>
             rootIds.has(page.id) ? { ...page, parentPageId: undefined } : page,
@@ -227,9 +319,15 @@ export default function Sidebar({
             <section
               className={`section-block ${activeSectionId === section.id ? 'is-current' : ''}`}
               key={section.id}
+              role="listitem"
             >
               <div className="section-row">
-                <button type="button" onClick={() => toggleSection(section.id)}>
+                <button
+                  type="button"
+                  onClick={() => toggleSection(section.id)}
+                  aria-expanded={!collapsed}
+                  aria-controls={sectionPagesId}
+                >
                   {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
                   <span>{section.title}</span>
                   <small>{section.pages.length}</small>
@@ -252,29 +350,29 @@ export default function Sidebar({
                   <Trash2 size={12} />
                 </button>
               </div>
-              {!collapsed ? (
-                <div className="page-tree">
-                  <PageTree
-                    pages={normalizedPages}
-                    activePageId={activePageId}
-                    sectionId={section.id}
-                    notebookId={activeNotebook.id}
-                    onActivate={onActivatePage}
-                    onAddSubpage={(parentPageId) => onAddPage(section.id, parentPageId)}
-                    onTrash={onTrashPage}
-                  />
-                  <button
-                    type="button"
-                    className="add-page"
-                    onClick={() => {
-                      onAddPage(section.id);
-                    }}
-                  >
-                    <Plus size={14} />
-                    New page
-                  </button>
-                </div>
-              ) : null}
+              <div id={sectionPagesId} className="page-tree" hidden={collapsed}>
+                <PageTree
+                  pages={normalizedPages}
+                  activePageId={activePageId}
+                  sectionId={section.id}
+                  notebookId={activeNotebook.id}
+                  onActivate={onActivatePage}
+                  onAddSubpage={(parentPageId) => onAddPage(section.id, parentPageId)}
+                  onTrash={onTrashPage}
+                  onDuplicate={onDuplicatePage}
+                  onReorder={onReorderPage}
+                />
+                <button
+                  type="button"
+                  className="add-page"
+                  onClick={() => {
+                    onAddPage(section.id);
+                  }}
+                >
+                  <Plus size={14} />
+                  New page
+                </button>
+              </div>
             </section>
           );
         })}
@@ -285,6 +383,8 @@ export default function Sidebar({
         Trash
         <span>{trashCount}</span>
       </button>
-    </aside>
+    </div>
   );
-}
+});
+
+export default Sidebar;

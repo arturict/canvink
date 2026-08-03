@@ -9,16 +9,27 @@ import {
 } from 'react';
 import {
   AlertTriangle,
+  CircleHelp,
   CheckCircle2,
+  Download,
+  Focus,
   HardDrive,
   LoaderCircle,
   PanelLeftClose,
   PanelLeftOpen,
+  RefreshCw,
   Search,
+  Tag,
   Trash2,
+  Type,
+  WifiOff,
   X,
 } from 'lucide-react';
-import { createDefaultWorkspace } from '../domain/sample';
+import { createId } from '../domain/ids';
+import {
+  createDefaultWorkspace,
+  findBundledStartPage,
+} from '../domain/sample';
 import { MAX_TITLE_BYTES } from '../domain/limits';
 import { truncateUtf8 } from '../domain/strings';
 import {
@@ -30,10 +41,12 @@ import {
   createNotebook,
   createPage,
   createSection,
+  duplicatePage,
   getActiveContext,
   restoreTrashEntry,
   renameNotebook,
   renameSection,
+  reorderPage,
   searchWorkspace,
   trashElement,
   trashNotebook,
@@ -45,7 +58,9 @@ import {
 import type {
   BrushSettings,
   EditorTool,
+  PageTag,
   PageElement,
+  TextElement,
   TrashEntry,
   WorkspaceState,
 } from '../domain/types';
@@ -67,19 +82,77 @@ import {
   loadWorkspace,
   saveWorkspace,
   type StorageBackend,
+  WorkspaceOpenError,
+  type WorkspaceOpenFailureCode,
 } from '../storage/workspaceStorage';
+import {
+  clearRecoveryDraftThrough,
+  discardRecoveryDraft,
+  loadRecoveryDraft,
+  recoveryDraftDiffersFrom,
+  saveRecoveryDraft,
+  type RecoveryDraft,
+} from '../storage/recoveryJournal';
 import { canAutosave } from '../storage/persistencePolicy';
+import {
+  loadUiPreferences,
+  saveUiPreferences,
+  type UiPreferences,
+} from '../ui/preferences';
+import GettingStartedPanel from './GettingStartedPanel';
 import Inspector from './Inspector';
 import Sidebar from './Sidebar';
-import Toolbar from './Toolbar';
+import Toolbar, { editorToolForKeyboardShortcut } from './Toolbar';
 
 type SaveState = 'loading' | 'saving' | 'saved' | 'error';
+type LoadFailureKind = WorkspaceOpenFailureCode | 'storage';
+
+function messageFromError(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message.trim()) return error.message;
+  if (typeof error === 'string' && error.trim()) return error;
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof error.message === 'string' &&
+    error.message.trim()
+  ) {
+    return error.message;
+  }
+  return fallback;
+}
+
+function blankTextElement(): TextElement {
+  const now = new Date().toISOString();
+  return {
+    id: createId('text'),
+    kind: 'text',
+    x: 72,
+    y: 72,
+    width: 560,
+    height: 160,
+    text: '',
+    color: '#1e2925',
+    fontSize: 22,
+    fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
+    fontWeight: 400,
+    fontStyle: 'normal',
+    textDecoration: 'none',
+    textAlign: 'left',
+    listStyle: 'none',
+    createdAt: now,
+    updatedAt: now,
+  };
+}
 
 function trashLabel(entry: TrashEntry): string {
   if ('title' in entry.item) return entry.item.title;
   if (entry.item.kind === 'image') return entry.item.name;
   if (entry.item.kind === 'pdf') return entry.item.sourceName;
   if (entry.item.kind === 'text') return entry.item.text.slice(0, 50) || 'Empty text';
+  if (entry.item.kind === 'checklist') {
+    return entry.item.items[0]?.text || 'Checklist';
+  }
   return `${entry.item.tool} stroke`;
 }
 
@@ -99,23 +172,53 @@ function elementLabel(element: PageElement): string {
   if (element.kind === 'stroke') {
     return `${element.tool === 'highlighter' ? 'Highlighter' : 'Pen'} stroke, ${element.points.length} points`;
   }
-  if (element.kind === 'image') return `Image: ${element.name}`;
+  if (element.kind === 'image') {
+    return `Image: ${element.alt.trim() || element.name}`;
+  }
+  if (element.kind === 'checklist') {
+    const completed = element.items.filter((item) => item.checked).length;
+    return `Checklist: ${completed}/${element.items.length} complete`;
+  }
   return `PDF: ${element.sourceName}, ${element.pageCount} pages`;
 }
+
+const PAGE_TAG_OPTIONS: ReadonlyArray<{ id: PageTag; label: string }> = [
+  { id: 'important', label: 'Important' },
+  { id: 'todo', label: 'To do' },
+  { id: 'question', label: 'Question' },
+  { id: 'idea', label: 'Idea' },
+];
 
 export default function NotebookApp() {
   const [workspace, setWorkspace] = useState<WorkspaceState>(() => createDefaultWorkspace());
   const [storageReady, setStorageReady] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [loadFailureKind, setLoadFailureKind] = useState<LoadFailureKind>('storage');
   const [storageBackend, setStorageBackend] = useState<StorageBackend>(() =>
     activeStorageBackend(),
   );
   const [saveState, setSaveState] = useState<SaveState>('loading');
+  const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [noticeKind, setNoticeKind] = useState<'status' | 'error'>('status');
+  const [recoveryDraft, setRecoveryDraft] = useState<RecoveryDraft | null>(null);
+  const [recoveryWarning, setRecoveryWarning] = useState<string | null>(null);
+  const [recoveryActionFeedback, setRecoveryActionFeedback] = useState<{
+    kind: 'status' | 'error';
+    message: string;
+  } | null>(null);
   const [tool, setTool] = useState<EditorTool>('pen');
   const [brush, setBrush] = useState<BrushSettings>({ color: '#1e2925', size: 7 });
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [hiddenEmptyPromptPageId, setHiddenEmptyPromptPageId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [preferences, setPreferences] = useState<UiPreferences>(() => loadUiPreferences());
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+  const [isOnline, setIsOnline] = useState(() => navigator.onLine);
+  const [compactLayout, setCompactLayout] = useState(() =>
+    window.matchMedia('(max-width: 820px)').matches,
+  );
   const [sidebarOpen, setSidebarOpen] = useState(() =>
     window.matchMedia('(min-width: 821px)').matches,
   );
@@ -124,16 +227,23 @@ export default function NotebookApp() {
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const portableInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<CanvasEditorHandle>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const pageTitleRef = useRef<HTMLInputElement>(null);
+  const sidebarToggleRef = useRef<HTMLButtonElement>(null);
+  const guideTriggerRef = useRef<HTMLButtonElement>(null);
+  const sidebarNavigationRef = useRef<HTMLDivElement>(null);
+  const workspaceShellRef = useRef<HTMLElement>(null);
   const workspaceRef = useRef(workspace);
   const storageReadyRef = useRef(storageReady);
   const loadFailedRef = useRef(loadFailed);
   const dirtyRevisionRef = useRef(0);
   const savedRevisionRef = useRef(0);
   const saveTimerRef = useRef<number | null>(null);
+  const recoveryTimerRef = useRef<number | null>(null);
+  const recoverySessionIdRef = useRef(createId('recovery'));
   const skipNextAutosaveRef = useRef(false);
   const closingRef = useRef(false);
   const flushSaveRef = useRef<() => Promise<void>>(async () => undefined);
-  const saveErrorNoticeRef = useRef<string | null>(null);
   const trashDialogRef = useRef<HTMLElement>(null);
   const trashReturnFocusRef = useRef<HTMLElement | null>(null);
   const deferredQuery = useDeferredValue(searchQuery);
@@ -144,6 +254,12 @@ export default function NotebookApp() {
   );
   const selectedElement =
     context?.page.elements.find((element) => element.id === selectedElementId) ?? null;
+  const closeSidebar = useCallback((restoreFocus = true) => {
+    setSidebarOpen(false);
+    if (restoreFocus) {
+      window.requestAnimationFrame(() => sidebarToggleRef.current?.focus());
+    }
+  }, []);
   const closeTrash = useCallback(() => {
     setTrashOpen(false);
     window.requestAnimationFrame(() => trashReturnFocusRef.current?.focus());
@@ -154,19 +270,30 @@ export default function NotebookApp() {
       try {
         const backend = await saveWorkspace(snapshot);
         savedRevisionRef.current = Math.max(savedRevisionRef.current, revision);
+        void clearRecoveryDraftThrough({
+          sessionId: recoverySessionIdRef.current,
+          revision,
+        })
+          .then(() => {
+            if (revision === dirtyRevisionRef.current) setRecoveryWarning(null);
+          })
+          .catch((error: unknown) => {
+            if (revision === dirtyRevisionRef.current) {
+              setRecoveryWarning(
+                `Your note is saved, but the temporary recovery draft could not be cleared. ${messageFromError(error, 'You can keep editing safely.')}`,
+              );
+            }
+          });
         if (revision === dirtyRevisionRef.current) {
           setStorageBackend(backend);
           setSaveState('saved');
-          const resolvedMessage = saveErrorNoticeRef.current;
-          saveErrorNoticeRef.current = null;
-          setNotice((current) => (current === resolvedMessage ? null : current));
+          setSaveErrorMessage(null);
         }
       } catch (error) {
         if (revision === dirtyRevisionRef.current) {
-          const message = error instanceof Error ? error.message : 'Autosave failed.';
-          saveErrorNoticeRef.current = message;
+          const message = messageFromError(error, 'Autosave failed.');
           setSaveState('error');
-          setNotice(message);
+          setSaveErrorMessage(message);
         }
         throw error;
       }
@@ -193,6 +320,27 @@ export default function NotebookApp() {
     await persistSnapshot(structuredClone(workspaceRef.current), revision);
   }, [persistSnapshot]);
 
+  const flushRecoveryDraft = useCallback(async (): Promise<void> => {
+    const revision = dirtyRevisionRef.current;
+    if (
+      revision <= savedRevisionRef.current ||
+      !canAutosave({
+        storageReady: storageReadyRef.current,
+        loadFailed: loadFailedRef.current,
+      })
+    ) {
+      return;
+    }
+    if (recoveryTimerRef.current !== null) {
+      window.clearTimeout(recoveryTimerRef.current);
+      recoveryTimerRef.current = null;
+    }
+    await saveRecoveryDraft(workspaceRef.current, {
+      sessionId: recoverySessionIdRef.current,
+      revision,
+    });
+  }, []);
+
   useEffect(() => {
     workspaceRef.current = workspace;
   }, [workspace]);
@@ -207,9 +355,50 @@ export default function NotebookApp() {
   }, [flushLatestWorkspace]);
 
   useEffect(() => {
+    const updateOnlineState = () => setIsOnline(navigator.onLine);
+    window.addEventListener('online', updateOnlineState);
+    window.addEventListener('offline', updateOnlineState);
+    return () => {
+      window.removeEventListener('online', updateOnlineState);
+      window.removeEventListener('offline', updateOnlineState);
+    };
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 820px)');
+    const handleLayoutChange = (event: MediaQueryListEvent) => {
+      setCompactLayout(event.matches);
+      if (event.matches) {
+        setGuideOpen(false);
+        trashReturnFocusRef.current = sidebarToggleRef.current;
+        closeSidebar(
+          sidebarNavigationRef.current?.contains(document.activeElement) ?? false,
+        );
+      }
+    };
+    media.addEventListener('change', handleLayoutChange);
+    return () => media.removeEventListener('change', handleLayoutChange);
+  }, [closeSidebar]);
+
+  useEffect(() => {
     let active = true;
     loadWorkspace()
-      .then((result) => {
+      .then(async (result) => {
+        let pendingRecovery: RecoveryDraft | null = null;
+        let recoveryLoadWarning: string | null = null;
+        try {
+          const draft = await loadRecoveryDraft();
+          if (draft && recoveryDraftDiffersFrom(draft, result.workspace)) {
+            pendingRecovery = draft;
+          } else if (draft) {
+            await discardRecoveryDraft(draft);
+          }
+        } catch (error) {
+          recoveryLoadWarning = `Saved notes opened normally, but a temporary recovery draft could not be checked. ${messageFromError(error, 'The recovery data was left unchanged.')}`;
+        }
+        return { result, pendingRecovery, recoveryLoadWarning };
+      })
+      .then(({ result, pendingRecovery, recoveryLoadWarning }) => {
         if (!active) return;
         workspaceRef.current = result.workspace;
         dirtyRevisionRef.current = 0;
@@ -220,13 +409,25 @@ export default function NotebookApp() {
         setWorkspace(result.workspace);
         setStorageBackend(result.backend);
         setSaveState('saved');
+        setSaveErrorMessage(null);
         setLoadFailed(false);
         setStorageReady(true);
+        setRecoveryDraft(pendingRecovery);
+        setRecoveryWarning(recoveryLoadWarning);
+        const loadedContext = getActiveContext(result.workspace);
+        setGuideOpen(
+          !loadUiPreferences().guideDismissed &&
+            loadedContext?.page.title === 'Quick note' &&
+            loadedContext.page.elements.length === 0,
+        );
       })
       .catch((error: unknown) => {
         if (!active) return;
         loadFailedRef.current = true;
-        setNotice(error instanceof Error ? error.message : 'Could not load the local workspace.');
+        setLoadFailureKind(
+          error instanceof WorkspaceOpenError ? error.code : 'storage',
+        );
+        setNotice(messageFromError(error, 'Could not load the local workspace.'));
         setSaveState('error');
         setLoadFailed(true);
       });
@@ -234,6 +435,52 @@ export default function NotebookApp() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    const shell = workspaceShellRef.current;
+    if (!sidebarOpen || !compactLayout) {
+      shell?.removeAttribute('inert');
+      return undefined;
+    }
+
+    shell?.setAttribute('inert', '');
+    const navigation = sidebarNavigationRef.current;
+    const focusableElements = () =>
+      navigation
+        ? [...navigation.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+          )].filter((element) => element.offsetParent !== null)
+        : [];
+
+    window.requestAnimationFrame(() => focusableElements()[0]?.focus());
+    const handleNavigationKeyboard = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeSidebar();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = focusableElements();
+      if (focusable.length === 0) {
+        event.preventDefault();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable.at(-1)!;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', handleNavigationKeyboard, true);
+    return () => {
+      shell?.removeAttribute('inert');
+      document.removeEventListener('keydown', handleNavigationKeyboard, true);
+    };
+  }, [closeSidebar, compactLayout, sidebarOpen]);
 
   useEffect(() => {
     if (!canAutosave({ storageReady, loadFailed })) return undefined;
@@ -245,6 +492,26 @@ export default function NotebookApp() {
     const revision = dirtyRevisionRef.current + 1;
     dirtyRevisionRef.current = revision;
     setSaveState('saving');
+    if (recoveryTimerRef.current !== null) {
+      window.clearTimeout(recoveryTimerRef.current);
+    }
+    recoveryTimerRef.current = window.setTimeout(() => {
+      recoveryTimerRef.current = null;
+      void saveRecoveryDraft(workspace, {
+        sessionId: recoverySessionIdRef.current,
+        revision,
+      })
+        .then(() => {
+          if (revision === dirtyRevisionRef.current) setRecoveryWarning(null);
+        })
+        .catch((error: unknown) => {
+          if (revision === dirtyRevisionRef.current) {
+            setRecoveryWarning(
+              `Crash recovery could not protect the latest unsaved edit. ${messageFromError(error, 'Autosave will still continue.')}`,
+            );
+          }
+        });
+    }, 180);
     if (saveTimerRef.current !== null) {
       window.clearTimeout(saveTimerRef.current);
     }
@@ -255,6 +522,10 @@ export default function NotebookApp() {
       );
     }, 650);
     return () => {
+      if (recoveryTimerRef.current !== null) {
+        window.clearTimeout(recoveryTimerRef.current);
+        recoveryTimerRef.current = null;
+      }
       if (saveTimerRef.current !== null) {
         window.clearTimeout(saveTimerRef.current);
         saveTimerRef.current = null;
@@ -269,12 +540,14 @@ export default function NotebookApp() {
       dirtyRevisionRef.current > savedRevisionRef.current;
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (!hasUnsavedChanges()) return;
+      void flushRecoveryDraft().catch(() => undefined);
       void flushSaveRef.current().catch(() => undefined);
       event.preventDefault();
       event.returnValue = '';
     };
     const handlePageHide = () => {
       if (hasUnsavedChanges()) {
+        void flushRecoveryDraft().catch(() => undefined);
         void flushSaveRef.current().catch(() => undefined);
       }
     };
@@ -308,10 +581,9 @@ export default function NotebookApp() {
         })
         .catch((error: unknown) => {
           setSaveState('error');
+          setNoticeKind('error');
           setNotice(
-            error instanceof Error
-              ? error.message
-              : 'Could not install the safe-close handler.',
+            messageFromError(error, 'Could not install the safe-close handler.'),
           );
         });
     }
@@ -322,7 +594,7 @@ export default function NotebookApp() {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('pagehide', handlePageHide);
     };
-  }, [loadFailed, storageReady]);
+  }, [flushRecoveryDraft, loadFailed, storageReady]);
 
   useEffect(() => {
     if (!trashOpen) return undefined;
@@ -365,7 +637,14 @@ export default function NotebookApp() {
 
   useEffect(() => {
     const handleKeyboard = (event: KeyboardEvent) => {
-      if (trashOpen || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (
+        trashOpen ||
+        (compactLayout && sidebarOpen) ||
+        event.ctrlKey ||
+        event.metaKey
+      ) {
+        return;
+      }
       const target = event.target as HTMLElement | null;
       if (
         target?.tagName === 'INPUT' ||
@@ -376,15 +655,24 @@ export default function NotebookApp() {
         return;
       }
 
-      const keyTools: Record<string, EditorTool> = {
-        v: 'select',
-        p: 'pen',
-        h: 'highlighter',
-        e: 'eraser',
-        t: 'text',
-      };
-      const nextTool = keyTools[event.key.toLocaleLowerCase()];
-      if (nextTool) setTool(nextTool);
+      if (event.altKey && event.shiftKey) {
+        const nextTool = editorToolForKeyboardShortcut(event);
+        if (nextTool) {
+          event.preventDefault();
+          setTool(nextTool);
+          if (nextTool !== 'select' && context) {
+            setHiddenEmptyPromptPageId(context.page.id);
+          }
+        }
+        return;
+      }
+      if (event.altKey) return;
+
+      const canvasOwnsKeyboard =
+        !target ||
+        target === document.body ||
+        Boolean(target.closest('.canvas-page'));
+      if (!canvasOwnsKeyboard) return;
 
       if (
         (event.key === 'Delete' || event.key === 'Backspace') &&
@@ -395,21 +683,119 @@ export default function NotebookApp() {
         setWorkspace((current) => trashElement(current, context.page.id, selectedElementId));
         setSelectedElementId(null);
       }
+
+      const movement = {
+        ArrowLeft: { x: -1, y: 0 },
+        ArrowRight: { x: 1, y: 0 },
+        ArrowUp: { x: 0, y: -1 },
+        ArrowDown: { x: 0, y: 1 },
+      }[event.key];
+      if (movement && selectedElement && context) {
+        event.preventDefault();
+        const distance = event.shiftKey ? 10 : 1;
+        setWorkspace((current) =>
+          updatePageElement(current, context.page.id, selectedElement.id, {
+            x: selectedElement.x + movement.x * distance,
+            y: selectedElement.y + movement.y * distance,
+          }),
+        );
+      }
     };
     window.addEventListener('keydown', handleKeyboard);
     return () => window.removeEventListener('keydown', handleKeyboard);
-  }, [context, selectedElementId, trashOpen]);
+  }, [
+    compactLayout,
+    context,
+    selectedElement,
+    selectedElementId,
+    sidebarOpen,
+    trashOpen,
+  ]);
+
+  const restorePendingRecovery = () => {
+    if (!recoveryDraft) return;
+    workspaceRef.current = recoveryDraft.workspace;
+    dirtyRevisionRef.current = 0;
+    savedRevisionRef.current = 0;
+    skipNextAutosaveRef.current = false;
+    setSelectedElementId(null);
+    setGuideOpen(false);
+    setRecoveryActionFeedback(null);
+    setRecoveryWarning(null);
+    setRecoveryDraft(null);
+    setWorkspace(recoveryDraft.workspace);
+  };
+
+  const keepSavedWorkspace = async () => {
+    if (!recoveryDraft) return;
+    setRecoveryActionFeedback(null);
+    try {
+      const discarded = await discardRecoveryDraft(recoveryDraft);
+      if (!discarded) {
+        setRecoveryActionFeedback({
+          kind: 'error',
+          message: 'The recovery draft changed before it could be discarded. Reload and review it again.',
+        });
+        return;
+      }
+      setRecoveryDraft(null);
+    } catch (error) {
+      setRecoveryActionFeedback({
+        kind: 'error',
+        message: messageFromError(error, 'The recovery draft could not be discarded.'),
+      });
+    }
+  };
+
+  const downloadPendingRecovery = () => {
+    if (!recoveryDraft) return;
+    try {
+      exportWorkspaceJson(recoveryDraft.workspace);
+      setRecoveryActionFeedback({
+        kind: 'status',
+        message: 'Recovery copy download started. Confirm that the JSON file appears in Downloads.',
+      });
+    } catch (error) {
+      setRecoveryActionFeedback({
+        kind: 'error',
+        message: messageFromError(error, 'The recovery copy could not be downloaded.'),
+      });
+    }
+  };
 
   if (!storageReady) {
     if (loadFailed) {
+      const failure = {
+        'writer-conflict': {
+          title: 'Canvink is already open in another tab.',
+          detail:
+            'Only one browser tab can edit this local workspace at a time. Close the other Canvink tab, then try again here.',
+          safety: 'Your stored notes were not changed by this tab.',
+        },
+        'coordination-unavailable': {
+          title: 'This browser cannot safely edit the workspace.',
+          detail:
+            'Canvink needs browser write coordination to prevent two tabs from overwriting each other. Use a current browser with Web Locks support or the desktop app.',
+          safety: 'Your stored notes were not changed.',
+        },
+        storage: {
+          title: 'Your local workspace could not be opened.',
+          detail: notice ?? 'Canvink could not verify the stored data.',
+          safety: 'Editing stays disabled so placeholder data cannot overwrite your notes.',
+        },
+      }[loadFailureKind];
       return (
-        <main className="fatal-state" role="alert">
+        <main
+          className="fatal-state"
+          role="alert"
+          data-failure-kind={loadFailureKind}
+        >
           <AlertTriangle />
-          <h1>Your local workspace could not be opened.</h1>
-          <p>{notice ?? 'Canvink did not change the stored data.'}</p>
-          <p>Editing is disabled so unsaved welcome data cannot hide the problem.</p>
+          <h1>{failure.title}</h1>
+          <p>{failure.detail}</p>
+          <p>{failure.safety}</p>
           <button type="button" onClick={() => window.location.reload()}>
-            Try opening it again
+            Try again
           </button>
         </main>
       );
@@ -420,6 +806,52 @@ export default function NotebookApp() {
         <LoaderCircle className="spin" />
         <h1>Opening your local workspace</h1>
         <p>The editor will unlock after stored data has been checked.</p>
+      </main>
+    );
+  }
+
+  if (recoveryDraft) {
+    return (
+      <main className="fatal-state fatal-state--recovery">
+        <section
+          className="recovery-card"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="recovery-title"
+          aria-describedby="recovery-description"
+        >
+          <RefreshCw aria-hidden="true" />
+          <p className="recovery-card__eyebrow">Unsaved work found</p>
+          <h1 id="recovery-title">Resume your last editing draft?</h1>
+          <p id="recovery-description">
+            Canvink found a valid temporary draft from{' '}
+            <time dateTime={recoveryDraft.capturedAt}>
+              {new Date(recoveryDraft.capturedAt).toLocaleString()}
+            </time>
+            . It has not replaced your last saved workspace.
+          </p>
+          <div className="recovery-card__actions">
+            <button type="button" onClick={restorePendingRecovery}>
+              <RefreshCw size={16} />
+              Restore unsaved draft
+            </button>
+            <button type="button" onClick={() => void keepSavedWorkspace()}>
+              Keep last saved copy
+            </button>
+            <button type="button" onClick={downloadPendingRecovery}>
+              <Download size={16} />
+              Download draft first
+            </button>
+          </div>
+          {recoveryActionFeedback ? (
+            <p
+              className={`recovery-card__feedback ${recoveryActionFeedback.kind === 'error' ? 'recovery-card__feedback--error' : ''}`}
+              role={recoveryActionFeedback.kind === 'error' ? 'alert' : 'status'}
+            >
+              {recoveryActionFeedback.message}
+            </p>
+          ) : null}
+        </section>
       </main>
     );
   }
@@ -436,9 +868,33 @@ export default function NotebookApp() {
     );
   }
 
-  const showNotice = (message: string) => {
+  const showNotice = (
+    message: string,
+    kind: 'status' | 'error' = 'status',
+  ) => {
+    setNoticeKind(kind);
     setNotice(message);
     window.setTimeout(() => setNotice((current) => (current === message ? null : current)), 4200);
+  };
+
+  const showOperationError = (operation: string, error: unknown) => {
+    showNotice(
+      `${operation} failed. ${messageFromError(error, 'Try again or choose another export format.')}`,
+      'error',
+    );
+  };
+
+  const runSynchronousExport = (
+    operation: string,
+    exportAction: () => void,
+    successMessage?: string,
+  ) => {
+    try {
+      exportAction();
+      if (successMessage) showNotice(successMessage);
+    } catch (error) {
+      showOperationError(operation, error);
+    }
   };
 
   const addElement = (
@@ -457,9 +913,7 @@ export default function NotebookApp() {
       return true;
     } catch (error) {
       showNotice(
-        error instanceof Error
-          ? error.message
-          : 'This object would exceed the safe workspace limits.',
+        messageFromError(error, 'This object would exceed the safe workspace limits.'),
       );
       return false;
     }
@@ -477,9 +931,7 @@ export default function NotebookApp() {
       workspaceRef.current = candidate;
       setWorkspace(candidate);
     } catch (error) {
-      showNotice(
-        error instanceof Error ? error.message : 'This change is not valid.',
-      );
+      showNotice(messageFromError(error, 'This change is not valid.'));
     }
   };
 
@@ -498,7 +950,7 @@ export default function NotebookApp() {
       setTool('select');
       showNotice(`Added ${file.name}.`);
     } catch (error) {
-      showNotice(error instanceof Error ? error.message : 'Image import failed.');
+      showNotice(messageFromError(error, 'Image import failed.'));
     }
   };
 
@@ -513,7 +965,7 @@ export default function NotebookApp() {
       setTool('select');
       showNotice(`Added a ${element.pageCount}-page PDF preview.`);
     } catch (error) {
-      showNotice(error instanceof Error ? error.message : 'PDF import failed.');
+      showNotice(messageFromError(error, 'PDF import failed.'));
     }
   };
 
@@ -562,7 +1014,7 @@ export default function NotebookApp() {
         showNotice(`Imported ${file.name} as an editable page.`);
       }
     } catch (error) {
-      showNotice(error instanceof Error ? error.message : 'Import failed.');
+      showNotice(messageFromError(error, 'Import failed.'));
     }
   };
 
@@ -586,6 +1038,135 @@ export default function NotebookApp() {
     }
   };
 
+  const dismissGuide = () => {
+    setGuideOpen(false);
+    const nextPreferences: UiPreferences = {
+      ...preferences,
+      guideDismissed: true,
+    };
+    setPreferences(nextPreferences);
+    saveUiPreferences(nextPreferences);
+    window.requestAnimationFrame(() => guideTriggerRef.current?.focus());
+  };
+
+  const changeTextSize = (textSize: UiPreferences['textSize']) => {
+    const nextPreferences: UiPreferences = {
+      ...preferences,
+      textSize,
+    };
+    setPreferences(nextPreferences);
+    saveUiPreferences(nextPreferences);
+  };
+
+  const startTextOnPage = (snapshot: WorkspaceState, pageId: string) => {
+    const active = getActiveContext(snapshot);
+    const targetPage = active?.page.id === pageId
+      ? active.page
+      : snapshot.notebooks
+          .flatMap((notebook) => notebook.sections)
+          .flatMap((section) => section.pages)
+          .find((page) => page.id === pageId);
+    const existingEmptyText = targetPage?.elements.find(
+      (element) => element.kind === 'text' && element.text.trim() === '',
+    );
+    if (existingEmptyText) {
+      workspaceRef.current = snapshot;
+      setWorkspace(snapshot);
+      setSelectedElementId(existingEmptyText.id);
+      setTool('select');
+      editorRef.current?.editText(existingEmptyText.id);
+      return;
+    }
+
+    const element = blankTextElement();
+    const candidate = addPageElement(snapshot, pageId, element);
+    try {
+      assertWorkspaceShape(candidate);
+      workspaceRef.current = candidate;
+      setWorkspace(candidate);
+      setSelectedElementId(element.id);
+      setTool('select');
+      editorRef.current?.editText(element.id);
+    } catch (error) {
+      showNotice(messageFromError(error, 'A text note could not be added safely.'));
+    }
+  };
+
+  const startQuickNote = () => {
+    let candidate = workspaceRef.current;
+    const active = getActiveContext(candidate);
+    if (!active) return;
+
+    const notebook = candidate.notebooks.find((item) => item.id === active.notebook.id);
+    const notesSection =
+      notebook?.sections.find((section) => section.title === 'Notes') ?? active.section;
+    let targetPage =
+      active.page.title === 'Quick note' &&
+      active.page.elements.every(
+        (element) => element.kind === 'text' && element.text.trim() === '',
+      )
+        ? active.page
+        : notesSection.pages.find(
+            (page) =>
+              page.title === 'Quick note' &&
+              page.elements.every(
+                (element) => element.kind === 'text' && element.text.trim() === '',
+              ),
+          );
+
+    if (!targetPage) {
+      targetPage = createPage('Quick note', 'free');
+      candidate = appendPage(candidate, active.notebook.id, notesSection.id, targetPage);
+    } else {
+      candidate = activatePage(candidate, active.notebook.id, notesSection.id, targetPage.id);
+    }
+
+    setGuideOpen(false);
+    startTextOnPage(candidate, targetPage.id);
+  };
+
+  const openExample = () => {
+    const example = findBundledStartPage(workspaceRef.current);
+    if (example) {
+      const candidate = activatePage(
+        workspaceRef.current,
+        example.notebook.id,
+        example.section.id,
+        example.page.id,
+      );
+      workspaceRef.current = candidate;
+      setWorkspace(candidate);
+      setSelectedElementId(null);
+      setGuideOpen(false);
+      window.requestAnimationFrame(() => pageTitleRef.current?.focus());
+      return;
+    }
+    showNotice('The example page is not available in this workspace.');
+  };
+
+  const focusSearch = () => {
+    setGuideOpen(false);
+    window.requestAnimationFrame(() => searchInputRef.current?.focus());
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    window.requestAnimationFrame(() => searchInputRef.current?.focus());
+  };
+
+  const retrySave = () => {
+    setSaveState('saving');
+    void flushLatestWorkspace().catch(() => undefined);
+  };
+
+  const downloadRescueCopy = () => {
+    runSynchronousExport(
+      'Rescue copy download',
+      () => exportWorkspaceJson(workspaceRef.current),
+      'Rescue copy download started. Confirm that the JSON file appears in Downloads.',
+    );
+  };
+
   const addPage = (sectionId: string, parentPageId?: string) => {
     const page = createPage(parentPageId ? 'Untitled subpage' : 'Untitled page', 'free', parentPageId);
     const candidate = appendPage(
@@ -601,6 +1182,7 @@ export default function NotebookApp() {
     workspaceRef.current = candidate;
     setSelectedElementId(null);
     setWorkspace(candidate);
+    window.requestAnimationFrame(() => pageTitleRef.current?.focus());
   };
 
   const activateNotebook = (notebookId: string) => {
@@ -619,22 +1201,58 @@ export default function NotebookApp() {
     error: { icon: AlertTriangle, label: 'Save needs attention' },
   }[saveState];
   const SaveIcon = saveIndicator.icon;
+  const activePageTags = context.page.tags ?? [];
+
+  const togglePageTag = (tag: PageTag) => {
+    setWorkspace((current) =>
+      updatePage(current, context.page.id, (page) => {
+        const tags = page.tags ?? [];
+        const removing = tags.includes(tag);
+        const nextTags = removing
+          ? tags.filter((candidate) => candidate !== tag)
+          : [...tags, tag];
+        return {
+          ...page,
+          tags: nextTags.length ? nextTags : undefined,
+          ...(tag === 'todo'
+            ? { taskState: removing ? undefined : page.taskState ?? 'open' }
+            : {}),
+        };
+      }),
+    );
+  };
 
   return (
-    <main className={`notebook-app ${sidebarOpen ? '' : 'sidebar-is-closed'}`}>
+    <main
+      className={[
+        'notebook-app',
+        sidebarOpen ? '' : 'sidebar-is-closed',
+        focusMode ? 'focus-mode' : '',
+        preferences.textSize === 'large' ? 'ui-text-large' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <a className="skip-link" href="#page-editor">
+        Skip to the page editor
+      </a>
       {sidebarOpen ? (
         <Sidebar
+          ref={sidebarNavigationRef}
+          id="notebook-navigation"
+          modal={compactLayout}
           notebooks={workspace.notebooks}
           activeNotebookId={workspace.activeNotebookId}
           activeSectionId={workspace.activeSectionId}
           activePageId={workspace.activePageId}
           trashCount={workspace.trash.length}
-          onClose={() => setSidebarOpen(false)}
+          onClose={() => closeSidebar(compactLayout)}
           onActivatePage={(notebookId, sectionId, pageId) => {
             setWorkspace((current) => activatePage(current, notebookId, sectionId, pageId));
             setSelectedElementId(null);
-            if (window.matchMedia('(max-width: 820px)').matches) {
-              setSidebarOpen(false);
+            if (compactLayout) {
+              closeSidebar(false);
+              window.requestAnimationFrame(() => pageTitleRef.current?.focus());
             }
           }}
           onActivateNotebook={activateNotebook}
@@ -682,9 +1300,33 @@ export default function NotebookApp() {
               trashPage(current, context.notebook.id, sectionId, pageId),
             )
           }
+          onDuplicatePage={(sectionId, pageId) => {
+            setWorkspace((current) =>
+              duplicatePage(current, context.notebook.id, sectionId, pageId),
+            );
+            setSelectedElementId(null);
+          }}
+          onReorderPage={(sectionId, pageId, direction) =>
+            setWorkspace((current) =>
+              reorderPage(
+                current,
+                context.notebook.id,
+                sectionId,
+                pageId,
+                direction,
+              ),
+            )
+          }
           onOpenTrash={() => {
-            trashReturnFocusRef.current =
-              document.activeElement instanceof HTMLElement ? document.activeElement : null;
+            setGuideOpen(false);
+            trashReturnFocusRef.current = compactLayout
+              ? sidebarToggleRef.current
+              : document.activeElement instanceof HTMLElement
+                ? document.activeElement
+                : null;
+            if (compactLayout) {
+              closeSidebar(false);
+            }
             setTrashOpen(true);
           }}
         />
@@ -694,41 +1336,66 @@ export default function NotebookApp() {
           type="button"
           className="sidebar-scrim"
           aria-label="Close notebook navigation"
-          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+          tabIndex={-1}
+          onClick={() => closeSidebar()}
         />
       ) : null}
 
-      <section className="workspace-shell">
+      <section ref={workspaceShellRef} className="workspace-shell">
         <header className="app-topbar">
           <button
+            ref={sidebarToggleRef}
             type="button"
             className="sidebar-toggle"
-            onClick={() => setSidebarOpen((value) => !value)}
+            onClick={() => {
+              setFocusMode(false);
+              if (!sidebarOpen && compactLayout) {
+                setGuideOpen(false);
+              }
+              setSidebarOpen(!sidebarOpen);
+            }}
             aria-label={sidebarOpen ? 'Hide notebook navigation' : 'Show notebook navigation'}
+            aria-controls="notebook-navigation"
+            aria-expanded={sidebarOpen}
           >
             {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+          </button>
+          <button
+            type="button"
+            className="topbar-action topbar-action--primary"
+            onClick={startQuickNote}
+          >
+            <Type size={16} />
+            <span>Quick note</span>
           </button>
           <div className="breadcrumbs" aria-label="Current page location">
             <span>{context.notebook.title}</span>
             <i>/</i>
             <span>{context.section.title}</span>
           </div>
-          <div className="search-box">
+          <div className="search-box" role="search">
             <Search size={16} />
             <input
+              ref={searchInputRef}
               type="search"
-              placeholder="Search pages and text"
+              placeholder="Search notes, tag:todo, is:open"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               aria-label="Search workspace"
             />
             {searchQuery ? (
-              <button type="button" onClick={() => setSearchQuery('')} aria-label="Clear search">
+              <button type="button" onClick={clearSearch} aria-label="Clear search">
                 <X size={14} />
               </button>
             ) : null}
             {deferredQuery ? (
-              <div className="search-results">
+              <div
+                id="workspace-search-results"
+                className="search-results"
+                role="region"
+                aria-label="Search results"
+              >
                 {searchResults.length ? (
                   searchResults.map((result) => (
                     <button
@@ -745,6 +1412,7 @@ export default function NotebookApp() {
                         );
                         setSelectedElementId(result.elementId ?? null);
                         setSearchQuery('');
+                        window.requestAnimationFrame(() => pageTitleRef.current?.focus());
                       }}
                     >
                       <span>{result.title}</span>
@@ -752,23 +1420,145 @@ export default function NotebookApp() {
                     </button>
                   ))
                 ) : (
-                  <p>No matching notes.</p>
+                  <div
+                    className="search-empty-state"
+                    data-empty-kind="search"
+                    role="status"
+                  >
+                    <strong>No matching notes</strong>
+                    <p>Try a shorter phrase or start a new quick note.</p>
+                    <div>
+                      <button type="button" onClick={clearSearch}>
+                        Clear search
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery('');
+                          startQuickNote();
+                        }}
+                      >
+                        Quick note
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             ) : null}
           </div>
-          <div className={`save-indicator save-indicator--${saveState}`} title={`Using ${storageBackend}`}>
+          <div className="topbar-actions">
+            <button
+              ref={guideTriggerRef}
+              type="button"
+              className="topbar-action"
+              aria-label="Guide and display"
+              aria-controls="getting-started-panel"
+              aria-expanded={guideOpen}
+              onClick={() => {
+                if (guideOpen) {
+                  dismissGuide();
+                } else {
+                  setGuideOpen(true);
+                }
+              }}
+            >
+              <CircleHelp size={16} />
+              <span>Guide</span>
+            </button>
+            <button
+              type="button"
+              className="topbar-action"
+              aria-pressed={focusMode}
+              aria-label={focusMode ? 'Exit focus mode' : 'Enter focus mode'}
+              onClick={() => {
+                if (focusMode) {
+                  setFocusMode(false);
+                  if (!compactLayout) setSidebarOpen(true);
+                } else {
+                  setFocusMode(true);
+                  setSidebarOpen(false);
+                }
+              }}
+            >
+              <Focus size={16} />
+              <span>Focus</span>
+            </button>
+          </div>
+          <div
+            className={`save-indicator save-indicator--${saveState}`}
+            title={`Using ${storageBackend}`}
+            role="status"
+            aria-live="polite"
+            data-testid="save-status"
+            data-state={saveState}
+          >
             <SaveIcon size={15} className={saveState === 'saving' || saveState === 'loading' ? 'spin' : ''} />
             <span>{saveIndicator.label}</span>
             <HardDrive size={13} />
           </div>
         </header>
 
+        <div className="status-stack" aria-live="polite">
+          {!isOnline ? (
+            <div
+              className="status-banner status-banner--offline"
+              data-testid="offline-status"
+              role="status"
+            >
+              <WifiOff size={17} />
+              <p>
+                {storageBackend === 'tauri'
+                  ? 'This desktop app edits and saves locally without a network connection.'
+                  : 'Browser reports offline. Editing and local saves continue here. Reopening works after the offline app shell has been cached.'}
+              </p>
+            </div>
+          ) : null}
+          {recoveryWarning ? (
+            <div
+              className="status-banner status-banner--warning"
+              data-testid="recovery-warning"
+              role="alert"
+            >
+              <AlertTriangle size={17} />
+              <p>{recoveryWarning}</p>
+              <div className="status-banner__actions">
+                <button type="button" onClick={() => setRecoveryWarning(null)}>
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          ) : null}
+          {saveErrorMessage ? (
+            <div className="status-banner status-banner--error" role="alert">
+              <AlertTriangle size={17} />
+              <div>
+                <strong>Changes are not saved yet.</strong>
+                <p>{saveErrorMessage}</p>
+              </div>
+              <div className="status-banner__actions">
+                <button type="button" onClick={retrySave}>
+                  <RefreshCw size={15} />
+                  Retry save
+                </button>
+                <button type="button" onClick={downloadRescueCopy}>
+                  <Download size={15} />
+                  Download rescue copy
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
         <Toolbar
           tool={tool}
           brush={brush}
           pageMode={context.page.mode}
-          onToolChange={setTool}
+          onToolChange={(nextTool) => {
+            setTool(nextTool);
+            if (nextTool !== 'select') {
+              setHiddenEmptyPromptPageId(context.page.id);
+            }
+          }}
           onBrushChange={setBrush}
           onPageModeChange={(mode) =>
             setWorkspace((current) =>
@@ -778,21 +1568,31 @@ export default function NotebookApp() {
           onImportImage={() => imageInputRef.current?.click()}
           onImportPdf={() => pdfInputRef.current?.click()}
           onPortableImport={() => portableInputRef.current?.click()}
-          onExportJson={() => exportWorkspaceJson(workspace)}
-          onExportMarkdown={() => exportPageMarkdown(context)}
+          onExportJson={() =>
+            runSynchronousExport('JSON export', () => exportWorkspaceJson(workspace))
+          }
+          onExportMarkdown={() =>
+            runSynchronousExport('Markdown export', () => exportPageMarkdown(context))
+          }
           onExportPng={() => {
-            const dataUrl = editorRef.current?.toPngDataUrl(2);
-            if (dataUrl) downloadDataUrl(dataUrl, `${shortFilename(context.page.title)}.png`);
+            runSynchronousExport('PNG export', () => {
+              const dataUrl = editorRef.current?.toPngDataUrl(2);
+              if (!dataUrl) {
+                throw new Error('The canvas is not ready for export.');
+              }
+              downloadDataUrl(dataUrl, `${shortFilename(context.page.title)}.png`);
+            });
           }}
           onExportPdf={() =>
             exportPagePdf(context).catch((error: unknown) =>
-              showNotice(error instanceof Error ? error.message : 'PDF export failed.'),
+              showOperationError('PDF export', error),
             )
           }
         />
 
         <div className="page-header">
           <input
+            ref={pageTitleRef}
             value={context.page.title}
             maxLength={16 * 1024}
             aria-label="Page title"
@@ -805,6 +1605,50 @@ export default function NotebookApp() {
               )
             }
           />
+          <div className="page-meta-actions">
+            {activePageTags.map((tag) => (
+              <span className={`page-tag page-tag--${tag}`} key={tag}>
+                {PAGE_TAG_OPTIONS.find((option) => option.id === tag)?.label ?? tag}
+              </span>
+            ))}
+            {activePageTags.includes('todo') ? (
+              <button
+                type="button"
+                className={`page-task-state page-task-state--${context.page.taskState ?? 'open'}`}
+                aria-pressed={context.page.taskState === 'done'}
+                onClick={() =>
+                  setWorkspace((current) =>
+                    updatePage(current, context.page.id, (page) => ({
+                      ...page,
+                      taskState: page.taskState === 'done' ? 'open' : 'done',
+                    })),
+                  )
+                }
+              >
+                <CheckCircle2 size={13} />
+                {context.page.taskState === 'done' ? 'Done' : 'Open'}
+              </button>
+            ) : null}
+            <details className="page-tag-menu">
+              <summary aria-label="Page tags">
+                <Tag size={14} />
+                <span>Tags</span>
+              </summary>
+              <div className="page-tag-menu__popover">
+                {PAGE_TAG_OPTIONS.map((option) => (
+                  <button
+                    type="button"
+                    key={option.id}
+                    aria-pressed={activePageTags.includes(option.id)}
+                    onClick={() => togglePageTag(option.id)}
+                  >
+                    <span className={`page-tag-dot page-tag-dot--${option.id}`} />
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </details>
+          </div>
           <label className="object-picker">
             <span className="sr-only">Selected canvas object</span>
             <select
@@ -831,6 +1675,37 @@ export default function NotebookApp() {
           onDragOver={(event) => event.preventDefault()}
           onDrop={handleDrop}
         >
+          {context.page.elements.length === 0 &&
+          hiddenEmptyPromptPageId !== context.page.id ? (
+            <section className="canvas-empty-state" data-empty-kind="page">
+              <span className="app-eyebrow">Blank page</span>
+              <h2>Capture the first thing on your mind</h2>
+              <p>Start with text, draw directly, or add an image. You can organize it later.</p>
+              <div>
+                <button
+                  type="button"
+                  className="canvas-empty-state__primary"
+                  onClick={() => startTextOnPage(workspaceRef.current, context.page.id)}
+                >
+                  <Type size={17} />
+                  Write a note
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTool('pen');
+                    setHiddenEmptyPromptPageId(context.page.id);
+                    document.getElementById('page-editor')?.focus();
+                  }}
+                >
+                  Draw
+                </button>
+                <button type="button" onClick={() => imageInputRef.current?.click()}>
+                  Add image
+                </button>
+              </div>
+            </section>
+          ) : null}
           <CanvasEditor
             ref={editorRef}
             page={context.page}
@@ -841,6 +1716,7 @@ export default function NotebookApp() {
             onAddElement={addElement}
             onUpdateElement={updateElement}
             onDeleteElement={removeElement}
+            onToolChange={setTool}
           />
         </div>
 
@@ -853,8 +1729,24 @@ export default function NotebookApp() {
             if (selectedElement) removeElement(selectedElement.id);
           }}
           onClose={() => setSelectedElementId(null)}
+          onEditText={() => {
+            if (selectedElement?.kind === 'text') {
+              editorRef.current?.editText(selectedElement.id);
+            }
+          }}
         />
       </section>
+
+      {guideOpen ? (
+        <GettingStartedPanel
+          textSize={preferences.textSize}
+          onTextSizeChange={changeTextSize}
+          onQuickNote={startQuickNote}
+          onFocusSearch={focusSearch}
+          onOpenExample={openExample}
+          onDismiss={dismissGuide}
+        />
+      ) : null}
 
       <input
         ref={imageInputRef}
@@ -953,9 +1845,13 @@ export default function NotebookApp() {
                     </div>
                   ))
               ) : (
-                <div className="empty-trash">
+                <div className="empty-trash" data-empty-kind="trash">
                   <Trash2 size={28} />
-                  <p>Trash is empty.</p>
+                  <strong>Trash is empty</strong>
+                  <p>Deleted pages and canvas objects appear here so you can restore them.</p>
+                  <button type="button" onClick={closeTrash}>
+                    Back to notes
+                  </button>
                 </div>
               )}
             </div>
@@ -979,7 +1875,10 @@ export default function NotebookApp() {
       ) : null}
 
       {notice ? (
-        <div className="toast" role="status">
+        <div
+          className={`toast ${noticeKind === 'error' ? 'toast--error' : ''}`}
+          role={noticeKind === 'error' ? 'alert' : 'status'}
+        >
           <span>{notice}</span>
           <button type="button" onClick={() => setNotice(null)} aria-label="Dismiss message">
             <X size={14} />

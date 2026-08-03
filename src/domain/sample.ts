@@ -1,12 +1,20 @@
 import { createId } from './ids';
 import {
   WORKSPACE_SCHEMA_VERSION,
+  type ActiveContext,
   type InkPoint,
   type Page,
   type Section,
   type TextElement,
   type WorkspaceState,
 } from './types';
+
+export const BUNDLED_START_PAGE_ID = 'page-canvink-example-start-here-v1';
+const BUNDLED_EXAMPLES_SECTION_TITLE = 'Examples';
+const BUNDLED_START_PAGE_TITLE = 'Start here';
+const BUNDLED_START_PAGE_HEADING = 'Welcome to Canvink';
+const BUNDLED_START_PAGE_INTRO =
+  'A calm, local-first place for handwriting, notes, images, and PDFs. Pick a tool above and make this page yours.';
 
 function timestamp(): string {
   return new Date().toISOString();
@@ -72,46 +80,50 @@ function section(title: string, pages: Page[]): Section {
 
 export function createDefaultWorkspace(): WorkspaceState {
   const now = timestamp();
-  const welcomePage = page('Start here', 'free', [
-    textElement('Welcome to Canvink', 92, 88, {
-      width: 650,
-      height: 70,
-      fontSize: 42,
-      fontWeight: 700,
-    }),
-    textElement(
-      'A calm, local-first place for handwriting, notes, images, and PDFs. Pick a tool above and make this page yours.',
-      96,
-      172,
+  const quickNotePage = page('Quick note', 'free', []);
+  const welcomePage = {
+    ...page(BUNDLED_START_PAGE_TITLE, 'free', [
+      textElement(BUNDLED_START_PAGE_HEADING, 92, 88, {
+        width: 650,
+        height: 70,
+        fontSize: 42,
+        fontWeight: 700,
+      }),
+      textElement(
+        BUNDLED_START_PAGE_INTRO,
+        96,
+        172,
+        {
+          width: 630,
+          height: 110,
+          color: '#53615b',
+          fontSize: 20,
+          fontWeight: 400,
+        },
+      ),
       {
-        width: 630,
-        height: 110,
-        color: '#53615b',
-        fontSize: 20,
-        fontWeight: 400,
+        id: createId('stroke'),
+        kind: 'stroke',
+        tool: 'pen',
+        x: 0,
+        y: 0,
+        points: linePoints(),
+        color: '#d7653b',
+        size: 7,
+        opacity: 1,
+        createdAt: now,
+        updatedAt: now,
       },
-    ),
-    {
-      id: createId('stroke'),
-      kind: 'stroke',
-      tool: 'pen',
-      x: 0,
-      y: 0,
-      points: linePoints(),
-      color: '#d7653b',
-      size: 7,
-      opacity: 1,
-      createdAt: now,
-      updatedAt: now,
-    },
-    textElement('Tip: your changes save automatically on this device.', 96, 388, {
-      width: 540,
-      height: 52,
-      fontSize: 17,
-      color: '#53615b',
-      fontWeight: 400,
-    }),
-  ]);
+      textElement('Tip: your changes save automatically on this device.', 96, 388, {
+        width: 540,
+        height: 52,
+        fontSize: 17,
+        color: '#53615b',
+        fontWeight: 400,
+      }),
+    ]),
+    id: BUNDLED_START_PAGE_ID,
+  };
   const ideasPage = page('Ideas', 'free', [
     textElement('Loose ideas', 72, 68, {
       fontSize: 34,
@@ -142,7 +154,8 @@ export function createDefaultWorkspace(): WorkspaceState {
       color: '#53615b',
     }),
   ]);
-  const notesSection = section('Notes', [welcomePage, ideasPage]);
+  const notesSection = section('Notes', [quickNotePage]);
+  const examplesSection = section(BUNDLED_EXAMPLES_SECTION_TITLE, [welcomePage, ideasPage]);
   const templatesSection = section('Templates', [meetingPage]);
   const notebook = {
     id: createId('notebook'),
@@ -150,7 +163,7 @@ export function createDefaultWorkspace(): WorkspaceState {
     color: '#d7653b',
     createdAt: now,
     updatedAt: now,
-    sections: [notesSection, templatesSection],
+    sections: [notesSection, examplesSection, templatesSection],
   };
 
   return {
@@ -160,6 +173,42 @@ export function createDefaultWorkspace(): WorkspaceState {
     trash: [],
     activeNotebookId: notebook.id,
     activeSectionId: notesSection.id,
-    activePageId: welcomePage.id,
+    activePageId: quickNotePage.id,
   };
+}
+
+export function findBundledStartPage(workspace: WorkspaceState): ActiveContext | null {
+  for (const notebook of workspace.notebooks) {
+    for (const section of notebook.sections) {
+      const markedPage = section.pages.find(
+        (candidate) => candidate.id === BUNDLED_START_PAGE_ID,
+      );
+      if (markedPage) {
+        return { notebook, section, page: markedPage };
+      }
+    }
+  }
+
+  for (const notebook of workspace.notebooks) {
+    const section = notebook.sections.find(
+      (candidate) => candidate.title === BUNDLED_EXAMPLES_SECTION_TITLE,
+    );
+    const legacyPage = section?.pages.find(
+      (candidate) =>
+        candidate.title === BUNDLED_START_PAGE_TITLE &&
+        [BUNDLED_START_PAGE_HEADING, BUNDLED_START_PAGE_INTRO].every(
+          (signature) =>
+            candidate.elements.some(
+              (element) =>
+                element.kind === 'text' &&
+                element.text.trim() === signature,
+            ),
+        ),
+    );
+    if (section && legacyPage) {
+      return { notebook, section, page: legacyPage };
+    }
+  }
+
+  return null;
 }

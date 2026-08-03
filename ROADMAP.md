@@ -9,11 +9,11 @@ Canvink will prioritize data integrity and excellent pen-and-page fundamentals b
 The public alpha establishes:
 
 - A Tauri 2 desktop application and a limited browser demo
-- Notebook, section, and page organization
+- Notebook, section, page, and subpage organization, including page duplication and sibling reordering
 - Free-canvas and A4 page modes
-- Mixed ink, text, image, and PDF objects
+- Mixed ink, formatted text, checklist, image, and PDF objects
 - Local autosave with SQLite on desktop and IndexedDB in the browser demo
-- Basic text search, trash, and export foundations
+- Text, checklist, tag, and task search, plus trash and export foundations
 - A documented schema, security model, and release process
 
 The v0.1 series remains unstable. Compatibility work will be explicit and migrations will be tested, but users should expect changes and maintain backups.

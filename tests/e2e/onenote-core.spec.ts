@@ -124,19 +124,53 @@ test('formats, tags, finds, resumes, duplicates, and reorders a working page', a
   );
 });
 
-test('keeps the core organization controls usable in the mobile journey', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await gotoApp(page);
+test.describe('mobile core workflows', () => {
+  test.use({
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+  });
 
-  await page.getByLabel('Page tags').click();
-  await page.getByRole('button', { name: 'Important', exact: true }).click();
-  await expectNoDocumentOverflow(page);
+  test('keeps the core organization controls usable in the mobile journey', async ({ page }) => {
+    await gotoApp(page);
 
-  await page.getByRole('button', { name: /Show notebook navigation/i }).click();
-  const navigation = page.getByRole('dialog', { name: /Notebook navigation/i });
-  await expect(navigation).toBeVisible();
-  await navigation.getByLabel('Actions for Quick note').click();
-  await expect(navigation.getByRole('button', { name: 'Add subpage' })).toBeVisible();
-  await expect(navigation.getByRole('button', { name: 'Duplicate' })).toBeVisible();
-  await expectNoDocumentOverflow(page);
+    await page.getByRole('button', { name: /^Checklist/ }).click();
+    const stage = page.locator('#page-editor .konvajs-content');
+    const stageBounds = await stage.boundingBox();
+    expect(stageBounds).not.toBeNull();
+    if (!stageBounds) return;
+    await page.touchscreen.tap(stageBounds.x + 70, stageBounds.y + 110);
+
+    const properties = page.getByRole('complementary', {
+      name: /Object properties/i,
+    });
+    await properties
+      .getByRole('textbox', { name: 'Checklist item 1', exact: true })
+      .fill('Mobile task');
+    await properties.getByRole('button', { name: 'Close properties' }).click();
+    await page.touchscreen.tap(stageBounds.x + 91, stageBounds.y + 135);
+    await page.getByLabel('Select a canvas object').selectOption({ index: 1 });
+    await expect(
+      properties.getByRole('checkbox', {
+        name: 'Mark item 1 complete',
+        exact: true,
+      }),
+    ).toBeChecked();
+
+    await page.getByLabel('Page tags').click();
+    await page.getByRole('button', { name: 'Important', exact: true }).click();
+    await expectNoDocumentOverflow(page);
+
+    await page.getByRole('button', { name: /Show notebook navigation/i }).click();
+    const navigation = page.getByRole('dialog', { name: /Notebook navigation/i });
+    await expect(navigation).toBeVisible();
+    await navigation.getByLabel('Actions for Quick note').click();
+    await expect(
+      navigation.getByRole('button', { name: 'Add subpage' }),
+    ).toBeVisible();
+    await expect(
+      navigation.getByRole('button', { name: 'Duplicate' }),
+    ).toBeVisible();
+    await expectNoDocumentOverflow(page);
+  });
 });

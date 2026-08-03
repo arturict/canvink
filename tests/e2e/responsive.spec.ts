@@ -1,5 +1,6 @@
 import {
   createQuickNote,
+  editSelectedText,
   expect,
   expectNoDocumentOverflow,
   gotoApp,
@@ -110,9 +111,16 @@ test.describe('mobile', () => {
     await expect(navigation).toHaveCount(0);
     await expect(page.getByLabel('Page title')).toHaveValue(note.title);
     await page.getByLabel('Select a canvas object').selectOption({ index: 1 });
-    await expect(page.getByPlaceholder('Write your note')).toBeVisible();
-    await expect(page.getByPlaceholder('Write your note')).toHaveValue(note.body);
+    const editor = await editSelectedText(page);
+    await expect(editor).toHaveValue(note.body);
+    const inspector = page.getByRole('complementary', {
+      name: /Object properties/i,
+    });
+    await expect(inspector).toBeHidden();
     await expectNoDocumentOverflow(page);
+
+    await editor.press('Escape');
+    await expect(inspector).toBeVisible();
   });
 
   test('keeps guide, navigation, shortcuts, and trash in one modal layer', async ({

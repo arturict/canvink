@@ -640,26 +640,16 @@ export async function createPagePdf(context: ActiveContext): Promise<JsPDF> {
     }
 
     const source = element.kind === 'image' ? element.dataUrl : element.previewDataUrl;
-    try {
-      pdf.addImage(
-        source,
-        jsPdfImageFormat(source),
-        offsetX + element.x * scale,
-        offsetY + element.y * scale,
-        element.width * scale,
-        element.height * scale,
-        undefined,
-        'FAST',
-      );
-    } catch {
-      pdf.setDrawColor(180, 185, 180);
-      pdf.rect(
-        offsetX + element.x * scale,
-        offsetY + element.y * scale,
-        element.width * scale,
-        element.height * scale,
-      );
-    }
+    pdf.addImage(
+      source,
+      jsPdfImageFormat(source),
+      offsetX + element.x * scale,
+      offsetY + element.y * scale,
+      element.width * scale,
+      element.height * scale,
+      undefined,
+      'FAST',
+    );
   }
 
   return pdf;

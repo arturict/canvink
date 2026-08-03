@@ -1,22 +1,20 @@
 import { FileText, Image as ImageIcon, SlidersHorizontal, Trash2, Type } from 'lucide-react';
-import type { Ref } from 'react';
-import { MAX_TEXT_CHARS } from '../domain/limits';
 import type { PageElement } from '../domain/types';
 
 interface InspectorProps {
   element: PageElement | null;
-  textInputRef?: Ref<HTMLTextAreaElement>;
   onUpdate: (patch: Partial<PageElement>) => void;
   onDelete: () => void;
   onClose: () => void;
+  onEditText: () => void;
 }
 
 export default function Inspector({
   element,
-  textInputRef,
   onUpdate,
   onDelete,
   onClose,
+  onEditText,
 }: InspectorProps) {
   if (!element) return null;
 
@@ -42,18 +40,13 @@ export default function Inspector({
 
       {element.kind === 'text' ? (
         <>
-          <label className="field">
-            <span>Text</span>
-            <textarea
-              ref={textInputRef}
-              value={element.text}
-              maxLength={MAX_TEXT_CHARS}
-              rows={8}
-              placeholder="Write your note"
-              onChange={(event) => onUpdate({ text: event.target.value })}
-              autoFocus
-            />
-          </label>
+          <div className="inline-edit-callout">
+            <p>Edit the words where they appear on the page.</p>
+            <button type="button" onClick={onEditText}>
+              <Type size={15} />
+              Edit text on page
+            </button>
+          </div>
           <div className="field-row">
             <label className="field">
               <span>Size</span>

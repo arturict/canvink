@@ -25,7 +25,10 @@ import {
   X,
 } from 'lucide-react';
 import { createId } from '../domain/ids';
-import { createDefaultWorkspace } from '../domain/sample';
+import {
+  createDefaultWorkspace,
+  findBundledStartPage,
+} from '../domain/sample';
 import { MAX_TITLE_BYTES } from '../domain/limits';
 import { truncateUtf8 } from '../domain/strings';
 import {
@@ -75,7 +78,17 @@ import {
   loadWorkspace,
   saveWorkspace,
   type StorageBackend,
+  WorkspaceOpenError,
+  type WorkspaceOpenFailureCode,
 } from '../storage/workspaceStorage';
+import {
+  clearRecoveryDraftThrough,
+  discardRecoveryDraft,
+  loadRecoveryDraft,
+  recoveryDraftDiffersFrom,
+  saveRecoveryDraft,
+  type RecoveryDraft,
+} from '../storage/recoveryJournal';
 import { canAutosave } from '../storage/persistencePolicy';
 import {
   loadUiPreferences,
@@ -88,6 +101,7 @@ import Sidebar from './Sidebar';
 import Toolbar, { editorToolForKeyboardShortcut } from './Toolbar';
 
 type SaveState = 'loading' | 'saving' | 'saved' | 'error';
+type LoadFailureKind = WorkspaceOpenFailureCode | 'storage';
 
 function messageFromError(error: unknown, fallback: string): string {
   if (error instanceof Error && error.message.trim()) return error.message;
@@ -157,6 +171,7 @@ export default function NotebookApp() {
   const [workspace, setWorkspace] = useState<WorkspaceState>(() => createDefaultWorkspace());
   const [storageReady, setStorageReady] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [loadFailureKind, setLoadFailureKind] = useState<LoadFailureKind>('storage');
   const [storageBackend, setStorageBackend] = useState<StorageBackend>(() =>
     activeStorageBackend(),
   );
@@ -164,6 +179,12 @@ export default function NotebookApp() {
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [noticeKind, setNoticeKind] = useState<'status' | 'error'>('status');
+  const [recoveryDraft, setRecoveryDraft] = useState<RecoveryDraft | null>(null);
+  const [recoveryWarning, setRecoveryWarning] = useState<string | null>(null);
+  const [recoveryActionFeedback, setRecoveryActionFeedback] = useState<{
+    kind: 'status' | 'error';
+    message: string;
+  } | null>(null);
   const [tool, setTool] = useState<EditorTool>('pen');
   const [brush, setBrush] = useState<BrushSettings>({ color: '#1e2925', size: 7 });
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
@@ -184,7 +205,6 @@ export default function NotebookApp() {
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const portableInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<CanvasEditorHandle>(null);
-  const textEditorRef = useRef<HTMLTextAreaElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const pageTitleRef = useRef<HTMLInputElement>(null);
   const sidebarToggleRef = useRef<HTMLButtonElement>(null);
@@ -197,6 +217,8 @@ export default function NotebookApp() {
   const dirtyRevisionRef = useRef(0);
   const savedRevisionRef = useRef(0);
   const saveTimerRef = useRef<number | null>(null);
+  const recoveryTimerRef = useRef<number | null>(null);
+  const recoverySessionIdRef = useRef(createId('recovery'));
   const skipNextAutosaveRef = useRef(false);
   const closingRef = useRef(false);
   const flushSaveRef = useRef<() => Promise<void>>(async () => undefined);
@@ -226,6 +248,20 @@ export default function NotebookApp() {
       try {
         const backend = await saveWorkspace(snapshot);
         savedRevisionRef.current = Math.max(savedRevisionRef.current, revision);
+        void clearRecoveryDraftThrough({
+          sessionId: recoverySessionIdRef.current,
+          revision,
+        })
+          .then(() => {
+            if (revision === dirtyRevisionRef.current) setRecoveryWarning(null);
+          })
+          .catch((error: unknown) => {
+            if (revision === dirtyRevisionRef.current) {
+              setRecoveryWarning(
+                `Your note is saved, but the temporary recovery draft could not be cleared. ${messageFromError(error, 'You can keep editing safely.')}`,
+              );
+            }
+          });
         if (revision === dirtyRevisionRef.current) {
           setStorageBackend(backend);
           setSaveState('saved');
@@ -262,6 +298,27 @@ export default function NotebookApp() {
     await persistSnapshot(structuredClone(workspaceRef.current), revision);
   }, [persistSnapshot]);
 
+  const flushRecoveryDraft = useCallback(async (): Promise<void> => {
+    const revision = dirtyRevisionRef.current;
+    if (
+      revision <= savedRevisionRef.current ||
+      !canAutosave({
+        storageReady: storageReadyRef.current,
+        loadFailed: loadFailedRef.current,
+      })
+    ) {
+      return;
+    }
+    if (recoveryTimerRef.current !== null) {
+      window.clearTimeout(recoveryTimerRef.current);
+      recoveryTimerRef.current = null;
+    }
+    await saveRecoveryDraft(workspaceRef.current, {
+      sessionId: recoverySessionIdRef.current,
+      revision,
+    });
+  }, []);
+
   useEffect(() => {
     workspaceRef.current = workspace;
   }, [workspace]);
@@ -274,10 +331,6 @@ export default function NotebookApp() {
   useEffect(() => {
     flushSaveRef.current = flushLatestWorkspace;
   }, [flushLatestWorkspace]);
-
-  useEffect(() => {
-    saveUiPreferences(preferences);
-  }, [preferences]);
 
   useEffect(() => {
     const updateOnlineState = () => setIsOnline(navigator.onLine);
@@ -308,7 +361,22 @@ export default function NotebookApp() {
   useEffect(() => {
     let active = true;
     loadWorkspace()
-      .then((result) => {
+      .then(async (result) => {
+        let pendingRecovery: RecoveryDraft | null = null;
+        let recoveryLoadWarning: string | null = null;
+        try {
+          const draft = await loadRecoveryDraft();
+          if (draft && recoveryDraftDiffersFrom(draft, result.workspace)) {
+            pendingRecovery = draft;
+          } else if (draft) {
+            await discardRecoveryDraft(draft);
+          }
+        } catch (error) {
+          recoveryLoadWarning = `Saved notes opened normally, but a temporary recovery draft could not be checked. ${messageFromError(error, 'The recovery data was left unchanged.')}`;
+        }
+        return { result, pendingRecovery, recoveryLoadWarning };
+      })
+      .then(({ result, pendingRecovery, recoveryLoadWarning }) => {
         if (!active) return;
         workspaceRef.current = result.workspace;
         dirtyRevisionRef.current = 0;
@@ -322,6 +390,8 @@ export default function NotebookApp() {
         setSaveErrorMessage(null);
         setLoadFailed(false);
         setStorageReady(true);
+        setRecoveryDraft(pendingRecovery);
+        setRecoveryWarning(recoveryLoadWarning);
         const loadedContext = getActiveContext(result.workspace);
         setGuideOpen(
           !loadUiPreferences().guideDismissed &&
@@ -332,6 +402,9 @@ export default function NotebookApp() {
       .catch((error: unknown) => {
         if (!active) return;
         loadFailedRef.current = true;
+        setLoadFailureKind(
+          error instanceof WorkspaceOpenError ? error.code : 'storage',
+        );
         setNotice(messageFromError(error, 'Could not load the local workspace.'));
         setSaveState('error');
         setLoadFailed(true);
@@ -397,6 +470,26 @@ export default function NotebookApp() {
     const revision = dirtyRevisionRef.current + 1;
     dirtyRevisionRef.current = revision;
     setSaveState('saving');
+    if (recoveryTimerRef.current !== null) {
+      window.clearTimeout(recoveryTimerRef.current);
+    }
+    recoveryTimerRef.current = window.setTimeout(() => {
+      recoveryTimerRef.current = null;
+      void saveRecoveryDraft(workspace, {
+        sessionId: recoverySessionIdRef.current,
+        revision,
+      })
+        .then(() => {
+          if (revision === dirtyRevisionRef.current) setRecoveryWarning(null);
+        })
+        .catch((error: unknown) => {
+          if (revision === dirtyRevisionRef.current) {
+            setRecoveryWarning(
+              `Crash recovery could not protect the latest unsaved edit. ${messageFromError(error, 'Autosave will still continue.')}`,
+            );
+          }
+        });
+    }, 180);
     if (saveTimerRef.current !== null) {
       window.clearTimeout(saveTimerRef.current);
     }
@@ -407,6 +500,10 @@ export default function NotebookApp() {
       );
     }, 650);
     return () => {
+      if (recoveryTimerRef.current !== null) {
+        window.clearTimeout(recoveryTimerRef.current);
+        recoveryTimerRef.current = null;
+      }
       if (saveTimerRef.current !== null) {
         window.clearTimeout(saveTimerRef.current);
         saveTimerRef.current = null;
@@ -421,12 +518,14 @@ export default function NotebookApp() {
       dirtyRevisionRef.current > savedRevisionRef.current;
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (!hasUnsavedChanges()) return;
+      void flushRecoveryDraft().catch(() => undefined);
       void flushSaveRef.current().catch(() => undefined);
       event.preventDefault();
       event.returnValue = '';
     };
     const handlePageHide = () => {
       if (hasUnsavedChanges()) {
+        void flushRecoveryDraft().catch(() => undefined);
         void flushSaveRef.current().catch(() => undefined);
       }
     };
@@ -473,7 +572,7 @@ export default function NotebookApp() {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('pagehide', handlePageHide);
     };
-  }, [loadFailed, storageReady]);
+  }, [flushRecoveryDraft, loadFailed, storageReady]);
 
   useEffect(() => {
     if (!trashOpen) return undefined;
@@ -588,16 +687,90 @@ export default function NotebookApp() {
     trashOpen,
   ]);
 
+  const restorePendingRecovery = () => {
+    if (!recoveryDraft) return;
+    workspaceRef.current = recoveryDraft.workspace;
+    dirtyRevisionRef.current = 0;
+    savedRevisionRef.current = 0;
+    skipNextAutosaveRef.current = false;
+    setSelectedElementId(null);
+    setGuideOpen(false);
+    setRecoveryActionFeedback(null);
+    setRecoveryWarning(null);
+    setRecoveryDraft(null);
+    setWorkspace(recoveryDraft.workspace);
+  };
+
+  const keepSavedWorkspace = async () => {
+    if (!recoveryDraft) return;
+    setRecoveryActionFeedback(null);
+    try {
+      const discarded = await discardRecoveryDraft(recoveryDraft);
+      if (!discarded) {
+        setRecoveryActionFeedback({
+          kind: 'error',
+          message: 'The recovery draft changed before it could be discarded. Reload and review it again.',
+        });
+        return;
+      }
+      setRecoveryDraft(null);
+    } catch (error) {
+      setRecoveryActionFeedback({
+        kind: 'error',
+        message: messageFromError(error, 'The recovery draft could not be discarded.'),
+      });
+    }
+  };
+
+  const downloadPendingRecovery = () => {
+    if (!recoveryDraft) return;
+    try {
+      exportWorkspaceJson(recoveryDraft.workspace);
+      setRecoveryActionFeedback({
+        kind: 'status',
+        message: 'Recovery copy download started. Confirm that the JSON file appears in Downloads.',
+      });
+    } catch (error) {
+      setRecoveryActionFeedback({
+        kind: 'error',
+        message: messageFromError(error, 'The recovery copy could not be downloaded.'),
+      });
+    }
+  };
+
   if (!storageReady) {
     if (loadFailed) {
+      const failure = {
+        'writer-conflict': {
+          title: 'Canvink is already open in another tab.',
+          detail:
+            'Only one browser tab can edit this local workspace at a time. Close the other Canvink tab, then try again here.',
+          safety: 'Your stored notes were not changed by this tab.',
+        },
+        'coordination-unavailable': {
+          title: 'This browser cannot safely edit the workspace.',
+          detail:
+            'Canvink needs browser write coordination to prevent two tabs from overwriting each other. Use a current browser with Web Locks support or the desktop app.',
+          safety: 'Your stored notes were not changed.',
+        },
+        storage: {
+          title: 'Your local workspace could not be opened.',
+          detail: notice ?? 'Canvink could not verify the stored data.',
+          safety: 'Editing stays disabled so placeholder data cannot overwrite your notes.',
+        },
+      }[loadFailureKind];
       return (
-        <main className="fatal-state" role="alert">
+        <main
+          className="fatal-state"
+          role="alert"
+          data-failure-kind={loadFailureKind}
+        >
           <AlertTriangle />
-          <h1>Your local workspace could not be opened.</h1>
-          <p>{notice ?? 'Canvink did not change the stored data.'}</p>
-          <p>Editing is disabled so unsaved welcome data cannot hide the problem.</p>
+          <h1>{failure.title}</h1>
+          <p>{failure.detail}</p>
+          <p>{failure.safety}</p>
           <button type="button" onClick={() => window.location.reload()}>
-            Try opening it again
+            Try again
           </button>
         </main>
       );
@@ -608,6 +781,52 @@ export default function NotebookApp() {
         <LoaderCircle className="spin" />
         <h1>Opening your local workspace</h1>
         <p>The editor will unlock after stored data has been checked.</p>
+      </main>
+    );
+  }
+
+  if (recoveryDraft) {
+    return (
+      <main className="fatal-state fatal-state--recovery">
+        <section
+          className="recovery-card"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="recovery-title"
+          aria-describedby="recovery-description"
+        >
+          <RefreshCw aria-hidden="true" />
+          <p className="recovery-card__eyebrow">Unsaved work found</p>
+          <h1 id="recovery-title">Resume your last editing draft?</h1>
+          <p id="recovery-description">
+            Canvink found a valid temporary draft from{' '}
+            <time dateTime={recoveryDraft.capturedAt}>
+              {new Date(recoveryDraft.capturedAt).toLocaleString()}
+            </time>
+            . It has not replaced your last saved workspace.
+          </p>
+          <div className="recovery-card__actions">
+            <button type="button" onClick={restorePendingRecovery}>
+              <RefreshCw size={16} />
+              Restore unsaved draft
+            </button>
+            <button type="button" onClick={() => void keepSavedWorkspace()}>
+              Keep last saved copy
+            </button>
+            <button type="button" onClick={downloadPendingRecovery}>
+              <Download size={16} />
+              Download draft first
+            </button>
+          </div>
+          {recoveryActionFeedback ? (
+            <p
+              className={`recovery-card__feedback ${recoveryActionFeedback.kind === 'error' ? 'recovery-card__feedback--error' : ''}`}
+              role={recoveryActionFeedback.kind === 'error' ? 'alert' : 'status'}
+            >
+              {recoveryActionFeedback.message}
+            </p>
+          ) : null}
+        </section>
       </main>
     );
   }
@@ -796,18 +1015,22 @@ export default function NotebookApp() {
 
   const dismissGuide = () => {
     setGuideOpen(false);
-    setPreferences((current) => ({
-      ...current,
+    const nextPreferences: UiPreferences = {
+      ...preferences,
       guideDismissed: true,
-    }));
+    };
+    setPreferences(nextPreferences);
+    saveUiPreferences(nextPreferences);
     window.requestAnimationFrame(() => guideTriggerRef.current?.focus());
   };
 
   const changeTextSize = (textSize: UiPreferences['textSize']) => {
-    setPreferences((current) => ({
-      ...current,
+    const nextPreferences: UiPreferences = {
+      ...preferences,
       textSize,
-    }));
+    };
+    setPreferences(nextPreferences);
+    saveUiPreferences(nextPreferences);
   };
 
   const startTextOnPage = (snapshot: WorkspaceState, pageId: string) => {
@@ -826,7 +1049,7 @@ export default function NotebookApp() {
       setWorkspace(snapshot);
       setSelectedElementId(existingEmptyText.id);
       setTool('select');
-      window.requestAnimationFrame(() => textEditorRef.current?.focus());
+      editorRef.current?.editText(existingEmptyText.id);
       return;
     }
 
@@ -838,7 +1061,7 @@ export default function NotebookApp() {
       setWorkspace(candidate);
       setSelectedElementId(element.id);
       setTool('select');
-      window.requestAnimationFrame(() => textEditorRef.current?.focus());
+      editorRef.current?.editText(element.id);
     } catch (error) {
       showNotice(messageFromError(error, 'A text note could not be added safely.'));
     }
@@ -878,23 +1101,20 @@ export default function NotebookApp() {
   };
 
   const openExample = () => {
-    for (const notebook of workspaceRef.current.notebooks) {
-      for (const section of notebook.sections) {
-        const page = section.pages.find((item) => item.title === 'Start here');
-        if (!page) continue;
-        const candidate = activatePage(
-          workspaceRef.current,
-          notebook.id,
-          section.id,
-          page.id,
-        );
-        workspaceRef.current = candidate;
-        setWorkspace(candidate);
-        setSelectedElementId(null);
-        setGuideOpen(false);
-        window.requestAnimationFrame(() => pageTitleRef.current?.focus());
-        return;
-      }
+    const example = findBundledStartPage(workspaceRef.current);
+    if (example) {
+      const candidate = activatePage(
+        workspaceRef.current,
+        example.notebook.id,
+        example.section.id,
+        example.page.id,
+      );
+      workspaceRef.current = candidate;
+      setWorkspace(candidate);
+      setSelectedElementId(null);
+      setGuideOpen(false);
+      window.requestAnimationFrame(() => pageTitleRef.current?.focus());
+      return;
     }
     showNotice('The example page is not available in this workspace.');
   };
@@ -1097,15 +1317,10 @@ export default function NotebookApp() {
             <input
               ref={searchInputRef}
               type="search"
-              role="combobox"
               placeholder="Search pages and text"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               aria-label="Search workspace"
-              aria-autocomplete="list"
-              aria-controls="workspace-search-results"
-              aria-expanded={Boolean(deferredQuery)}
-              aria-haspopup="listbox"
             />
             {searchQuery ? (
               <button type="button" onClick={clearSearch} aria-label="Clear search">
@@ -1116,15 +1331,13 @@ export default function NotebookApp() {
               <div
                 id="workspace-search-results"
                 className="search-results"
-                role="listbox"
+                role="region"
                 aria-label="Search results"
               >
                 {searchResults.length ? (
                   searchResults.map((result) => (
                     <button
                       type="button"
-                      role="option"
-                      aria-selected="false"
                       key={result.id}
                       onClick={() => {
                         setWorkspace((current) =>
@@ -1234,8 +1447,23 @@ export default function NotebookApp() {
               <p>
                 {storageBackend === 'tauri'
                   ? 'This desktop app edits and saves locally without a network connection.'
-                  : 'Browser reports offline. Editing and local saves can continue in this open tab. Reopening may require the site.'}
+                  : 'Browser reports offline. Editing and local saves continue here. Reopening works after the offline app shell has been cached.'}
               </p>
+            </div>
+          ) : null}
+          {recoveryWarning ? (
+            <div
+              className="status-banner status-banner--warning"
+              data-testid="recovery-warning"
+              role="alert"
+            >
+              <AlertTriangle size={17} />
+              <p>{recoveryWarning}</p>
+              <div className="status-banner__actions">
+                <button type="button" onClick={() => setRecoveryWarning(null)}>
+                  Dismiss
+                </button>
+              </div>
             </div>
           ) : null}
           {saveErrorMessage ? (
@@ -1377,12 +1605,12 @@ export default function NotebookApp() {
             onAddElement={addElement}
             onUpdateElement={updateElement}
             onDeleteElement={removeElement}
+            onToolChange={setTool}
           />
         </div>
 
         <Inspector
           element={selectedElement}
-          textInputRef={textEditorRef}
           onUpdate={(patch) => {
             if (selectedElement) updateElement(selectedElement.id, patch);
           }}
@@ -1390,6 +1618,11 @@ export default function NotebookApp() {
             if (selectedElement) removeElement(selectedElement.id);
           }}
           onClose={() => setSelectedElementId(null)}
+          onEditText={() => {
+            if (selectedElement?.kind === 'text') {
+              editorRef.current?.editText(selectedElement.id);
+            }
+          }}
         />
       </section>
 

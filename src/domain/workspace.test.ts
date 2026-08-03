@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { createDefaultWorkspace } from './sample';
+import {
+  BUNDLED_START_PAGE_ID,
+  createDefaultWorkspace,
+  findBundledStartPage,
+} from './sample';
 import {
   activatePage,
   addPageElement,
@@ -39,6 +43,40 @@ describe('workspace model', () => {
       'Examples',
       'Templates',
     ]);
+    expect(findBundledStartPage(workspace)?.page.id).toBe(BUNDLED_START_PAGE_ID);
+  });
+
+  it('finds the bundled example even when an earlier user page has the same title', () => {
+    const workspace = createDefaultWorkspace();
+    const notesSection = workspace.notebooks[0].sections[0];
+    notesSection.pages.unshift({
+      ...createPage('Start here', 'free'),
+      id: 'page-user-start-here',
+    });
+
+    const example = findBundledStartPage(workspace);
+
+    expect(example?.section.title).toBe('Examples');
+    expect(example?.page.id).toBe(BUNDLED_START_PAGE_ID);
+  });
+
+  it('keeps the bundled marker across renames and recognizes only the signed legacy fixture', () => {
+    const renamedWorkspace = createDefaultWorkspace();
+    const renamedExample = findBundledStartPage(renamedWorkspace)!;
+    renamedExample.page.title = 'My renamed example';
+    expect(findBundledStartPage(renamedWorkspace)?.page.id).toBe(
+      BUNDLED_START_PAGE_ID,
+    );
+
+    const legacyWorkspace = createDefaultWorkspace();
+    const legacyExample = findBundledStartPage(legacyWorkspace)!;
+    legacyExample.page.id = 'page-legacy-random-id';
+    expect(findBundledStartPage(legacyWorkspace)?.page.id).toBe(
+      'page-legacy-random-id',
+    );
+
+    legacyExample.page.elements = [];
+    expect(findBundledStartPage(legacyWorkspace)).toBeNull();
   });
 
   it('renames notebooks and sections without changing their identities', () => {

@@ -1,9 +1,11 @@
 import {
   forwardRef,
   memo,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -22,7 +24,7 @@ import {
 } from 'react-konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import { createId } from '../domain/ids';
-import { MAX_POINTS_PER_STROKE } from '../domain/limits';
+import { MAX_POINTS_PER_STROKE, MAX_TEXT_CHARS } from '../domain/limits';
 import type {
   BrushSettings,
   EditorTool,
@@ -33,12 +35,14 @@ import type {
   PdfElement,
   StrokeElement,
 } from '../domain/types';
+import { accessibleElementSummary } from './accessibility';
 import { A4_PAGE, FREE_PAGE } from './constants';
 import { getStrokeOutline, strokeToSvgPath } from './ink';
 
 export interface CanvasEditorHandle {
   toPngDataUrl: (pixelRatio?: number) => string;
   dimensions: () => { width: number; height: number };
+  editText: (elementId: string) => void;
 }
 
 interface CanvasEditorProps {
@@ -47,9 +51,10 @@ interface CanvasEditorProps {
   brush: BrushSettings;
   selectedElementId: string | null;
   onSelectElement: (elementId: string | null) => void;
-  onAddElement: (element: PageElement) => void;
+  onAddElement: (element: PageElement) => boolean;
   onUpdateElement: (elementId: string, patch: Partial<PageElement>) => void;
   onDeleteElement: (elementId: string) => void;
+  onToolChange: (tool: EditorTool) => void;
 }
 
 interface CanvasAssetProps {
@@ -204,24 +209,6 @@ function elementCursor(tool: EditorTool): string {
   return 'crosshair';
 }
 
-function accessibleElementSummary(element: PageElement): string {
-  if (element.kind === 'text') {
-    const text = element.text.trim();
-    return text ? `Text: ${text}` : 'Empty text note';
-  }
-  if (element.kind === 'stroke') {
-    const tool = element.tool === 'highlighter' ? 'Highlighter' : 'Pen';
-    return `${tool} stroke with ${element.points.length} points`;
-  }
-  if (element.kind === 'image') {
-    const alt = element.alt.trim();
-    return alt
-      ? `Image: ${alt}. File: ${element.name}`
-      : `Image without alt text: ${element.name}`;
-  }
-  return `PDF preview: ${element.sourceName}, ${element.pageCount} pages`;
-}
-
 const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function CanvasEditor(
   {
     page,
@@ -232,21 +219,35 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
     onAddElement,
     onUpdateElement,
     onDeleteElement,
+    onToolChange,
   },
   ref,
 ) {
+  const canvasPageRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
+  const inlineTextEditorRef = useRef<HTMLTextAreaElement>(null);
   const canvasDescriptionId = useId();
+  const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const activePointerRef = useRef<number | null>(null);
   const draftPointsRef = useRef<InkPoint[]>([]);
   const draftRef = useRef<StrokeElement | null>(null);
   const erasedDuringGestureRef = useRef(new Set<string>());
+  const finishPointerRef = useRef<(event: PointerEvent, cancelled?: boolean) => void>(
+    () => undefined,
+  );
   const dimensions = page.mode === 'a4' ? A4_PAGE : FREE_PAGE;
   const selectedElement = page.elements.find(
     (element) => element.id === selectedElementId,
   );
+  const editingTextElement =
+    selectedElement?.kind === 'text' && selectedElement.id === editingTextId
+      ? selectedElement
+      : null;
+  const beginTextEditing = useCallback((elementId: string) => {
+    setEditingTextId(elementId);
+  }, []);
 
   useImperativeHandle(
     ref,
@@ -256,24 +257,41 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
         if (!stage) return '';
         const transformer = transformerRef.current;
         const transformerWasVisible = transformer?.visible() ?? false;
+        const editingNode = editingTextId
+          ? stage.findOne(
+              (node: Konva.Node) => node.getAttr('elementId') === editingTextId,
+            )
+          : undefined;
+        const editingNodeWasVisible = editingNode?.visible();
         try {
           transformer?.visible(false);
-          transformer?.getLayer()?.draw();
+          editingNode?.visible(true);
+          stage.draw();
           return stage.toDataURL({ pixelRatio, mimeType: 'image/png' });
         } finally {
           transformer?.visible(transformerWasVisible);
-          transformer?.getLayer()?.draw();
+          if (editingNode && editingNodeWasVisible !== undefined) {
+            editingNode.visible(editingNodeWasVisible);
+          }
+          stage.draw();
         }
       },
       dimensions: () => dimensions,
+      editText: beginTextEditing,
     }),
-    [dimensions],
+    [beginTextEditing, dimensions, editingTextId],
   );
 
   useEffect(() => {
     const transformer = transformerRef.current;
     const stage = stageRef.current;
-    if (!transformer || !stage || !selectedElementId || tool !== 'select') {
+    if (
+      !transformer ||
+      !stage ||
+      !selectedElementId ||
+      tool !== 'select' ||
+      editingTextId === selectedElementId
+    ) {
       transformer?.nodes([]);
       transformer?.getLayer()?.batchDraw();
       return;
@@ -284,7 +302,13 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
     );
     transformer.nodes(selectedNode ? [selectedNode] : []);
     transformer.getLayer()?.batchDraw();
-  }, [page.elements, selectedElementId, tool]);
+  }, [editingTextId, page.elements, selectedElementId, tool]);
+
+  useLayoutEffect(() => {
+    if (editingTextId && editingTextId === selectedElementId) {
+      inlineTextEditorRef.current?.focus();
+    }
+  }, [editingTextId, selectedElementId]);
 
   const gridLines = useMemo(() => {
     const lines: Array<{ points: number[]; major: boolean }> = [];
@@ -344,9 +368,7 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
   const handlePointerDown = (event: KonvaEventObject<PointerEvent>) => {
     const nativeEvent = event.evt;
     const stage = stageRef.current;
-    if (!stage || (nativeEvent.pointerType === 'touch' && (tool === 'pen' || tool === 'highlighter'))) {
-      return;
-    }
+    if (!stage) return;
 
     const elementId = findElementId(event.target);
     if (tool === 'select') {
@@ -358,12 +380,17 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
       erasedDuringGestureRef.current.clear();
       activePointerRef.current = nativeEvent.pointerId;
       eraseTarget(event.target);
-      stage.container().setPointerCapture?.(nativeEvent.pointerId);
+      try {
+        stage.container().setPointerCapture?.(nativeEvent.pointerId);
+      } catch {
+        // Window-level pointer completion still closes the gesture.
+      }
       nativeEvent.preventDefault();
       return;
     }
 
     if (tool === 'text') {
+      nativeEvent.preventDefault();
       const [point] = pointerSamples(nativeEvent);
       if (!point) return;
       const createdAt = new Date().toISOString();
@@ -382,15 +409,21 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
         createdAt,
         updatedAt: createdAt,
       };
-      onAddElement(element);
+      if (!onAddElement(element)) return;
       onSelectElement(element.id);
+      onToolChange('select');
+      beginTextEditing(element.id);
       return;
     }
 
     if (tool !== 'pen' && tool !== 'highlighter') return;
     nativeEvent.preventDefault();
-    stage.container().setPointerCapture?.(nativeEvent.pointerId);
     activePointerRef.current = nativeEvent.pointerId;
+    try {
+      stage.container().setPointerCapture?.(nativeEvent.pointerId);
+    } catch {
+      // Window-level pointer completion still closes the gesture.
+    }
     const points = pointerSamples(nativeEvent).slice(0, MAX_POINTS_PER_STROKE);
     draftPointsRef.current = points;
     const createdAt = new Date().toISOString();
@@ -433,12 +466,15 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
     }
   };
 
-  const finishPointer = (event: KonvaEventObject<PointerEvent>, cancelled = false) => {
-    const nativeEvent = event.evt;
+  const finishPointer = (nativeEvent: PointerEvent, cancelled = false) => {
     if (activePointerRef.current !== nativeEvent.pointerId) return;
     const stage = stageRef.current;
-    if (stage?.container().hasPointerCapture?.(nativeEvent.pointerId)) {
-      stage.container().releasePointerCapture(nativeEvent.pointerId);
+    try {
+      if (stage?.container().hasPointerCapture?.(nativeEvent.pointerId)) {
+        stage.container().releasePointerCapture(nativeEvent.pointerId);
+      }
+    } catch {
+      // The browser may release capture before the bubbled completion event.
     }
 
     const draft = draftRef.current;
@@ -466,8 +502,25 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
     paintDraft(null);
   };
 
+  useLayoutEffect(() => {
+    finishPointerRef.current = finishPointer;
+  });
+
+  useEffect(() => {
+    const handlePointerUp = (event: PointerEvent) => finishPointerRef.current(event);
+    const handlePointerCancel = (event: PointerEvent) =>
+      finishPointerRef.current(event, true);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerCancel);
+    return () => {
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerCancel);
+    };
+  }, []);
+
   return (
     <div
+      ref={canvasPageRef}
       id="page-editor"
       className={`canvas-page canvas-page--${page.mode}`}
       style={{ width: dimensions.width, height: dimensions.height, cursor: elementCursor(tool) }}
@@ -498,8 +551,8 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
         height={dimensions.height}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
-        onPointerUp={(event) => finishPointer(event)}
-        onPointerCancel={(event) => finishPointer(event, true)}
+        onPointerUp={(event) => finishPointer(event.evt)}
+        onPointerCancel={(event) => finishPointer(event.evt, true)}
       >
         <Layer listening={false}>
           <Rect width={dimensions.width} height={dimensions.height} fill="#fffefa" name="page-bg" />
@@ -560,12 +613,29 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
                   fontStyle={element.fontWeight >= 600 ? 'bold' : 'normal'}
                   lineHeight={1.35}
                   wrap="word"
+                  visible={editingTextId !== element.id}
                   draggable={tool === 'select'}
                   onClick={
                     tool === 'select' ? () => onSelectElement(element.id) : undefined
                   }
                   onTap={
                     tool === 'select' ? () => onSelectElement(element.id) : undefined
+                  }
+                  onDblClick={
+                    tool === 'select'
+                      ? () => {
+                          onSelectElement(element.id);
+                          beginTextEditing(element.id);
+                        }
+                      : undefined
+                  }
+                  onDblTap={
+                    tool === 'select'
+                      ? () => {
+                          onSelectElement(element.id);
+                          beginTextEditing(element.id);
+                        }
+                      : undefined
                   }
                   onDragEnd={(moveEvent) =>
                     onUpdateElement(element.id, {
@@ -637,6 +707,56 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
         height={dimensions.height}
         aria-hidden="true"
       />
+      {editingTextElement ? (
+        <textarea
+          ref={inlineTextEditorRef}
+          className="canvas-inline-text-editor"
+          data-testid="canvas-inline-text-editor"
+          aria-label="Edit text on page"
+          value={editingTextElement.text}
+          maxLength={MAX_TEXT_CHARS}
+          placeholder="Write your note"
+          spellCheck
+          style={{
+            left: editingTextElement.x,
+            top: editingTextElement.y,
+            width: editingTextElement.width,
+            height: editingTextElement.height,
+            color: editingTextElement.color,
+            fontSize: editingTextElement.fontSize,
+            fontFamily: editingTextElement.fontFamily,
+            fontWeight: editingTextElement.fontWeight,
+          }}
+          onChange={(event) => {
+            const availableHeight = Math.max(
+              editingTextElement.height,
+              dimensions.height - Math.max(0, editingTextElement.y),
+            );
+            const height = Math.min(
+              availableHeight,
+              Math.max(editingTextElement.height, event.currentTarget.scrollHeight),
+            );
+            onUpdateElement(editingTextElement.id, {
+              text: event.currentTarget.value,
+              height,
+            });
+          }}
+          onBlur={() =>
+            setEditingTextId((current) =>
+              current === editingTextElement.id ? null : current,
+            )
+          }
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' && !event.nativeEvent.isComposing) {
+              event.preventDefault();
+              event.stopPropagation();
+              setEditingTextId(null);
+              canvasPageRef.current?.focus();
+            }
+          }}
+          onPointerDown={(event) => event.stopPropagation()}
+        />
+      ) : null}
     </div>
   );
 });

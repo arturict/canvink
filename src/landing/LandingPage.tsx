@@ -3,7 +3,6 @@ import {
   BookOpen,
   Check,
   Code2,
-  Download,
   FileText,
   Image as ImageIcon,
   Layers3,
@@ -15,7 +14,6 @@ import {
 import "./landing.css";
 
 const repositoryUrl = "https://github.com/arturict/canvink";
-const releaseUrl = `${repositoryUrl}/releases/latest`;
 
 const alphaFeatures = [
   "Blank quick note, optional guide, and focused text capture",
@@ -24,6 +22,7 @@ const alphaFeatures = [
   "Pressure-aware pen and highlighter",
   "Movable text, images, and PDF previews",
   "Local autosave with retry and rescue export, search, and trash",
+  "Installable offline app shell and rootless Docker self-hosting",
 ];
 
 export function LandingPage() {
@@ -75,18 +74,18 @@ export function LandingPage() {
             </a>
             <a
               className="secondary-cta"
-              href={releaseUrl}
+              href={`${repositoryUrl}#build-from-source`}
               target="_blank"
               rel="noreferrer"
             >
-              <Download size={18} />
-              Download latest alpha
+              <Code2 size={18} />
+              Build or self-host
             </a>
           </div>
           <p className="demo-note">
             The demo saves only in this browser. Desktop builds use a local
-            SQLite notebook file. Current Windows and Linux packages are
-            unsigned public-alpha builds.
+            SQLite notebook file. Any desktop packages in the public alpha are
+            unsigned.
           </p>
         </div>
 

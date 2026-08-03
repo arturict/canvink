@@ -81,9 +81,21 @@ export async function createQuickNote(
   const editor = page.getByPlaceholder('Write your note');
   await expect(editor).toBeVisible();
   await expect(editor).toBeFocused();
-  await page.getByLabel('Page title').fill(note.title);
   await editor.fill(note.body);
+  await page.getByLabel('Page title').fill(note.title);
   await waitForAutosave(page);
+  return editSelectedText(page);
+}
+
+export async function editSelectedText(page: Page): Promise<Locator> {
+  const editor = page.getByPlaceholder('Write your note');
+  if (await editor.isVisible()) return editor;
+
+  const trigger = page.getByRole('button', { name: 'Edit text on page' });
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+  await expect(editor).toBeVisible();
+  await expect(editor).toBeFocused();
   return editor;
 }
 
@@ -171,7 +183,7 @@ export async function installOneShotIndexedDbWriteFailure(page: Page): Promise<v
       value: unknown,
       key?: IDBValidKey,
     ): IDBRequest<IDBValidKey> {
-      if (armed && !injected) {
+      if (armed && !injected && key === 'canvink:workspace:v1') {
         injected = true;
         armed = false;
         throw new DOMException(

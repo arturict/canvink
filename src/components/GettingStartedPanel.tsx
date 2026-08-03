@@ -1,4 +1,5 @@
 import { BookOpen, Check, Search, Type, X } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import type { UiPreferences } from '../ui/preferences';
 
 interface GettingStartedPanelProps {
@@ -18,6 +19,12 @@ export default function GettingStartedPanel({
   onOpenExample,
   onDismiss,
 }: GettingStartedPanelProps) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    closeButtonRef.current?.focus();
+  }, []);
+
   return (
     <aside
       id="getting-started-panel"
@@ -29,7 +36,12 @@ export default function GettingStartedPanel({
           <span className="app-eyebrow">Optional guide</span>
           <h2 id="getting-started-title">Start with what matters</h2>
         </div>
-        <button type="button" onClick={onDismiss} aria-label="Close guide">
+        <button
+          ref={closeButtonRef}
+          type="button"
+          onClick={onDismiss}
+          aria-label="Close guide"
+        >
           <X size={18} />
         </button>
       </header>

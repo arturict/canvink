@@ -65,6 +65,30 @@ describe('portable files', () => {
     expect(contents).toContain('/Subtype /Image');
   });
 
+  it('fails PDF export instead of silently dropping an unsupported image', async () => {
+    const context = getActiveContext(createDefaultWorkspace())!;
+    const now = new Date().toISOString();
+    context.page.elements = [
+      {
+        id: 'unsupported-pdf-image',
+        kind: 'image',
+        x: 40,
+        y: 40,
+        width: 100,
+        height: 100,
+        dataUrl: 'data:image/svg+xml;base64,PHN2Zy8+',
+        name: 'unsupported.svg',
+        alt: 'Unsupported image',
+        createdAt: now,
+        updatedAt: now,
+      },
+    ];
+
+    await expect(createPagePdf(context)).rejects.toThrow(
+      'Unsupported PDF image preview format.',
+    );
+  });
+
   it.each(['element', 'page', 'section', 'notebook'] as const)(
     'rejects invalid image previews inside a trashed %s',
     async (kind) => {

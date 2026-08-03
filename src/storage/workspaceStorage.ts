@@ -13,6 +13,19 @@ let browserWriteLockAcquisition: Promise<void> | undefined;
 let browserWriteLockLifetime: Promise<unknown> | undefined;
 
 export type StorageBackend = 'tauri' | 'indexeddb';
+export type WorkspaceOpenFailureCode =
+  | 'writer-conflict'
+  | 'coordination-unavailable';
+
+export class WorkspaceOpenError extends Error {
+  constructor(
+    public readonly code: WorkspaceOpenFailureCode,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'WorkspaceOpenError';
+  }
+}
 
 function hasTauriRuntime(): boolean {
   return typeof window !== 'undefined' && typeof window.__TAURI_INTERNALS__ !== 'undefined';
@@ -27,7 +40,8 @@ function acquireBrowserWriteLock(): Promise<void> {
   if (browserWriteLockAcquisition) return browserWriteLockAcquisition;
   if (typeof navigator === 'undefined' || !('locks' in navigator)) {
     return Promise.reject(
-      new Error(
+      new WorkspaceOpenError(
+        'coordination-unavailable',
         'This browser cannot safely coordinate local writes. Use a current browser with Web Locks support or install the desktop app.',
       ),
     );
@@ -42,7 +56,8 @@ function acquireBrowserWriteLock(): Promise<void> {
         if (!lock) {
           settled = true;
           reject(
-            new Error(
+            new WorkspaceOpenError(
+              'writer-conflict',
               'Canvink is already open in another browser tab. Close that tab, then reload this one to edit safely.',
             ),
           );

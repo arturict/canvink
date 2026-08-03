@@ -14,10 +14,11 @@ The project is for people who like the freedom of a spatial notebook but want un
 - Free-canvas and A4 page modes
 - Pressure-aware vector ink built with `perfect-freehand`
 - Freely positioned ink, text, image, and PDF objects rendered with Konva
-- Basic text search, local autosave, persistent save retry, rescue export, trash, and page export foundations
+- Basic text search, local autosave, reviewed crash-draft recovery, persistent save retry, rescue export, trash, and page export foundations
 - A Tauri 2 desktop shell with SQLite as the authoritative desktop store
-- A browser demo that persists locally in IndexedDB
+- An installable browser app that persists locally in IndexedDB
 - A public landing page and web demo built with React, TypeScript, and Vite
+- A hardened, rootless container for self-hosting the static browser build
 - No account requirement and no application telemetry
 
 The order of objects on a page is meaningful. Text, ink, images, and PDF previews share one coordinate system and can be layered together instead of being isolated in separate editors.
@@ -32,7 +33,9 @@ The hosted browser build is a demo, not a cloud notebook. Its content stays in t
 
 For durable use, prefer the desktop build and maintain backups. Desktop data is stored locally in SQLite. It is not encrypted by Canvink in the current alpha.
 
-An already open browser tab can keep editing and saving to IndexedDB while the browser reports offline. Canvink does not ship a service worker in this alpha, so reopening or reloading the hosted demo while offline is not promised. A failed save remains visible with a retry action and a JSON rescue-copy download. Reload restores the last successful save, not an unsaved crash draft.
+After one successful online load, the production browser build caches its application shell. An activated service worker can reopen the interface offline, while notebook content continues to come only from that origin's IndexedDB. A first visit still needs the site, browser storage can still be cleared, and offline support is not sync. A failed save remains visible with a retry action and a JSON rescue-copy download. During the autosave window, Canvink also keeps a separate temporary recovery draft. After an interrupted session, a valid draft is offered for review, download, restoration, or discard and never silently replaces the last successful save.
+
+To host the browser build on your own machine or server, follow the [self-hosting guide](docs/self-hosting.md). The container serves static application files only. It does not receive, sync, or back up notebook content.
 
 ## Build from source
 
@@ -98,6 +101,9 @@ Read more:
 - [File format v1](docs/file-format-v1.md)
 - [Security model](docs/security-model.md)
 - [Release process](docs/release-process.md)
+- [Self-hosting](docs/self-hosting.md)
+- [Local release pipeline](docs/local-release-pipeline.md)
+- [Beta readiness](docs/beta-readiness.md)
 - [Community and marketing rules](docs/community-and-marketing.md)
 
 ## Privacy

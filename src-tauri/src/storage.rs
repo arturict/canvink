@@ -104,7 +104,7 @@ impl Database {
     }
 
     fn connect(&self) -> Result<Connection, StorageError> {
-        ensure_parent_directory(&self.path)?;
+        prepare_database_path(&self.path)?;
         let mut connection = Connection::open_with_flags(
             &self.path,
             OpenFlags::SQLITE_OPEN_READ_WRITE
@@ -113,18 +113,70 @@ impl Database {
         )?;
         configure_connection(&connection, true)?;
         migrate(&mut connection)?;
+        #[cfg(unix)]
+        harden_unix_database_files(&self.path)?;
         Ok(connection)
     }
 }
 
-fn ensure_parent_directory(path: &Path) -> Result<(), StorageError> {
-    let parent = path.parent().ok_or_else(|| {
+fn database_parent(path: &Path) -> Result<&Path, StorageError> {
+    path.parent().ok_or_else(|| {
         StorageError::Io(std::io::Error::new(
             std::io::ErrorKind::InvalidInput,
             "database path has no parent directory",
         ))
-    })?;
+    })
+}
+
+fn prepare_database_path(path: &Path) -> Result<(), StorageError> {
+    let parent = database_parent(path)?;
+
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt, PermissionsExt};
+
+        let mut directory_builder = fs::DirBuilder::new();
+        directory_builder
+            .recursive(true)
+            .mode(0o700)
+            .create(parent)?;
+        fs::set_permissions(parent, fs::Permissions::from_mode(0o700))?;
+
+        let database_file = fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .mode(0o600)
+            .open(path)?;
+        database_file.set_permissions(fs::Permissions::from_mode(0o600))?;
+        harden_unix_database_files(path)?;
+    }
+
+    #[cfg(not(unix))]
     fs::create_dir_all(parent)?;
+
+    Ok(())
+}
+
+#[cfg(unix)]
+fn harden_unix_database_files(path: &Path) -> Result<(), StorageError> {
+    use std::os::unix::fs::PermissionsExt;
+
+    fs::set_permissions(path, fs::Permissions::from_mode(0o600))?;
+    for suffix in ["-journal", "-wal", "-shm"] {
+        let mut companion_path = path.as_os_str().to_os_string();
+        companion_path.push(suffix);
+        match fs::set_permissions(
+            PathBuf::from(companion_path),
+            fs::Permissions::from_mode(0o600),
+        ) {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(StorageError::Io(error)),
+        }
+    }
+
     Ok(())
 }
 
@@ -1250,6 +1302,76 @@ mod tests {
         assert_eq!(search_hits, 1);
         assert_eq!(journal_mode.to_ascii_lowercase(), "wal");
         assert_eq!(synchronous, 2, "SQLite FULL synchronous is numeric value 2");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn initialization_repairs_private_unix_storage_permissions() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let test_database = TestDatabase::new();
+        let database_path = test_database.directory.join("notebook.sqlite");
+        fs::set_permissions(&test_database.directory, fs::Permissions::from_mode(0o755))
+            .expect("test directory permissions can be relaxed");
+        fs::set_permissions(&database_path, fs::Permissions::from_mode(0o644))
+            .expect("test database permissions can be relaxed");
+
+        test_database
+            .database
+            .initialize()
+            .expect("database permissions are repaired during initialization");
+
+        assert_eq!(
+            fs::metadata(&test_database.directory)
+                .expect("test directory metadata exists")
+                .permissions()
+                .mode()
+                & 0o777,
+            0o700
+        );
+        assert_eq!(
+            fs::metadata(&database_path)
+                .expect("test database metadata exists")
+                .permissions()
+                .mode()
+                & 0o777,
+            0o600
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn legacy_sqlite_companion_files_are_restricted_to_the_owner() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let test_database = TestDatabase::new();
+        let database_path = test_database.directory.join("notebook.sqlite");
+
+        for suffix in ["-journal", "-wal", "-shm"] {
+            let mut companion_path = database_path.as_os_str().to_os_string();
+            companion_path.push(suffix);
+            let companion_path = PathBuf::from(companion_path);
+            fs::write(&companion_path, b"legacy companion")
+                .expect("legacy companion can be created");
+            fs::set_permissions(&companion_path, fs::Permissions::from_mode(0o644))
+                .expect("legacy companion permissions can be relaxed");
+        }
+
+        harden_unix_database_files(&database_path)
+            .expect("legacy companion permissions are repaired");
+
+        for suffix in ["-journal", "-wal", "-shm"] {
+            let mut companion_path = database_path.as_os_str().to_os_string();
+            companion_path.push(suffix);
+            assert_eq!(
+                fs::metadata(PathBuf::from(companion_path))
+                    .expect("legacy companion metadata exists")
+                    .permissions()
+                    .mode()
+                    & 0o777,
+                0o600
+            );
+        }
     }
 
     #[test]

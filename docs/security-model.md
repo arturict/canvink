@@ -19,7 +19,7 @@ Desktop notes are stored locally in SQLite. Browser-demo notes are stored in the
 
 ### Desktop operating system
 
-Canvink trusts the signed-in operating-system account, filesystem permissions, and device security. A person or process with access to the user's account or disk may be able to read or modify the database.
+Canvink trusts the signed-in operating-system account, filesystem permissions, and device security. On Unix systems, Canvink creates and repairs its database directory with owner-only permissions (`0700`) and its SQLite database and companion files with owner-only permissions (`0600`). A person or process with access to the user's account or disk may still be able to read or modify the database.
 
 Use full-disk encryption, a locked account, operating-system updates, and trusted backups for sensitive notes. The current alpha does not add database encryption or an application PIN.
 
@@ -56,7 +56,7 @@ Images, PDFs, filenames, and pasted text are untrusted. Parsers can contain vuln
 | Cross-site scripting | React text rendering, no trusted note HTML, restrictive content policy where supported | Dependency or application bugs can still introduce XSS |
 | Supply-chain compromise | Locked dependencies, review of updates, CI gates, minimized release permissions | Public package ecosystems remain a trust dependency |
 | Tampered binary | Release checksums and exact source tag | Current desktop builds are unsigned |
-| Local device compromise | Operating-system protections and user backups | Canvink does not encrypt data at rest |
+| Local device compromise | Operating-system protections, owner-only Unix database permissions, and user backups | Canvink does not encrypt data at rest or protect against processes running as the same user |
 | Silent remote collection | No application telemetry or required account | Hosting providers still keep ordinary request logs |
 
 ## Explicit non-guarantees

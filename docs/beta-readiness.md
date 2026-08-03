@@ -8,7 +8,9 @@ The current source tree is a beta candidate, not a published beta. The public pr
 
 - A blank Quick note opens as the first value path, with an optional guide that can be skipped and resumed.
 - Notebook, section, page, and nested-page organization work on desktop and focused mobile layouts.
-- Pages and text are searchable without a network service.
+- Pages can be duplicated and reordered among siblings without changing their hierarchy.
+- Text supports common emphasis, alignment, and list styles; checklists remain editable canvas objects.
+- Pages, text, checklists, tags, and open or completed tasks are searchable without a network service.
 - Autosave reports loading, saving, saved, and actionable error states honestly.
 - A failed authoritative save keeps the in-memory edit available for retry and portable rescue download.
 - A temporary versioned recovery journal protects edits during the autosave window. Startup validates a differing draft and requires an explicit restore, download, or discard decision.
@@ -16,6 +18,8 @@ The current source tree is a beta candidate, not a published beta. The public pr
 - The cached browser shell can reopen after a successful online visit, while note data remains local to IndexedDB. This is offline use, not sync.
 - Trash restore, JSON workspace backup and restore, Markdown import and export, page image and PDF export, and bounded image and PDF preview import are present.
 - The same static browser artifact can run from the documented rootless container without a Canvink backend or account.
+
+The bounded replacement target is documented in the [OneNote use-case coverage matrix](onenote-use-case-coverage.md). It covers 12 of 15 selected individual, local-first notebook outcomes; it is not a claim of broad OneNote feature parity.
 
 ## Evidence required for the candidate
 

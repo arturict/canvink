@@ -16,6 +16,21 @@ test('workspace JSON export restores hierarchy and note content after replacemen
   const originalTitle = 'Portable backup sentinel';
   const originalBody = 'The exported workspace must restore this exact note body.';
   await createQuickNote(page, { title: originalTitle, body: originalBody });
+  await page.getByLabel('Page tags').click();
+  await page.getByRole('button', { name: 'To do', exact: true }).click();
+  await page.getByRole('button', { name: /^Checklist/ }).click();
+  await page.locator('#page-editor .konvajs-content').click({
+    position: { x: 720, y: 280 },
+  });
+  const checklistItem = page.getByRole('textbox', {
+    name: 'Checklist item 1',
+    exact: true,
+  });
+  await checklistItem.fill('Portable checklist sentinel');
+  await page
+    .getByRole('checkbox', { name: 'Mark item 1 complete', exact: true })
+    .check();
+  await waitForAutosave(page);
 
   await page.locator('details.action-menu--right > summary').click();
   const exportDownloadPromise = page.waitForEvent('download');
@@ -28,6 +43,7 @@ test('workspace JSON export restores hierarchy and note content after replacemen
   await exportDownload.delete();
 
   await page.getByLabel('Page title').fill('Changed after backup');
+  await page.getByLabel('Select a canvas object').selectOption({ index: 1 });
   await (await editSelectedText(page)).fill('This mutation must be replaced by import.');
   await waitForAutosave(page);
 
@@ -57,7 +73,19 @@ test('workspace JSON export restores hierarchy and note content after replacemen
   expect(confirmationMessages[1]).toMatch(/backup download finished/i);
   await expect(page.getByLabel('Page title')).toHaveValue(originalTitle);
   await waitForAutosave(page);
+  await page.getByLabel('Select a canvas object').selectOption({ index: 1 });
   await expect(await editSelectedText(page)).toHaveValue(originalBody);
+  await expect(page.locator('.page-tag--todo')).toHaveText('To do');
+  await page.getByLabel('Select a canvas object').selectOption({ index: 2 });
+  await expect(
+    page.getByRole('textbox', { name: 'Checklist item 1', exact: true }),
+  ).toHaveValue('Portable checklist sentinel');
+  await expect(
+    page.getByRole('checkbox', {
+      name: 'Mark item 1 complete',
+      exact: true,
+    }),
+  ).toBeChecked();
   await expect(page.getByRole('combobox', { name: 'Notebook' })).toHaveValue(
     /.+/,
   );
@@ -67,4 +95,8 @@ test('workspace JSON export restores hierarchy and note content after replacemen
   await expect(page.getByLabel('Page title')).toHaveValue(originalTitle);
   await page.getByLabel('Select a canvas object').selectOption({ index: 1 });
   await expect(await editSelectedText(page)).toHaveValue(originalBody);
+  await page.getByLabel('Select a canvas object').selectOption({ index: 2 });
+  await expect(
+    page.getByRole('textbox', { name: 'Checklist item 1', exact: true }),
+  ).toHaveValue('Portable checklist sentinel');
 });

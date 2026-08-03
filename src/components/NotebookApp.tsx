@@ -19,6 +19,7 @@ import {
   PanelLeftOpen,
   RefreshCw,
   Search,
+  Tag,
   Trash2,
   Type,
   WifiOff,
@@ -40,10 +41,12 @@ import {
   createNotebook,
   createPage,
   createSection,
+  duplicatePage,
   getActiveContext,
   restoreTrashEntry,
   renameNotebook,
   renameSection,
+  reorderPage,
   searchWorkspace,
   trashElement,
   trashNotebook,
@@ -55,6 +58,7 @@ import {
 import type {
   BrushSettings,
   EditorTool,
+  PageTag,
   PageElement,
   TextElement,
   TrashEntry,
@@ -132,6 +136,10 @@ function blankTextElement(): TextElement {
     fontSize: 22,
     fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
     fontWeight: 400,
+    fontStyle: 'normal',
+    textDecoration: 'none',
+    textAlign: 'left',
+    listStyle: 'none',
     createdAt: now,
     updatedAt: now,
   };
@@ -142,6 +150,9 @@ function trashLabel(entry: TrashEntry): string {
   if (entry.item.kind === 'image') return entry.item.name;
   if (entry.item.kind === 'pdf') return entry.item.sourceName;
   if (entry.item.kind === 'text') return entry.item.text.slice(0, 50) || 'Empty text';
+  if (entry.item.kind === 'checklist') {
+    return entry.item.items[0]?.text || 'Checklist';
+  }
   return `${entry.item.tool} stroke`;
 }
 
@@ -164,8 +175,19 @@ function elementLabel(element: PageElement): string {
   if (element.kind === 'image') {
     return `Image: ${element.alt.trim() || element.name}`;
   }
+  if (element.kind === 'checklist') {
+    const completed = element.items.filter((item) => item.checked).length;
+    return `Checklist: ${completed}/${element.items.length} complete`;
+  }
   return `PDF: ${element.sourceName}, ${element.pageCount} pages`;
 }
+
+const PAGE_TAG_OPTIONS: ReadonlyArray<{ id: PageTag; label: string }> = [
+  { id: 'important', label: 'Important' },
+  { id: 'todo', label: 'To do' },
+  { id: 'question', label: 'Question' },
+  { id: 'idea', label: 'Idea' },
+];
 
 export default function NotebookApp() {
   const [workspace, setWorkspace] = useState<WorkspaceState>(() => createDefaultWorkspace());
@@ -638,6 +660,9 @@ export default function NotebookApp() {
         if (nextTool) {
           event.preventDefault();
           setTool(nextTool);
+          if (nextTool !== 'select' && context) {
+            setHiddenEmptyPromptPageId(context.page.id);
+          }
         }
         return;
       }
@@ -1176,6 +1201,26 @@ export default function NotebookApp() {
     error: { icon: AlertTriangle, label: 'Save needs attention' },
   }[saveState];
   const SaveIcon = saveIndicator.icon;
+  const activePageTags = context.page.tags ?? [];
+
+  const togglePageTag = (tag: PageTag) => {
+    setWorkspace((current) =>
+      updatePage(current, context.page.id, (page) => {
+        const tags = page.tags ?? [];
+        const removing = tags.includes(tag);
+        const nextTags = removing
+          ? tags.filter((candidate) => candidate !== tag)
+          : [...tags, tag];
+        return {
+          ...page,
+          tags: nextTags.length ? nextTags : undefined,
+          ...(tag === 'todo'
+            ? { taskState: removing ? undefined : page.taskState ?? 'open' }
+            : {}),
+        };
+      }),
+    );
+  };
 
   return (
     <main
@@ -1255,6 +1300,23 @@ export default function NotebookApp() {
               trashPage(current, context.notebook.id, sectionId, pageId),
             )
           }
+          onDuplicatePage={(sectionId, pageId) => {
+            setWorkspace((current) =>
+              duplicatePage(current, context.notebook.id, sectionId, pageId),
+            );
+            setSelectedElementId(null);
+          }}
+          onReorderPage={(sectionId, pageId, direction) =>
+            setWorkspace((current) =>
+              reorderPage(
+                current,
+                context.notebook.id,
+                sectionId,
+                pageId,
+                direction,
+              ),
+            )
+          }
           onOpenTrash={() => {
             setGuideOpen(false);
             trashReturnFocusRef.current = compactLayout
@@ -1317,7 +1379,7 @@ export default function NotebookApp() {
             <input
               ref={searchInputRef}
               type="search"
-              placeholder="Search pages and text"
+              placeholder="Search notes, tag:todo, is:open"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               aria-label="Search workspace"
@@ -1491,7 +1553,12 @@ export default function NotebookApp() {
           tool={tool}
           brush={brush}
           pageMode={context.page.mode}
-          onToolChange={setTool}
+          onToolChange={(nextTool) => {
+            setTool(nextTool);
+            if (nextTool !== 'select') {
+              setHiddenEmptyPromptPageId(context.page.id);
+            }
+          }}
           onBrushChange={setBrush}
           onPageModeChange={(mode) =>
             setWorkspace((current) =>
@@ -1538,6 +1605,50 @@ export default function NotebookApp() {
               )
             }
           />
+          <div className="page-meta-actions">
+            {activePageTags.map((tag) => (
+              <span className={`page-tag page-tag--${tag}`} key={tag}>
+                {PAGE_TAG_OPTIONS.find((option) => option.id === tag)?.label ?? tag}
+              </span>
+            ))}
+            {activePageTags.includes('todo') ? (
+              <button
+                type="button"
+                className={`page-task-state page-task-state--${context.page.taskState ?? 'open'}`}
+                aria-pressed={context.page.taskState === 'done'}
+                onClick={() =>
+                  setWorkspace((current) =>
+                    updatePage(current, context.page.id, (page) => ({
+                      ...page,
+                      taskState: page.taskState === 'done' ? 'open' : 'done',
+                    })),
+                  )
+                }
+              >
+                <CheckCircle2 size={13} />
+                {context.page.taskState === 'done' ? 'Done' : 'Open'}
+              </button>
+            ) : null}
+            <details className="page-tag-menu">
+              <summary aria-label="Page tags">
+                <Tag size={14} />
+                <span>Tags</span>
+              </summary>
+              <div className="page-tag-menu__popover">
+                {PAGE_TAG_OPTIONS.map((option) => (
+                  <button
+                    type="button"
+                    key={option.id}
+                    aria-pressed={activePageTags.includes(option.id)}
+                    onClick={() => togglePageTag(option.id)}
+                  >
+                    <span className={`page-tag-dot page-tag-dot--${option.id}`} />
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </details>
+          </div>
           <label className="object-picker">
             <span className="sr-only">Selected canvas object</span>
             <select

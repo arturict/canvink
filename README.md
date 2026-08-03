@@ -9,12 +9,13 @@ The project is for people who like the freedom of a spatial notebook but want un
 
 ## What the alpha includes
 
-- A notebook, section, and page hierarchy
+- A notebook, section, page, and subpage hierarchy with page duplication and sibling reordering
 - A blank Quick note start, optional resumable guide, and keyboard-accessible text capture
 - Free-canvas and A4 page modes
 - Pressure-aware vector ink built with `perfect-freehand`
-- Freely positioned ink, text, image, and PDF objects rendered with Konva
-- Basic text search, local autosave, reviewed crash-draft recovery, persistent save retry, rescue export, trash, and page export foundations
+- Freely positioned ink, formatted text, checklist, image, and PDF objects rendered with Konva
+- Page tags, open/done task state, and search across titles, text, checklists, tags, and tasks
+- Local autosave, reviewed crash-draft recovery, persistent save retry, rescue export, trash, and page export foundations
 - A Tauri 2 desktop shell with SQLite as the authoritative desktop store
 - An installable browser app that persists locally in IndexedDB
 - A public landing page and web demo built with React, TypeScript, and Vite
@@ -104,6 +105,7 @@ Read more:
 - [Self-hosting](docs/self-hosting.md)
 - [Local release pipeline](docs/local-release-pipeline.md)
 - [Beta readiness](docs/beta-readiness.md)
+- [OneNote use-case coverage](docs/onenote-use-case-coverage.md)
 - [Community and marketing rules](docs/community-and-marketing.md)
 
 ## Privacy

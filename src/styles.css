@@ -325,6 +325,75 @@ summary:focus-visible,
   background: transparent;
 }
 
+.page-row__menu {
+  position: relative;
+  padding-right: 3px;
+  display: none;
+}
+
+.page-row:hover .page-row__menu,
+.page-row:focus-within .page-row__menu,
+.page-row__menu[open] {
+  display: block;
+}
+
+.page-row__menu summary {
+  width: 26px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: var(--app-muted);
+  border-radius: 5px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.page-row__menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.page-row__menu summary:hover,
+.page-row__menu[open] summary {
+  color: var(--app-green);
+  background: var(--app-green-soft);
+}
+
+.page-row__menu-popover {
+  position: absolute;
+  z-index: 38;
+  top: 30px;
+  right: 2px;
+  width: 154px;
+  padding: 5px;
+  border: 1px solid var(--app-line);
+  border-radius: 9px;
+  background: var(--app-paper);
+  box-shadow: var(--shadow-soft);
+}
+
+.page-row__menu-popover button {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 7px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--app-ink);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 10px;
+  text-align: left;
+}
+
+.page-row__menu-popover button:hover:not(:disabled) {
+  background: var(--app-green-soft);
+}
+
+.page-row__menu-popover button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
 .notebook-picker .notebook-delete {
   width: fit-content;
   height: auto;
@@ -1189,6 +1258,135 @@ summary:focus-visible,
   text-transform: uppercase;
 }
 
+.page-meta-actions {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.page-tag,
+.page-task-state,
+.page-tag-menu summary {
+  min-height: 26px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--app-line);
+  border-radius: 999px;
+  background: var(--app-paper);
+  font-size: 9px;
+  font-weight: 750;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.page-tag--important {
+  color: #8b3529;
+  border-color: #e1b9b1;
+  background: #fff1ee;
+}
+
+.page-tag--todo,
+.page-task-state--open {
+  color: #7a5712;
+  border-color: #dfc989;
+  background: #fff8dc;
+}
+
+.page-tag--question {
+  color: #295b82;
+  border-color: #b5cee0;
+  background: #eef7fd;
+}
+
+.page-tag--idea {
+  color: #5d4b91;
+  border-color: #cec2ea;
+  background: #f5f1ff;
+}
+
+.page-task-state--done {
+  color: #315448;
+  border-color: #b8cec4;
+  background: var(--app-green-soft);
+}
+
+.page-tag-menu {
+  position: relative;
+}
+
+.page-tag-menu summary {
+  color: var(--app-muted);
+  list-style: none;
+  cursor: pointer;
+}
+
+.page-tag-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.page-tag-menu[open] summary {
+  color: var(--app-green);
+  border-color: #adc0b6;
+}
+
+.page-tag-menu__popover {
+  position: absolute;
+  z-index: 32;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 150px;
+  padding: 5px;
+  border: 1px solid var(--app-line);
+  border-radius: 9px;
+  background: var(--app-paper);
+  box-shadow: var(--shadow-soft);
+}
+
+.page-tag-menu__popover button {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 10px;
+  text-align: left;
+}
+
+.page-tag-menu__popover button:hover,
+.page-tag-menu__popover button[aria-pressed="true"] {
+  background: var(--app-green-soft);
+}
+
+.page-tag-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #87978f;
+}
+
+.page-tag-dot--important {
+  background: #b54e3e;
+}
+
+.page-tag-dot--todo {
+  background: #be8a1d;
+}
+
+.page-tag-dot--question {
+  background: #4a86b2;
+}
+
+.page-tag-dot--idea {
+  background: #7862b5;
+}
+
 .object-picker {
   min-width: 0;
 }
@@ -1659,6 +1857,72 @@ summary:focus-visible,
   display: grid;
   grid-template-columns: 1fr 1.4fr;
   gap: 8px;
+}
+
+.checklist-properties {
+  display: grid;
+  gap: 11px;
+}
+
+.checklist-properties__items {
+  display: grid;
+  gap: 6px;
+}
+
+.checklist-properties__item {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 5px;
+}
+
+.checklist-properties__item > input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--app-green);
+}
+
+.checklist-properties__item > input[type="text"] {
+  min-width: 0;
+  height: 32px;
+  padding: 0 7px;
+  border: 1px solid var(--app-line);
+  border-radius: 6px;
+  background: white;
+  font-size: 11px;
+}
+
+.checklist-properties__item > button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: var(--app-muted);
+  border-radius: 6px;
+  background: transparent;
+}
+
+.checklist-properties__item > button:hover:not(:disabled) {
+  color: #9d3d31;
+  background: #fff0ed;
+}
+
+.checklist-properties__item > button:disabled {
+  opacity: 0.3;
+}
+
+.checklist-properties__add {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--app-green);
+  border: 1px solid #bfd0c6;
+  border-radius: 7px;
+  background: var(--app-green-soft);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .inspector-note,
@@ -2164,6 +2428,22 @@ summary:focus-visible,
     gap: 5px;
   }
 
+  .page-meta-actions .page-tag {
+    display: none;
+  }
+
+  .page-task-state,
+  .page-tag-menu summary {
+    min-width: 38px;
+    min-height: 38px;
+    justify-content: center;
+  }
+
+  .page-tag-menu summary span,
+  .page-task-state {
+    font-size: 0;
+  }
+
   .object-picker select {
     width: min(132px, 34vw);
     height: 38px;
@@ -2205,6 +2485,10 @@ summary:focus-visible,
 
   .row-actions {
     display: flex;
+  }
+
+  .page-row__menu {
+    display: block;
   }
 
   .getting-started {

@@ -4,14 +4,19 @@ import {
   useMemo,
   useState,
   type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
 } from 'react';
 import {
+  ArrowDown,
+  ArrowUp,
   BookOpen,
   ChevronDown,
   ChevronRight,
   FilePlus2,
   FileText,
   FolderPlus,
+  Copy,
+  MoreHorizontal,
   Pencil,
   Plus,
   Trash2,
@@ -38,6 +43,12 @@ export interface SidebarProps {
   onTrashNotebook: () => void;
   onTrashSection: (sectionId: string) => void;
   onTrashPage: (sectionId: string, pageId: string) => void;
+  onDuplicatePage: (sectionId: string, pageId: string) => void;
+  onReorderPage: (
+    sectionId: string,
+    pageId: string,
+    direction: 'up' | 'down',
+  ) => void;
   onOpenTrash: () => void;
 }
 
@@ -51,6 +62,12 @@ interface PageTreeProps {
   onActivate: SidebarProps['onActivatePage'];
   onAddSubpage: (parentPageId: string) => void;
   onTrash: (sectionId: string, pageId: string) => void;
+  onDuplicate: (sectionId: string, pageId: string) => void;
+  onReorder: (
+    sectionId: string,
+    pageId: string,
+    direction: 'up' | 'down',
+  ) => void;
 }
 
 function PageTree({
@@ -63,14 +80,23 @@ function PageTree({
   onActivate,
   onAddSubpage,
   onTrash,
+  onDuplicate,
+  onReorder,
 }: PageTreeProps) {
   const children = pages.filter((page) => page.parentPageId === parentPageId);
+  const runPageAction = (
+    event: ReactMouseEvent<HTMLButtonElement>,
+    action: () => void,
+  ) => {
+    event.currentTarget.closest('details')?.removeAttribute('open');
+    action();
+  };
 
   if (children.length === 0) return null;
 
   return (
     <div role="list">
-      {children.map((page) => (
+      {children.map((page, index) => (
         <div key={page.id} role="listitem">
           <div
             className={`page-row ${activePageId === page.id ? 'is-active' : ''}`}
@@ -86,23 +112,60 @@ function PageTree({
               <span>{page.title}</span>
               <small>{page.mode === 'a4' ? 'A4' : 'Free'}</small>
             </button>
-            <div className="row-actions">
-              <button
-                type="button"
-                title={`Add subpage below ${page.title}`}
-                onClick={() => onAddSubpage(page.id)}
-              >
-                <FilePlus2 size={13} />
-              </button>
-              <button
-                type="button"
-                title={`Move ${page.title} to trash`}
-                disabled={pages.length === 1}
-                onClick={() => onTrash(sectionId, page.id)}
-              >
-                <Trash2 size={13} />
-              </button>
-            </div>
+            <details className="page-row__menu">
+              <summary aria-label={`Actions for ${page.title}`}>
+                <MoreHorizontal size={14} />
+              </summary>
+              <div className="page-row__menu-popover">
+                <button
+                  type="button"
+                  onClick={(event) =>
+                    runPageAction(event, () => onAddSubpage(page.id))
+                  }
+                >
+                  <FilePlus2 size={13} /> Add subpage
+                </button>
+                <button
+                  type="button"
+                  onClick={(event) =>
+                    runPageAction(event, () => onDuplicate(sectionId, page.id))
+                  }
+                >
+                  <Copy size={13} /> Duplicate
+                </button>
+                <button
+                  type="button"
+                  disabled={index === 0}
+                  onClick={(event) =>
+                    runPageAction(event, () =>
+                      onReorder(sectionId, page.id, 'up'),
+                    )
+                  }
+                >
+                  <ArrowUp size={13} /> Move up
+                </button>
+                <button
+                  type="button"
+                  disabled={index === children.length - 1}
+                  onClick={(event) =>
+                    runPageAction(event, () =>
+                      onReorder(sectionId, page.id, 'down'),
+                    )
+                  }
+                >
+                  <ArrowDown size={13} /> Move down
+                </button>
+                <button
+                  type="button"
+                  disabled={pages.length === 1}
+                  onClick={(event) =>
+                    runPageAction(event, () => onTrash(sectionId, page.id))
+                  }
+                >
+                  <Trash2 size={13} /> Move to trash
+                </button>
+              </div>
+            </details>
           </div>
           <PageTree
             pages={pages}
@@ -114,6 +177,8 @@ function PageTree({
             onActivate={onActivate}
             onAddSubpage={onAddSubpage}
             onTrash={onTrash}
+            onDuplicate={onDuplicate}
+            onReorder={onReorder}
           />
         </div>
       ))}
@@ -141,6 +206,8 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar(
     onTrashNotebook,
     onTrashSection,
     onTrashPage,
+    onDuplicatePage,
+    onReorderPage,
     onOpenTrash,
   },
   ref,
@@ -292,6 +359,8 @@ const Sidebar = forwardRef<HTMLDivElement, SidebarProps>(function Sidebar(
                   onActivate={onActivatePage}
                   onAddSubpage={(parentPageId) => onAddPage(section.id, parentPageId)}
                   onTrash={onTrashPage}
+                  onDuplicate={onDuplicatePage}
+                  onReorder={onReorderPage}
                 />
                 <button
                   type="button"

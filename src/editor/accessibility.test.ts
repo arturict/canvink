@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ImageElement, TextElement } from '../domain/types';
+import type { ChecklistElement, ImageElement, TextElement } from '../domain/types';
 import { accessibleElementSummary } from './accessibility';
 
 function textElement(text: string): TextElement {
@@ -90,5 +90,29 @@ describe('canvas accessibility summaries', () => {
     expect(accessibleElementSummary(image)).toBe(
       `Image: ${'x'.repeat(160)}…. File: image.png`,
     );
+  });
+
+  it('summarizes checklist progress and bounds item text', () => {
+    const checklist: ChecklistElement = {
+      id: 'checklist-1',
+      kind: 'checklist',
+      x: 0,
+      y: 0,
+      width: 240,
+      height: 120,
+      color: '#000000',
+      fontSize: 16,
+      items: [
+        { id: 'item-1', text: 'Finished task', checked: true },
+        { id: 'item-2', text: 'x'.repeat(1_000), checked: false },
+      ],
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    };
+
+    const summary = accessibleElementSummary(checklist);
+    expect(summary).toContain('Checklist: 1 of 2 complete');
+    expect(summary).toContain('Finished task');
+    expect(summary.length).toBeLessThan(400);
   });
 });

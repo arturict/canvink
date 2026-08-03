@@ -6,6 +6,7 @@ import {
   FileText,
   Highlighter,
   ImagePlus,
+  ListChecks,
   MousePointer2,
   PenLine,
   Type,
@@ -36,6 +37,7 @@ export const TOOL_KEYBOARD_SHORTCUTS: Readonly<
   highlighter: 'Alt+Shift+H',
   eraser: 'Alt+Shift+E',
   text: 'Alt+Shift+T',
+  checklist: 'Alt+Shift+C',
 };
 
 const toolByShortcutKey: Readonly<Record<string, EditorTool>> = {
@@ -44,6 +46,7 @@ const toolByShortcutKey: Readonly<Record<string, EditorTool>> = {
   h: 'highlighter',
   e: 'eraser',
   t: 'text',
+  c: 'checklist',
 };
 
 export function editorToolForKeyboardShortcut(
@@ -94,6 +97,13 @@ const tools: Array<{
     shortcut: TOOL_KEYBOARD_SHORTCUTS.text,
     shortcutDisplay: 'Alt+⇧+T',
     icon: Type,
+  },
+  {
+    id: 'checklist',
+    label: 'Checklist',
+    shortcut: TOOL_KEYBOARD_SHORTCUTS.checklist,
+    shortcutDisplay: 'Alt+⇧+C',
+    icon: ListChecks,
   },
 ];
 

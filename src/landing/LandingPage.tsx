@@ -17,11 +17,12 @@ const repositoryUrl = "https://github.com/arturict/canvink";
 
 const alphaFeatures = [
   "Blank quick note, optional guide, and focused text capture",
-  "Notebook, section, page, and subpage hierarchy",
+  "Notebook, section, page, and subpage hierarchy with page actions",
   "Free canvas and printable A4 page modes",
   "Pressure-aware pen and highlighter",
-  "Movable text, images, and PDF previews",
-  "Local autosave with retry and rescue export, search, and trash",
+  "Formatted text, checklists, images, and PDF previews on one canvas",
+  "Tags, tasks, and search across text and checklist content",
+  "Local autosave with retry, recovery, rescue export, and trash",
   "Installable offline app shell and rootless Docker self-hosting",
 ];
 
@@ -59,13 +60,14 @@ export function LandingPage() {
             Open source. Local first. Mixed media.
           </div>
           <h1>
-            Your notes. Your files.
-            <span>Your canvas.</span>
+            Capture it now.
+            <span>Find it when it matters.</span>
           </h1>
           <p className="hero-lede">
-            Capture a thought on a blank local page, then organize it when useful.
-            Handwriting, movable text, images, and PDF previews can live together.
-            No required account. No cloud lock-in.
+            Open straight into a local note, write or draw, turn ideas into a
+            checklist, and find them again by text, tag, or task state.
+            Organize later, recover mistakes, and export your work without a
+            required account or cloud lock-in.
           </p>
           <div className="hero-actions">
             <a className="primary-cta" href="/app">
@@ -271,8 +273,9 @@ export function LandingPage() {
           <h2>Small enough to test. Honest enough to trust.</h2>
           <p>
             This is an early, local-only release, not a finished OneNote
-            replacement. The goal is to validate the mixed-object page and its
-            storage model before deciding which future capabilities belong.
+            replacement. The current beta candidate targets documented everyday
+            individual workflows while sync, collaboration, OCR, and broader
+            capture integrations remain outside the delivered scope.
           </p>
           <a href="/app" className="text-link">
             Open the demo <ArrowRight size={17} />

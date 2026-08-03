@@ -21,6 +21,8 @@ const MAX_ELEMENTS = 5_000_000;
 const MAX_TRASH_ENTRIES = 1_000_000;
 const MAX_TOTAL_POINTS = 10_000_000;
 const MAX_STRUCTURE_NODES = 20_000_000;
+const MAX_CHECKLIST_ITEMS = 200;
+const PAGE_TAGS = new Set(['important', 'todo', 'question', 'idea']);
 
 type JsonRecord = Record<string, unknown>;
 
@@ -202,6 +204,75 @@ function validateElement(
     if (![400, 500, 600, 700].includes(Number(element.fontWeight))) {
       malformed(`${path}.fontWeight is unsupported`);
     }
+    if (
+      element.fontStyle !== undefined &&
+      element.fontStyle !== 'normal' &&
+      element.fontStyle !== 'italic'
+    ) {
+      malformed(`${path}.fontStyle is unsupported`);
+    }
+    if (
+      element.textDecoration !== undefined &&
+      !['none', 'underline', 'line-through'].includes(
+        String(element.textDecoration),
+      )
+    ) {
+      malformed(`${path}.textDecoration is unsupported`);
+    }
+    if (
+      element.textAlign !== undefined &&
+      !['left', 'center', 'right'].includes(String(element.textAlign))
+    ) {
+      malformed(`${path}.textAlign is unsupported`);
+    }
+    if (
+      element.listStyle !== undefined &&
+      !['none', 'bullet', 'numbered'].includes(String(element.listStyle))
+    ) {
+      malformed(`${path}.listStyle is unsupported`);
+    }
+    return;
+  }
+
+  if (kind === 'checklist') {
+    positiveDimension(element.width, `${path}.width`);
+    positiveDimension(element.height, `${path}.height`);
+    stringValue(element.color, `${path}.color`, 128, false);
+    finiteNumber(element.fontSize, `${path}.fontSize`, 8, 120);
+    if (
+      !Array.isArray(element.items) ||
+      element.items.length === 0 ||
+      element.items.length > MAX_CHECKLIST_ITEMS
+    ) {
+      malformed(`${path}.items must contain between 1 and ${MAX_CHECKLIST_ITEMS} items`);
+    }
+    const itemIds = new Set<string>();
+    let textCharacters = 0;
+    element.items.forEach((itemValue, index) => {
+      const item = record(itemValue, `${path}.items[${index}]`);
+      const itemId = utf8StringValue(
+        item.id,
+        `${path}.items[${index}].id`,
+        MAX_ID_CHARS,
+        false,
+      );
+      if (itemIds.has(itemId)) {
+        malformed(`${path}.items duplicates an item ID`);
+      }
+      itemIds.add(itemId);
+      const text = stringValue(
+        item.text,
+        `${path}.items[${index}].text`,
+        MAX_SHORT_STRING_CHARS,
+      );
+      textCharacters += text.length;
+      if (textCharacters > MAX_TEXT_CHARS) {
+        malformed(`${path}.items contains too much text`);
+      }
+      if (typeof item.checked !== 'boolean') {
+        malformed(`${path}.items[${index}].checked must be a boolean`);
+      }
+    });
     return;
   }
 
@@ -251,6 +322,25 @@ function validatePage(
     utf8StringValue(page.parentPageId, `${path}.parentPageId`, MAX_ID_CHARS, false);
   }
   utf8StringValue(page.title, `${path}.title`, MAX_TITLE_BYTES);
+  if (page.tags !== undefined) {
+    if (!Array.isArray(page.tags) || page.tags.length > PAGE_TAGS.size) {
+      malformed(`${path}.tags must be a bounded array`);
+    }
+    const tags = new Set<string>();
+    page.tags.forEach((tag, index) => {
+      if (typeof tag !== 'string' || !PAGE_TAGS.has(tag) || tags.has(tag)) {
+        malformed(`${path}.tags[${index}] is unsupported or duplicated`);
+      }
+      tags.add(tag);
+    });
+  }
+  if (
+    page.taskState !== undefined &&
+    page.taskState !== 'open' &&
+    page.taskState !== 'done'
+  ) {
+    malformed(`${path}.taskState is unsupported`);
+  }
   if (page.mode !== 'free' && page.mode !== 'a4') {
     malformed(`${path}.mode is unsupported`);
   }

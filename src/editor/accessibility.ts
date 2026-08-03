@@ -63,6 +63,15 @@ export function accessibleElementSummary(element: PageElement): string {
     const tool = element.tool === 'highlighter' ? 'Highlighter' : 'Pen';
     return `${tool} stroke with ${element.points.length} points`;
   }
+  if (element.kind === 'checklist') {
+    const completed = element.items.filter((item) => item.checked).length;
+    const preview = boundedPlainText(
+      element.items.map((item) => item.text).filter(Boolean).join(', '),
+    );
+    return `Checklist: ${completed} of ${element.items.length} complete${
+      preview ? `. ${preview}` : ''
+    }`;
+  }
   if (element.kind === 'image') {
     const alt = boundedPlainText(element.alt);
     const name = boundedPlainText(element.name);

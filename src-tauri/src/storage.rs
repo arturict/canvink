@@ -1304,6 +1304,51 @@ mod tests {
         assert_eq!(synchronous, 2, "SQLite FULL synchronous is numeric value 2");
     }
 
+    #[test]
+    fn round_trip_preserves_checklists_and_page_task_metadata() {
+        let test_database = TestDatabase::new();
+        let mut expected = sample_workspace();
+        let page = &mut expected.notebooks[0].sections[0].pages[0];
+        page.extra
+            .insert("tags".to_owned(), json!(["todo", "important"]));
+        page.extra.insert("taskState".to_owned(), json!("open"));
+
+        let mut checklist_payload = BTreeMap::new();
+        checklist_payload.insert("color".to_owned(), json!("#1f2937"));
+        checklist_payload.insert("fontSize".to_owned(), json!(16));
+        checklist_payload.insert(
+            "items".to_owned(),
+            json!([
+                {"id": "check-1", "text": "Prepare notes", "checked": false},
+                {"id": "check-2", "text": "Share summary", "checked": true}
+            ]),
+        );
+        page.elements.push(PageElement {
+            id: "checklist-1".to_owned(),
+            kind: "checklist".to_owned(),
+            x: 30.0,
+            y: 240.0,
+            width: Some(360.0),
+            height: Some(120.0),
+            rotation: None,
+            z_index: Some(3),
+            created_at: Some("2026-07-29T10:04:00.000Z".to_owned()),
+            updated_at: Some("2026-07-29T10:04:00.000Z".to_owned()),
+            payload: checklist_payload,
+        });
+
+        let saved = test_database
+            .database
+            .save_workspace(&expected)
+            .expect("workspace with checklist saves");
+
+        assert_eq!(saved, expected);
+        assert_eq!(
+            saved.notebooks[0].sections[0].pages[0].elements[1].kind,
+            "checklist"
+        );
+    }
+
     #[cfg(unix)]
     #[test]
     fn initialization_repairs_private_unix_storage_permissions() {

@@ -27,6 +27,7 @@ import { createId } from '../domain/ids';
 import { MAX_POINTS_PER_STROKE, MAX_TEXT_CHARS } from '../domain/limits';
 import type {
   BrushSettings,
+  ChecklistElement,
   EditorTool,
   ImageElement,
   InkPoint,
@@ -35,6 +36,7 @@ import type {
   PdfElement,
   StrokeElement,
 } from '../domain/types';
+import { formattedText } from '../domain/textFormatting';
 import { accessibleElementSummary } from './accessibility';
 import { A4_PAGE, FREE_PAGE } from './constants';
 import { getStrokeOutline, strokeToSvgPath } from './ink';
@@ -64,6 +66,125 @@ interface CanvasAssetProps {
   onSelect: () => void;
   onUpdate: (patch: Partial<PageElement>) => void;
 }
+
+interface CanvasChecklistProps {
+  element: ChecklistElement;
+  selected: boolean;
+  selectable: boolean;
+  onSelect: () => void;
+  onUpdate: (patch: Partial<PageElement>) => void;
+}
+
+const CanvasChecklist = memo(function CanvasChecklist({
+  element,
+  selected,
+  selectable,
+  onSelect,
+  onUpdate,
+}: CanvasChecklistProps) {
+  const lineHeight = Math.max(30, element.fontSize * 1.55);
+  const contentHeight = Math.max(64, element.items.length * lineHeight + 22);
+  const height = Math.max(element.height, contentHeight);
+
+  return (
+    <Group
+      id={`element-${element.id}`}
+      elementId={element.id}
+      x={element.x}
+      y={element.y}
+      width={element.width}
+      height={height}
+      draggable={selectable}
+      listening={selectable}
+      onClick={onSelect}
+      onTap={onSelect}
+      onDragEnd={(event) => onUpdate({ x: event.target.x(), y: event.target.y() })}
+      onTransformEnd={(event) => {
+        const node = event.target;
+        const scaleX = node.scaleX();
+        const scaleY = node.scaleY();
+        node.scaleX(1);
+        node.scaleY(1);
+        onUpdate({
+          x: node.x(),
+          y: node.y(),
+          width: Math.max(220, element.width * scaleX),
+          height: Math.max(contentHeight, height * scaleY),
+        });
+      }}
+    >
+      <Rect
+        width={element.width}
+        height={height}
+        fill="#fffefa"
+        stroke={selected ? '#d7653b' : '#d9ddd7'}
+        strokeWidth={selected ? 1.5 : 1}
+        cornerRadius={10}
+        shadowColor="#1e2925"
+        shadowBlur={selected ? 12 : 5}
+        shadowOpacity={selected ? 0.14 : 0.06}
+        shadowOffsetY={3}
+      />
+      {element.items.map((item, index) => (
+        <Group key={item.id} y={12 + index * lineHeight}>
+          <Rect
+            x={12}
+            y={4}
+            width={18}
+            height={18}
+            cornerRadius={4}
+            fill={item.checked ? '#3f6859' : '#ffffff'}
+            stroke={item.checked ? '#3f6859' : '#87978f'}
+            strokeWidth={1.5}
+            onClick={(event) => {
+              event.cancelBubble = true;
+              onUpdate({
+                items: element.items.map((candidate) =>
+                  candidate.id === item.id
+                    ? { ...candidate, checked: !candidate.checked }
+                    : candidate,
+                ),
+              });
+            }}
+            onTap={(event) => {
+              event.cancelBubble = true;
+              onUpdate({
+                items: element.items.map((candidate) =>
+                  candidate.id === item.id
+                    ? { ...candidate, checked: !candidate.checked }
+                    : candidate,
+                ),
+              });
+            }}
+          />
+          {item.checked ? (
+            <KonvaText
+              x={14}
+              y={3}
+              width={14}
+              text="✓"
+              fill="#ffffff"
+              fontSize={15}
+              listening={false}
+              align="center"
+            />
+          ) : null}
+          <KonvaText
+            x={40}
+            y={2}
+            width={Math.max(80, element.width - 54)}
+            text={item.text || 'New task'}
+            fill={element.color}
+            fontSize={element.fontSize}
+            textDecoration={item.checked ? 'line-through' : undefined}
+            opacity={item.checked ? 0.62 : 1}
+            wrap="word"
+          />
+        </Group>
+      ))}
+    </Group>
+  );
+});
 
 function useLoadedImage(source: string): HTMLImageElement | undefined {
   const [image, setImage] = useState<HTMLImageElement>();
@@ -204,7 +325,7 @@ function deduplicateSamples(points: InkPoint[]): InkPoint[] {
 
 function elementCursor(tool: EditorTool): string {
   if (tool === 'select') return 'default';
-  if (tool === 'text') return 'text';
+  if (tool === 'text' || tool === 'checklist') return 'text';
   if (tool === 'eraser') return 'cell';
   return 'crosshair';
 }
@@ -416,6 +537,36 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
       return;
     }
 
+    if (tool === 'checklist') {
+      nativeEvent.preventDefault();
+      const [point] = pointerSamples(nativeEvent);
+      if (!point) return;
+      const createdAt = new Date().toISOString();
+      const element: ChecklistElement = {
+        id: createId('checklist'),
+        kind: 'checklist',
+        x: point.x,
+        y: point.y,
+        width: 420,
+        height: 96,
+        color: brush.color,
+        fontSize: 20,
+        items: [
+          {
+            id: createId('check'),
+            text: 'New task',
+            checked: false,
+          },
+        ],
+        createdAt,
+        updatedAt: createdAt,
+      };
+      if (!onAddElement(element)) return;
+      onSelectElement(element.id);
+      onToolChange('select');
+      return;
+    }
+
     if (tool !== 'pen' && tool !== 'highlighter') return;
     nativeEvent.preventDefault();
     activePointerRef.current = nativeEvent.pointerId;
@@ -606,11 +757,22 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
                   y={element.y}
                   width={element.width}
                   height={element.height}
-                  text={element.text}
+                  text={formattedText(element)}
                   fill={element.color}
                   fontSize={element.fontSize}
                   fontFamily={element.fontFamily}
-                  fontStyle={element.fontWeight >= 600 ? 'bold' : 'normal'}
+                  fontStyle={[
+                    element.fontWeight >= 600 ? 'bold' : '',
+                    element.fontStyle === 'italic' ? 'italic' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ') || 'normal'}
+                  textDecoration={
+                    element.textDecoration && element.textDecoration !== 'none'
+                      ? element.textDecoration
+                      : undefined
+                  }
+                  align={element.textAlign ?? 'left'}
                   lineHeight={1.35}
                   wrap="word"
                   visible={editingTextId !== element.id}
@@ -656,6 +818,19 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
                       height: Math.max(42, element.height * scaleY),
                     });
                   }}
+                />
+              );
+            }
+
+            if (element.kind === 'checklist') {
+              return (
+                <CanvasChecklist
+                  key={element.id}
+                  element={element}
+                  selected={element.id === selectedElementId}
+                  selectable={tool === 'select'}
+                  onSelect={() => onSelectElement(element.id)}
+                  onUpdate={(patch) => onUpdateElement(element.id, patch)}
                 />
               );
             }
@@ -726,6 +901,12 @@ const CanvasEditor = forwardRef<CanvasEditorHandle, CanvasEditorProps>(function 
             fontSize: editingTextElement.fontSize,
             fontFamily: editingTextElement.fontFamily,
             fontWeight: editingTextElement.fontWeight,
+            fontStyle: editingTextElement.fontStyle ?? 'normal',
+            textDecoration:
+              editingTextElement.textDecoration === 'none'
+                ? undefined
+                : editingTextElement.textDecoration,
+            textAlign: editingTextElement.textAlign ?? 'left',
           }}
           onChange={(event) => {
             const availableHeight = Math.max(

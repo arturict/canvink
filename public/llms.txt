@@ -6,7 +6,7 @@
 
 - Category: local-first mixed-media notebook
 - Current status: public alpha
-- Canvas: pressure-aware ink, text, checklists, images, and PDF previews
+- Canvas: pressure-aware ink, freeform text, images, and PDF previews
 - Page modes: free canvas and printable A4
 - Browser demo: stores notebook data only in the current browser
 - Desktop builds: use local SQLite notebook storage

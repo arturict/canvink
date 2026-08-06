@@ -16,7 +16,9 @@ test("landing publishes crawlable product and agent metadata", async () => {
   assert.match(html, /rel="canonical" href="https:\/\/canvink\.vercel\.app\/"/u);
   assert.match(html, /"@type": \["SoftwareApplication", "SoftwareSourceCode"\]/u);
   assert.match(robots, /^User-agent: OAI-SearchBot$/mu);
-  assert.match(sitemap, /<loc>https:\/\/canvink\.vercel\.app\/app<\/loc>/u);
+  assert.match(sitemap, /<loc>https:\/\/canvink\.vercel\.app\/<\/loc>/u);
+  assert.doesNotMatch(sitemap, /<loc>https:\/\/canvink\.vercel\.app\/app<\/loc>/u);
+  assert.doesNotMatch(html, /checklists|offline web app|softwareVersion/u);
   assert.match(llms, /local-first mixed-media notebook/u);
   assert.match(llms, /Current status: public alpha/u);
 });

@@ -21,3 +21,6 @@
 - Local web demo: https://canvink.vercel.app/app
 - Source: https://github.com/arturict/canvink
 - Releases: https://github.com/arturict/canvink/releases
+- License: https://github.com/arturict/canvink/blob/main/LICENSE
+- Changelog: https://github.com/arturict/canvink/blob/main/CHANGELOG.md
+- Known limitations: https://github.com/arturict/canvink/blob/main/docs/architecture.md#known-architectural-limitations

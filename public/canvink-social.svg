@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">Canvink local-first ink and PDF notebook</title>
+  <desc id="description">Canvink public alpha preview card with a notebook and pen mark.</desc>
+  <rect width="1200" height="630" rx="42" fill="#f7f5ef"/>
+  <circle cx="1060" cy="112" r="230" fill="#f1b654" opacity="0.22"/>
+  <circle cx="1040" cy="590" r="280" fill="#d7653b" opacity="0.14"/>
+  <rect x="88" y="112" width="172" height="172" rx="48" fill="#1e2925"/>
+  <path d="M136 158h66a12 12 0 0 1 12 12v66a12 12 0 0 1-12 12h-66v-90Z" fill="#f7f5ef"/>
+  <path d="M136 158v90M160 182h30M160 203h30" fill="none" stroke="#d7653b" stroke-width="11" stroke-linecap="round"/>
+  <path d="m166 238 38-38 16 16-38 38-23 7 7-23Z" fill="#f1b654" stroke="#1e2925" stroke-width="6" stroke-linejoin="round"/>
+  <text x="320" y="196" fill="#1e2925" font-family="Arial, Helvetica, sans-serif" font-size="82" font-weight="700">Canvink</text>
+  <text x="92" y="390" fill="#1e2925" font-family="Arial, Helvetica, sans-serif" font-size="58" font-weight="700">Ink, text, images and PDFs.</text>
+  <text x="92" y="466" fill="#52635c" font-family="Arial, Helvetica, sans-serif" font-size="40">One local-first canvas. Public alpha.</text>
+  <rect x="92" y="524" width="360" height="58" rx="29" fill="#1e2925"/>
+  <text x="272" y="564" fill="#f7f5ef" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="700" text-anchor="middle">Open source • AGPL-3.0</text>
+</svg>

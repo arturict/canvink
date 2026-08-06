@@ -8,8 +8,10 @@
 - Current status: public alpha
 - Canvas: pressure-aware ink, freeform text, images, and PDF previews
 - Page modes: free canvas and printable A4
-- Browser demo: stores notebook data only in the current browser
+- Browser demo: stores notebook data in IndexedDB only in the current browser
 - Desktop builds: use local SQLite notebook storage
+- Sync: browser IndexedDB data does not sync with desktop SQLite data
+- Encryption: local data is not encrypted by Canvink in the current public alpha
 - Accounts: no account is required for the local web demo
 - License: AGPL-3.0-or-later
 

@@ -20,6 +20,7 @@ test("landing publishes crawlable product and agent metadata", async () => {
   assert.match(html, /property="og:image" content="https:\/\/canvink\.vercel\.app\/canvink-social\.png"/u);
   assert.match(html, /name="twitter:image" content="https:\/\/canvink\.vercel\.app\/canvink-social\.png"/u);
   assert.match(html, /"@type": \["SoftwareApplication", "SoftwareSourceCode"\]/u);
+  assert.match(html, /"license": "https:\/\/spdx\.org\/licenses\/AGPL-3\.0-or-later\.html"/u);
   assert.match(robots, /^User-agent: OAI-SearchBot$/mu);
   assert.match(sitemap, /<loc>https:\/\/canvink\.vercel\.app\/<\/loc>/u);
   assert.doesNotMatch(sitemap, /<loc>https:\/\/canvink\.vercel\.app\/app<\/loc>/u);
@@ -27,6 +28,7 @@ test("landing publishes crawlable product and agent metadata", async () => {
   assert.doesNotMatch(html, /checklists|offline web app|softwareVersion/u);
   assert.match(llms, /local-first mixed-media notebook/u);
   assert.match(llms, /Current status: public alpha/u);
+  assert.match(llms, /Releases \(current Windows and Linux packages are unsigned public-alpha builds\)/u);
   assert.match(llms, /License: https:\/\/github\.com\/arturict\/canvink\/blob\/main\/LICENSE/u);
   assert.match(llms, /Changelog: https:\/\/github\.com\/arturict\/canvink\/blob\/main\/CHANGELOG\.md/u);
   assert.match(llms, /Known limitations: https:\/\/github\.com\/arturict\/canvink\/blob\/main\/docs\/architecture\.md#known-architectural-limitations/u);

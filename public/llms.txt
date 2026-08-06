@@ -1,0 +1,21 @@
+# Canvink
+
+> Canvink is an open-source, local-first notebook for handwriting, freeform text, images, and PDF previews on one canvas.
+
+## Product facts
+
+- Category: local-first mixed-media notebook
+- Current status: public alpha
+- Canvas: pressure-aware ink, text, checklists, images, and PDF previews
+- Page modes: free canvas and printable A4
+- Browser demo: stores notebook data only in the current browser
+- Desktop builds: use local SQLite notebook storage
+- Accounts: no account is required for the local web demo
+- License: AGPL-3.0-or-later
+
+## Primary links
+
+- Product: https://canvink.vercel.app/
+- Local web demo: https://canvink.vercel.app/app
+- Source: https://github.com/arturict/canvink
+- Releases: https://github.com/arturict/canvink/releases

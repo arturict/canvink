@@ -32,4 +32,5 @@ test("landing publishes crawlable product and agent metadata", async () => {
   assert.match(llms, /Known limitations: https:\/\/github\.com\/arturict\/canvink\/blob\/main\/docs\/architecture\.md#known-architectural-limitations/u);
   assert.ok(socialImage.length > 10_000);
   assert.match(socialImageSource, /viewBox="0 0 1200 630"/u);
+  assert.match(socialImageSource, /AGPL-3\.0-or-later/u);
 });

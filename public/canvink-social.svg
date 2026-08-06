@@ -11,6 +11,6 @@
   <text x="320" y="196" fill="#1e2925" font-family="Arial, Helvetica, sans-serif" font-size="82" font-weight="700">Canvink</text>
   <text x="92" y="390" fill="#1e2925" font-family="Arial, Helvetica, sans-serif" font-size="58" font-weight="700">Ink, text, images and PDFs.</text>
   <text x="92" y="466" fill="#52635c" font-family="Arial, Helvetica, sans-serif" font-size="40">One local-first canvas. Public alpha.</text>
-  <rect x="92" y="524" width="360" height="58" rx="29" fill="#1e2925"/>
-  <text x="272" y="564" fill="#f7f5ef" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="700" text-anchor="middle">Open source • AGPL-3.0</text>
+  <rect x="92" y="524" width="450" height="58" rx="29" fill="#1e2925"/>
+  <text x="317" y="564" fill="#f7f5ef" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="700" text-anchor="middle">Open source • AGPL-3.0-or-later</text>
 </svg>

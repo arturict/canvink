@@ -18,11 +18,11 @@ importers:
         specifier: 4.2.1
         version: 4.2.1
       konva:
-        specifier: 10.3.0
-        version: 10.3.0
+        specifier: 10.3.1
+        version: 10.3.1
       lucide-react:
-        specifier: 1.27.0
-        version: 1.27.0(react@19.2.8)
+        specifier: 1.31.0
+        version: 1.31.0(react@19.2.8)
       pdfjs-dist:
         specifier: 6.2.108
         version: 6.2.108
@@ -37,7 +37,7 @@ importers:
         version: 19.2.8(react@19.2.8)
       react-konva:
         specifier: 19.2.5
-        version: 19.2.5(@types/react@19.2.14)(konva@10.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        version: 19.2.5(@types/react@19.2.14)(konva@10.3.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
     devDependencies:
       '@eslint/js':
         specifier: 10.0.1
@@ -939,8 +939,16 @@ packages:
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
-  konva@10.3.0:
-    resolution: {integrity: sha512-gt19K2gzY4lHbnkvsku7eSmB+A9PTS2jG4F9coBMsdjM1UKfJNxJbDbXVpeCW1wjEGRwBD3nBamcHnqJhAeKlg==}
+  konva@10.3.1:
+    resolution: {integrity: sha512-7fT/jSkL2bZZOHRBk2QVMKAUbgHoKG72W+KJtpP5YMJUZRmjgoafROgxTADsrxKOY2ZM5eKyN/x6CM9PrlFfOg==}
+    peerDependencies:
+      canvas: ^3.0.0
+      skia-canvas: ^3.0.0
+    peerDependenciesMeta:
+      canvas:
+        optional: true
+      skia-canvas:
+        optional: true
 
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
@@ -1027,8 +1035,8 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
-  lucide-react@1.27.0:
-    resolution: {integrity: sha512-rJicGl/3Fly/E0rOH1YmPZ6e49JCnKknh1ox1vpHnkfjujAkKA6sqUZvH3MTAaXXjgexyUwgNwTJzTtYuAFYJw==}
+  lucide-react@1.31.0:
+    resolution: {integrity: sha512-G8u2eEtoHUnUa9f8lbvqDhCiORMnYLdUEo06EEG9MQvHQrInKcX3Pa2TH39MM5qyzRcWETxB0+aOwAPI1g1kEg==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -2183,7 +2191,7 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  konva@10.3.0: {}
+  konva@10.3.1: {}
 
   levn@0.4.1:
     dependencies:
@@ -2247,7 +2255,7 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lucide-react@1.27.0(react@19.2.8):
+  lucide-react@1.31.0(react@19.2.8):
     dependencies:
       react: 19.2.8
 
@@ -2335,11 +2343,11 @@ snapshots:
       react: 19.2.8
       scheduler: 0.27.0
 
-  react-konva@19.2.5(@types/react@19.2.14)(konva@10.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  react-konva@19.2.5(@types/react@19.2.14)(konva@10.3.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       '@types/react-reconciler': 0.33.0(@types/react@19.2.14)
       its-fine: 2.0.0(@types/react@19.2.14)(react@19.2.8)
-      konva: 10.3.0
+      konva: 10.3.1
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
       react-reconciler: 0.33.0(react@19.2.8)

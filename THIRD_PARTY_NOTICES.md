@@ -486,7 +486,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | @babel/code-frame | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-code-frame) |
 | npm | @babel/compat-data | 7.29.7 | MIT | [source](https://github.com/babel/babel#readme) |
 | npm | @babel/core | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-core) |
-| npm | @babel/generator | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-generator) |
+| npm | @babel/generator | 7.29.8 | MIT | [source](https://babel.dev/docs/en/next/babel-generator) |
 | npm | @babel/helper-compilation-targets | 7.29.7 | MIT | [source](https://github.com/babel/babel#readme) |
 | npm | @babel/helper-globals | 7.29.7 | MIT | [source](https://github.com/babel/babel#readme) |
 | npm | @babel/helper-module-imports | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-helper-module-imports) |
@@ -495,11 +495,11 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | @babel/helper-validator-identifier | 7.29.7 | MIT | [source](https://github.com/babel/babel#readme) |
 | npm | @babel/helper-validator-option | 7.29.7 | MIT | [source](https://github.com/babel/babel#readme) |
 | npm | @babel/helpers | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-helpers) |
-| npm | @babel/parser | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-parser) |
+| npm | @babel/parser | 7.29.8 | MIT | [source](https://babel.dev/docs/en/next/babel-parser) |
 | npm | @babel/runtime | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-runtime) |
 | npm | @babel/template | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-template) |
-| npm | @babel/traverse | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-traverse) |
-| npm | @babel/types | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-types) |
+| npm | @babel/traverse | 7.29.8 | MIT | [source](https://babel.dev/docs/en/next/babel-traverse) |
+| npm | @babel/types | 7.29.8 | MIT | [source](https://babel.dev/docs/en/next/babel-types) |
 | npm | @cacheable/memory | 2.2.0 | MIT | [source](https://github.com/jaredwray/cacheable#readme) |
 | npm | @cacheable/utils | 2.5.0 | MIT | [source](https://github.com/jaredwray/cacheable#readme) |
 | npm | @eslint-community/eslint-utils | 4.10.1 | MIT | [source](https://github.com/eslint-community/eslint-utils#readme) |
@@ -518,19 +518,19 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | @jridgewell/gen-mapping | 0.3.13 | MIT | [source](https://github.com/jridgewell/sourcemaps/tree/main/packages/gen-mapping) |
 | npm | @jridgewell/remapping | 2.3.5 | MIT | [source](https://github.com/jridgewell/sourcemaps/tree/main/packages/remapping) |
 | npm | @jridgewell/resolve-uri | 3.1.2 | MIT | [source](https://github.com/jridgewell/resolve-uri#readme) |
-| npm | @jridgewell/sourcemap-codec | 1.5.5 | MIT | [source](https://github.com/jridgewell/sourcemaps/tree/main/packages/sourcemap-codec) |
+| npm | @jridgewell/sourcemap-codec | 1.6.0 | MIT | [source](https://github.com/jridgewell/sourcemaps/tree/main/packages/sourcemap-codec) |
 | npm | @jridgewell/trace-mapping | 0.3.31 | MIT | [source](https://github.com/jridgewell/sourcemaps/tree/main/packages/trace-mapping) |
 | npm | @keyv/bigmap | 1.3.1 | MIT | [source](https://github.com/jaredwray/keyv) |
 | npm | @keyv/serialize | 1.1.1 | MIT | [source](https://github.com/jaredwray/keyv) |
-| npm | @napi-rs/canvas-linux-x64-gnu | 1.0.3 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
-| npm | @napi-rs/canvas-linux-x64-musl | 1.0.3 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
-| npm | @napi-rs/canvas-win32-x64-msvc | 1.0.3 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
-| npm | @napi-rs/canvas | 1.0.3 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
-| npm | @oxc-project/types | 0.148.0 | MIT | [source](https://oxc.rs) |
+| npm | @napi-rs/canvas-linux-x64-gnu | 1.0.9 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
+| npm | @napi-rs/canvas-linux-x64-musl | 1.0.9 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
+| npm | @napi-rs/canvas-win32-x64-msvc | 1.0.9 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
+| npm | @napi-rs/canvas | 1.0.9 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
+| npm | @oxc-project/types | 0.149.0 | MIT | [source](https://oxc.rs) |
 | npm | @playwright/test | 1.63.0 | Apache-2.0 | [source](https://playwright.dev) |
-| npm | @rolldown/binding-linux-x64-gnu | 1.2.7 | MIT | [source](https://rolldown.rs/) |
-| npm | @rolldown/binding-linux-x64-musl | 1.2.7 | MIT | [source](https://rolldown.rs/) |
-| npm | @rolldown/binding-win32-x64-msvc | 1.2.7 | MIT | [source](https://rolldown.rs/) |
+| npm | @rolldown/binding-linux-x64-gnu | 1.2.8 | MIT | [source](https://rolldown.rs/) |
+| npm | @rolldown/binding-linux-x64-musl | 1.2.8 | MIT | [source](https://rolldown.rs/) |
+| npm | @rolldown/binding-win32-x64-msvc | 1.2.8 | MIT | [source](https://rolldown.rs/) |
 | npm | @rolldown/pluginutils | 1.0.1 | MIT | [source](https://github.com/rolldown/plugins/tree/main/packages/pluginutils#readme) |
 | npm | @standard-schema/spec | 1.1.0 | MIT | [source](https://standardschema.dev) |
 | npm | @tauri-apps/api | 2.11.1 | Apache-2.0 OR MIT | [source](https://github.com/tauri-apps/tauri#readme) |
@@ -574,24 +574,24 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | assertion-error | 2.0.1 | MIT | [source](https://github.com/chaijs/assertion-error#readme) |
 | npm | balanced-match | 4.0.4 | MIT | [source](https://github.com/juliangruber/balanced-match#readme) |
 | npm | base64-arraybuffer | 1.0.2 | MIT | [source](https://github.com/niklasvh/base64-arraybuffer) |
-| npm | baseline-browser-mapping | 2.11.6 | Apache-2.0 | [source](https://github.com/web-platform-dx/baseline-browser-mapping#readme) |
+| npm | baseline-browser-mapping | 2.11.23 | Apache-2.0 | [source](https://github.com/web-platform-dx/baseline-browser-mapping#readme) |
 | npm | brace-expansion | 5.0.9 | MIT | [source](https://github.com/juliangruber/brace-expansion#readme) |
-| npm | browserslist | 4.28.7 | MIT | [source](https://github.com/browserslist/browserslist#readme) |
+| npm | browserslist | 4.28.9 | MIT | [source](https://github.com/browserslist/browserslist#readme) |
 | npm | cacheable | 2.5.0 | MIT | [source](https://github.com/jaredwray/cacheable#readme) |
-| npm | caniuse-lite | 1.0.30001806 | CC-BY-4.0 | [source](https://github.com/browserslist/caniuse-lite#readme) |
+| npm | caniuse-lite | 1.0.30001810 | CC-BY-4.0 | [source](https://github.com/browserslist/caniuse-lite#readme) |
 | npm | canvg | 3.0.11 | MIT | [source](https://github.com/canvg/canvg#readme) |
 | npm | chai | 6.2.2 | MIT | [source](http://chaijs.com) |
 | npm | convert-source-map | 2.0.0 | MIT | [source](https://github.com/thlorenz/convert-source-map) |
-| npm | core-js | 3.49.0 | MIT | [source](https://core-js.io) |
+| npm | core-js | 3.50.0 | MIT | [source](https://core-js.io) |
 | npm | cross-spawn | 7.0.6 | MIT | [source](https://github.com/moxystudio/node-cross-spawn) |
 | npm | css-line-break | 2.1.0 | MIT | [source](https://github.com/niklasvh/css-line-break#readme) |
 | npm | csstype | 3.2.3 | MIT | [source](https://github.com/frenic/csstype#readme) |
 | npm | debug | 4.4.3 | MIT | [source](https://github.com/debug-js/debug#readme) |
 | npm | deep-is | 0.1.4 | MIT | [source](https://github.com/thlorenz/deep-is#readme) |
 | npm | detect-libc | 2.1.2 | Apache-2.0 | [source](https://github.com/lovell/detect-libc#readme) |
-| npm | dompurify | 3.4.12 | (MPL-2.0 OR Apache-2.0) | [source](https://github.com/cure53/DOMPurify) |
-| npm | electron-to-chromium | 1.5.398 | ISC | [source](https://github.com/Kilian/electron-to-chromium#readme) |
-| npm | es-module-lexer | 2.3.1 | MIT | [source](https://github.com/guybedford/es-module-lexer#readme) |
+| npm | dompurify | 3.4.15 | (MPL-2.0 OR Apache-2.0) | [source](https://github.com/cure53/DOMPurify) |
+| npm | electron-to-chromium | 1.5.427 | ISC | [source](https://github.com/Kilian/electron-to-chromium#readme) |
+| npm | es-module-lexer | 2.3.2 | MIT | [source](https://github.com/guybedford/es-module-lexer#readme) |
 | npm | escalade | 3.2.0 | MIT | [source](https://github.com/lukeed/escalade#readme) |
 | npm | escape-string-regexp | 4.0.0 | MIT | [source](https://github.com/sindresorhus/escape-string-regexp#readme) |
 | npm | eslint-plugin-react-hooks | 7.1.1 | MIT | [source](https://react.dev/) |
@@ -627,7 +627,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | html2canvas | 1.4.1 | MIT | [source](https://html2canvas.hertzen.com) |
 | npm | idb-keyval | 6.3.0 | Apache-2.0 | [source](https://github.com/jakearchibald/idb-keyval#readme) |
 | npm | ignore | 5.3.2 | MIT | [source](https://github.com/kaelzhang/node-ignore#readme) |
-| npm | ignore | 7.0.8 | MIT | [source](https://github.com/kaelzhang/node-ignore#readme) |
+| npm | ignore | 7.0.9 | MIT | [source](https://github.com/kaelzhang/node-ignore#readme) |
 | npm | imurmurhash | 0.1.4 | MIT | [source](https://github.com/jensyt/imurmurhash-js) |
 | npm | iobuffer | 5.4.0 | MIT | [source](https://github.com/image-js/iobuffer#readme) |
 | npm | is-extglob | 2.1.1 | MIT | [source](https://github.com/jonschlinkert/is-extglob) |
@@ -641,7 +641,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | json5 | 2.2.3 | MIT | [source](http://json5.org/) |
 | npm | jspdf | 4.2.1 | MIT | [source](https://github.com/parallax/jsPDF) |
 | npm | keyv | 5.6.0 | MIT | [source](https://github.com/jaredwray/keyv) |
-| npm | konva | 10.3.0 | MIT | [source](http://konvajs.org/) |
+| npm | konva | 10.3.3 | MIT | [source](https://konvajs.org/) |
 | npm | levn | 0.4.1 | MIT | [source](https://github.com/gkz/levn) |
 | npm | lightningcss-linux-x64-gnu | 1.33.0 | MPL-2.0 | [source](https://github.com/parcel-bundler/lightningcss#readme) |
 | npm | lightningcss-linux-x64-musl | 1.33.0 | MPL-2.0 | [source](https://github.com/parcel-bundler/lightningcss#readme) |
@@ -649,14 +649,14 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | lightningcss | 1.33.0 | MPL-2.0 | [source](https://github.com/parcel-bundler/lightningcss#readme) |
 | npm | locate-path | 6.0.0 | MIT | [source](https://github.com/sindresorhus/locate-path#readme) |
 | npm | lru-cache | 5.1.1 | ISC | [source](https://github.com/isaacs/node-lru-cache#readme) |
-| npm | lucide-react | 1.27.0 | ISC | [source](https://lucide.dev) |
+| npm | lucide-react | 1.41.0 | ISC | [source](https://lucide.dev) |
 | npm | magic-string | 0.30.21 | MIT | [source](https://github.com/Rich-Harris/magic-string#readme) |
 | npm | minimatch | 10.2.6 | BlueOak-1.0.0 | [source](https://github.com/isaacs/minimatch#readme) |
 | npm | ms | 2.1.3 | MIT | [source](https://github.com/vercel/ms#readme) |
-| npm | nanoid | 3.3.18 | MIT | [source](https://github.com/ai/nanoid#readme) |
+| npm | nanoid | 3.3.19 | MIT | [source](https://github.com/ai/nanoid#readme) |
 | npm | natural-compare | 1.4.0 | MIT | [source](https://github.com/litejs/natural-compare-lite#readme) |
-| npm | node-releases | 2.0.51 | MIT | [source](https://github.com/chicoxyzzy/node-releases#readme) |
-| npm | obug | 2.1.4 | MIT | [source](https://github.com/sxzz/obug#readme) |
+| npm | node-releases | 2.0.55 | MIT | [source](https://github.com/chicoxyzzy/node-releases#readme) |
+| npm | obug | 2.2.1 | MIT | [source](https://github.com/sxzz/obug#readme) |
 | npm | optionator | 0.9.4 | MIT | [source](https://github.com/gkz/optionator) |
 | npm | p-limit | 3.1.0 | MIT | [source](https://github.com/sindresorhus/p-limit#readme) |
 | npm | p-locate | 5.0.0 | MIT | [source](https://github.com/sindresorhus/p-locate#readme) |
@@ -664,11 +664,10 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | path-exists | 4.0.0 | MIT | [source](https://github.com/sindresorhus/path-exists#readme) |
 | npm | path-key | 3.1.1 | MIT | [source](https://github.com/sindresorhus/path-key#readme) |
 | npm | pathe | 2.0.3 | MIT | [source](https://github.com/unjs/pathe#readme) |
-| npm | pdfjs-dist | 6.2.108 | Apache-2.0 | [source](https://mozilla.github.io/pdf.js/) |
+| npm | pdfjs-dist | 6.3.289 | Apache-2.0 | [source](https://mozilla.github.io/pdf.js/) |
 | npm | perfect-freehand | 1.2.3 | MIT | [source](https://github.com/steveruizok/perfect-freehand#readme) |
 | npm | performance-now | 2.1.0 | MIT | [source](https://github.com/braveg1rl/performance-now) |
 | npm | picocolors | 1.1.1 | ISC | [source](https://github.com/alexeyraspopov/picocolors#readme) |
-| npm | picomatch | 4.0.5 | MIT | [source](https://github.com/micromatch/picomatch) |
 | npm | picomatch | 4.0.7 | MIT | [source](https://github.com/micromatch/picomatch) |
 | npm | playwright-core | 1.63.0 | Apache-2.0 | [source](https://playwright.dev) |
 | npm | playwright | 1.63.0 | Apache-2.0 | [source](https://playwright.dev) |
@@ -678,12 +677,12 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | qified | 0.10.1 | MIT | [source](https://github.com/jaredwray/qified#readme) |
 | npm | raf | 3.4.1 | MIT | [source](https://github.com/chrisdickinson/raf#readme) |
 | npm | react-dom | 19.2.8 | MIT | [source](https://react.dev/) |
-| npm | react-konva | 19.2.5 | MIT | [source](https://github.com/konvajs/react-konva#readme) |
+| npm | react-konva | 19.2.6 | MIT | [source](https://konvajs.org/docs/react/index.html) |
 | npm | react-reconciler | 0.33.0 | MIT | [source](https://react.dev/) |
 | npm | react | 19.2.8 | MIT | [source](https://react.dev/) |
 | npm | regenerator-runtime | 0.13.11 | MIT | [source](https://github.com/facebook/regenerator/tree/main#readme) |
 | npm | rgbcolor | 1.0.1 | MIT | [source](https://github.com/yetzt/node-rgbcolor#readme) |
-| npm | rolldown | 1.2.7 | MIT | [source](https://rolldown.rs/) |
+| npm | rolldown | 1.2.8 | MIT | [source](https://rolldown.rs/) |
 | npm | scheduler | 0.27.0 | MIT | [source](https://react.dev/) |
 | npm | semver | 6.3.1 | ISC | [source](https://github.com/npm/node-semver#readme) |
 | npm | semver | 7.8.5 | ISC | [source](https://github.com/npm/node-semver#readme) |
@@ -697,14 +696,14 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | svg-pathdata | 6.0.3 | MIT | [source](https://github.com/nfroidure/svg-pathdata#readme) |
 | npm | text-segmentation | 1.0.3 | MIT | [source](https://github.com/niklasvh/text-segmentation) |
 | npm | tinybench | 2.9.0 | MIT | [source](https://github.com/tinylibs/tinybench#readme) |
-| npm | tinyexec | 1.2.4 | MIT | [source](https://github.com/tinylibs/tinyexec#readme) |
+| npm | tinyexec | 1.3.1 | MIT | [source](https://github.com/tinylibs/tinyexec#readme) |
 | npm | tinyglobby | 0.2.17 | MIT | [source](https://superchupu.dev/tinyglobby) |
 | npm | tinyrainbow | 3.1.1 | MIT | [source](https://github.com/tinylibs/tinyrainbow#readme) |
 | npm | ts-api-utils | 2.5.0 | MIT | [source](https://github.com/JoshuaKGoldberg/ts-api-utils#readme) |
 | npm | type-check | 0.4.0 | MIT | [source](https://github.com/gkz/type-check) |
 | npm | typescript-eslint | 8.69.0 | MIT | [source](https://typescript-eslint.io/packages/typescript-eslint) |
 | npm | typescript | 6.0.3 | Apache-2.0 | [source](https://www.typescriptlang.org/) |
-| npm | update-browserslist-db | 1.2.3 | MIT | [source](https://github.com/browserslist/update-db#readme) |
+| npm | update-browserslist-db | 1.3.3 | MIT | [source](https://github.com/browserslist/update-db#readme) |
 | npm | uri-js | 4.4.1 | BSD-2-Clause | [source](https://github.com/garycourt/uri-js) |
 | npm | utrie | 1.0.2 | MIT | [source](https://github.com/niklasvh/utrie) |
 | npm | vite | 8.2.2 | MIT | [source](https://vite.dev) |
@@ -715,7 +714,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | yallist | 3.1.1 | ISC | [source](https://github.com/isaacs/yallist#readme) |
 | npm | yocto-queue | 0.1.0 | MIT | [source](https://github.com/sindresorhus/yocto-queue#readme) |
 | npm | zod-validation-error | 4.0.2 | MIT | [source](https://github.com/causaly/zod-validation-error#readme) |
-| npm | zod | 4.4.3 | MIT | [source](https://zod.dev) |
+| npm | zod | 4.6.5 | MIT | [source](https://zod.dev) |
 
 ## Packages without a bundled top-level notice file
 
@@ -764,12 +763,12 @@ in the inventory apply. Their source distributions remain available upstream.
 - Cargo:winapi-i686-pc-windows-gnu@0.4.0, MIT/Apache-2.0, Peter Atashian <retep998@gmail.com>
 - Cargo:winapi-x86_64-pc-windows-gnu@0.4.0, MIT/Apache-2.0, Peter Atashian <retep998@gmail.com>
 - npm:@humanfs/types@0.15.0, Apache-2.0, Nicholas C. Zakas
-- npm:@napi-rs/canvas-linux-x64-gnu@1.0.3, MIT
-- npm:@napi-rs/canvas-linux-x64-musl@1.0.3, MIT
-- npm:@napi-rs/canvas-win32-x64-msvc@1.0.3, MIT
-- npm:@rolldown/binding-linux-x64-gnu@1.2.7, MIT
-- npm:@rolldown/binding-linux-x64-musl@1.2.7, MIT
-- npm:@rolldown/binding-win32-x64-msvc@1.2.7, MIT
+- npm:@napi-rs/canvas-linux-x64-gnu@1.0.9, MIT
+- npm:@napi-rs/canvas-linux-x64-musl@1.0.9, MIT
+- npm:@napi-rs/canvas-win32-x64-msvc@1.0.9, MIT
+- npm:@rolldown/binding-linux-x64-gnu@1.2.8, MIT
+- npm:@rolldown/binding-linux-x64-musl@1.2.8, MIT
+- npm:@rolldown/binding-win32-x64-msvc@1.2.8, MIT
 - npm:@tauri-apps/cli-linux-x64-gnu@2.11.4, Apache-2.0 OR MIT
 - npm:@tauri-apps/cli-linux-x64-musl@2.11.4, Apache-2.0 OR MIT
 - npm:@tauri-apps/cli-win32-x64-msvc@2.11.4, Apache-2.0 OR MIT
@@ -4537,7 +4536,7 @@ DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>Cargo:cssparser-macros@0.6.1, Cargo:cssparser@0.36.0, npm:dompurify@3.4.12</summary>
+<summary>Cargo:cssparser-macros@0.6.1, Cargo:cssparser@0.36.0, npm:dompurify@3.4.15</summary>
 
 Notice text SHA-256: `fab3dd6bdab226f1c08630b1dd917e11fcb4ec5e1e020e2c16f83a0a13863e85`
 
@@ -6337,7 +6336,7 @@ express Statement of Purpose.
 </details>
 
 <details>
-<summary>Cargo:embed_plist@1.2.2, Cargo:serialize-to-javascript-impl@0.1.2, Cargo:serialize-to-javascript@0.1.2, Cargo:tinyvec@1.12.0, Cargo:utf8_iter@1.0.4, npm:@eslint/config-array@0.23.5, npm:@eslint/config-helpers@0.7.0, npm:@eslint/core@1.2.1, npm:@eslint/object-schema@3.0.5, npm:@eslint/plugin-kit@0.7.3, npm:@humanfs/core@0.19.2, npm:@humanfs/node@0.16.8, npm:@humanwhocodes/module-importer@1.0.1, npm:@humanwhocodes/retry@0.4.3, npm:baseline-browser-mapping@2.11.6, npm:dompurify@3.4.12</summary>
+<summary>Cargo:embed_plist@1.2.2, Cargo:serialize-to-javascript-impl@0.1.2, Cargo:serialize-to-javascript@0.1.2, Cargo:tinyvec@1.12.0, Cargo:utf8_iter@1.0.4, npm:@eslint/config-array@0.23.5, npm:@eslint/config-helpers@0.7.0, npm:@eslint/core@1.2.1, npm:@eslint/object-schema@3.0.5, npm:@eslint/plugin-kit@0.7.3, npm:@humanfs/core@0.19.2, npm:@humanfs/node@0.16.8, npm:@humanwhocodes/module-importer@1.0.1, npm:@humanwhocodes/retry@0.4.3, npm:baseline-browser-mapping@2.11.23, npm:dompurify@3.4.15</summary>
 
 Notice text SHA-256: `50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a`
 
@@ -6964,7 +6963,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>Cargo:fdeflate@0.3.7, Cargo:field-offset@0.3.6, Cargo:miniz_oxide@0.8.9, Cargo:num-conv@0.2.2, Cargo:pin-project-lite@0.2.17, Cargo:raw-window-handle@0.6.2, Cargo:sync_wrapper@1.0.2, Cargo:tauri-build@2.6.3, Cargo:tauri-codegen@2.6.3, Cargo:tauri-macros@2.6.3, Cargo:tauri-plugin-single-instance@2.4.3, Cargo:tauri-runtime-wry@2.11.4, Cargo:tauri-runtime@2.11.3, Cargo:tauri-utils@2.9.3, Cargo:tauri@2.11.5, Cargo:time-core@0.1.9, Cargo:time-macros@0.2.32, Cargo:time@0.3.54, npm:@tauri-apps/api@2.11.1, npm:@tauri-apps/cli@2.11.4, npm:pdfjs-dist@6.2.108</summary>
+<summary>Cargo:fdeflate@0.3.7, Cargo:field-offset@0.3.6, Cargo:miniz_oxide@0.8.9, Cargo:num-conv@0.2.2, Cargo:pin-project-lite@0.2.17, Cargo:raw-window-handle@0.6.2, Cargo:sync_wrapper@1.0.2, Cargo:tauri-build@2.6.3, Cargo:tauri-codegen@2.6.3, Cargo:tauri-macros@2.6.3, Cargo:tauri-plugin-single-instance@2.4.3, Cargo:tauri-runtime-wry@2.11.4, Cargo:tauri-runtime@2.11.3, Cargo:tauri-utils@2.9.3, Cargo:tauri@2.11.5, Cargo:time-core@0.1.9, Cargo:time-macros@0.2.32, Cargo:time@0.3.54, npm:@tauri-apps/api@2.11.1, npm:@tauri-apps/cli@2.11.4, npm:pdfjs-dist@6.3.289</summary>
 
 Notice text SHA-256: `bb28c48e3e078166e91cfc2b6db7ffebb8a0973b9e23b3df060561292d8d69ec`
 
@@ -14762,7 +14761,7 @@ DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@babel/code-frame@7.29.7, npm:@babel/compat-data@7.29.7, npm:@babel/core@7.29.7, npm:@babel/generator@7.29.7, npm:@babel/helper-compilation-targets@7.29.7, npm:@babel/helper-globals@7.29.7, npm:@babel/helper-module-imports@7.29.7, npm:@babel/helper-module-transforms@7.29.7, npm:@babel/helper-string-parser@7.29.7, npm:@babel/helper-validator-identifier@7.29.7, npm:@babel/helper-validator-option@7.29.7, npm:@babel/runtime@7.29.7, npm:@babel/template@7.29.7, npm:@babel/traverse@7.29.7, npm:@babel/types@7.29.7</summary>
+<summary>npm:@babel/code-frame@7.29.7, npm:@babel/compat-data@7.29.7, npm:@babel/core@7.29.7, npm:@babel/generator@7.29.8, npm:@babel/helper-compilation-targets@7.29.7, npm:@babel/helper-globals@7.29.7, npm:@babel/helper-module-imports@7.29.7, npm:@babel/helper-module-transforms@7.29.7, npm:@babel/helper-string-parser@7.29.7, npm:@babel/helper-validator-identifier@7.29.7, npm:@babel/helper-validator-option@7.29.7, npm:@babel/runtime@7.29.7, npm:@babel/template@7.29.7, npm:@babel/traverse@7.29.8, npm:@babel/types@7.29.8</summary>
 
 Notice text SHA-256: `117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76`
 
@@ -14827,7 +14826,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@babel/parser@7.29.7</summary>
+<summary>npm:@babel/parser@7.29.8</summary>
 
 Notice text SHA-256: `2e97627cb278aa7556fb9e8817368302301a595b6c7582512b8d74c57b773652`
 
@@ -14945,7 +14944,7 @@ THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@jridgewell/gen-mapping@0.3.13, npm:@jridgewell/remapping@2.3.5, npm:@jridgewell/sourcemap-codec@1.5.5, npm:@jridgewell/trace-mapping@0.3.31</summary>
+<summary>npm:@jridgewell/gen-mapping@0.3.13, npm:@jridgewell/remapping@2.3.5, npm:@jridgewell/sourcemap-codec@1.6.0, npm:@jridgewell/trace-mapping@0.3.31</summary>
 
 Notice text SHA-256: `769d154fbde32a915af110b1123650bc79f4cbe675acc66e005265bf069c6c6c`
 
@@ -15066,7 +15065,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@napi-rs/canvas@1.0.3</summary>
+<summary>npm:@napi-rs/canvas@1.0.9</summary>
 
 Notice text SHA-256: `8802fecf9da4367bc23bcf20b21cc143785fc6c92b152f3fa7fbe6ce08d344d6`
 
@@ -15097,7 +15096,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@oxc-project/types@0.148.0</summary>
+<summary>npm:@oxc-project/types@0.149.0</summary>
 
 Notice text SHA-256: `95ced5ecf1133fbf41d409b5555c86c344f83f3b019926057ddbc07cfdcc27b3`
 
@@ -15793,7 +15792,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:browserslist@4.28.7</summary>
+<summary>npm:browserslist@4.28.9</summary>
 
 Notice text SHA-256: `21c2679a63d7699c0e644409e2f17d0adbc7a965003feb06b3ff4b833d21f722`
 
@@ -15823,7 +15822,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:caniuse-lite@1.0.30001806</summary>
+<summary>npm:caniuse-lite@1.0.30001810</summary>
 
 Notice text SHA-256: `fd3a263fe19ed8faa9068b43abaebafc02c77897b0c6fc09abc04bb592e5f16e`
 
@@ -16323,7 +16322,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:core-js@3.49.0</summary>
+<summary>npm:core-js@3.50.0</summary>
 
 Notice text SHA-256: `b87653fff2d44426ab5cd4723cee3b1364dc8d35a0acdf098c54689543123bf8`
 
@@ -16506,7 +16505,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:electron-to-chromium@1.5.398</summary>
+<summary>npm:electron-to-chromium@1.5.427</summary>
 
 Notice text SHA-256: `25ba5c59dad3e0dd8f9540beaa0f0a86a10e3aec35af5fdc8e88c5f6a5c0d8c6`
 
@@ -16521,7 +16520,7 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 </details>
 
 <details>
-<summary>npm:es-module-lexer@2.3.1</summary>
+<summary>npm:es-module-lexer@2.3.2</summary>
 
 Notice text SHA-256: `8a4b6c44eebfb026d23719a348145a661a555568dbfdc11618ff2d0dd9306b00`
 
@@ -17494,7 +17493,7 @@ limitations under the License.
 </details>
 
 <details>
-<summary>npm:ignore@5.3.2, npm:ignore@7.0.8</summary>
+<summary>npm:ignore@5.3.2, npm:ignore@7.0.9</summary>
 
 Notice text SHA-256: `542e7521fab287d3d2ea83e0145692c7d82ea81b28f141be6686364929d33079`
 
@@ -17828,7 +17827,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:konva@10.3.0</summary>
+<summary>npm:konva@10.3.3</summary>
 
 Notice text SHA-256: `f7cef0a46594ad495f30a37df7c218e90d5b3de0eb962da526b58ba10ee49fc3`
 
@@ -18275,7 +18274,7 @@ defined by the Mozilla Public License, v. 2.0.
 </details>
 
 <details>
-<summary>npm:lucide-react@1.27.0</summary>
+<summary>npm:lucide-react@1.41.0</summary>
 
 Notice text SHA-256: `b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57`
 
@@ -18441,7 +18440,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:nanoid@3.3.18</summary>
+<summary>npm:nanoid@3.3.19</summary>
 
 Notice text SHA-256: `da4db1480d9beea3483a2eda5c53b22238d0827d57da162b48f122e04d2d9987`
 
@@ -18471,7 +18470,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:node-releases@2.0.51</summary>
+<summary>npm:node-releases@2.0.55</summary>
 
 Notice text SHA-256: `3706296ed611888111ceccc1dff4712844dea4bde0b185c82d718c3b69895abe`
 
@@ -18502,7 +18501,7 @@ THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:obug@2.1.4</summary>
+<summary>npm:obug@2.2.1</summary>
 
 Notice text SHA-256: `ee48679d379ca6b4493d5e231094d85f818dd9be40b1a4f234fb7ff657ee35d9`
 
@@ -18738,7 +18737,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 </details>
 
 <details>
-<summary>npm:picomatch@4.0.5, npm:picomatch@4.0.7</summary>
+<summary>npm:picomatch@4.0.7</summary>
 
 Notice text SHA-256: `d0cd141b0c322fded5dfad1d4645bb2fedfc05b7321fe1009469638190d59ef9`
 
@@ -18816,7 +18815,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 </details>
 
 <details>
-<summary>npm:react-konva@19.2.5</summary>
+<summary>npm:react-konva@19.2.6</summary>
 
 Notice text SHA-256: `0874c25d40dcf71ff12256d30e15e59fd3e21a163c53448ea8bcbe6c03b663e4`
 
@@ -18914,7 +18913,7 @@ Please either apply this, the MIT license, or the license in './FEEL-FREE.md'
 </details>
 
 <details>
-<summary>npm:rolldown@1.2.7</summary>
+<summary>npm:rolldown@1.2.8</summary>
 
 Notice text SHA-256: `23ecfff35a5a2e80d92142f75228912c3b1abc4b5a8337a821ff4397e2f9f734`
 
@@ -19184,7 +19183,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:tinyexec@1.2.4</summary>
+<summary>npm:tinyexec@1.3.1</summary>
 
 Notice text SHA-256: `f95f668fe64081ddb4153b322e34fdd719b991285ed08177d5ad7133b7988d92`
 
@@ -19341,14 +19340,14 @@ END OF TERMS AND CONDITIONS
 </details>
 
 <details>
-<summary>npm:update-browserslist-db@1.2.3</summary>
+<summary>npm:update-browserslist-db@1.3.3</summary>
 
-Notice text SHA-256: `c414dde36704bd9c8a76c7aa2921b19270ff9abeb478ea0050250d16cf29b0f6`
+Notice text SHA-256: `9877e90da14aa8c931a1f9d07cc2a20ce119106e5dab1ebb41af865266d0cd2a`
 
 ~~~~text
 The MIT License (MIT)
 
-Copyright 2022 Andrey Sitnik <andrey@sitnik.ru> and other contributors
+Copyright 2022 Andrey Sitnik <andrey@sitnik.es> and other contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -22595,7 +22594,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 </details>
 
 <details>
-<summary>npm:zod@4.4.3</summary>
+<summary>npm:zod@4.6.5</summary>
 
 Notice text SHA-256: `3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8`
 

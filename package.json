@@ -35,13 +35,13 @@
     "@tauri-apps/api": "2.11.1",
     "idb-keyval": "6.3.0",
     "jspdf": "4.2.1",
-    "konva": "10.3.0",
-    "lucide-react": "1.27.0",
-    "pdfjs-dist": "6.2.108",
+    "konva": "10.3.3",
+    "lucide-react": "1.41.0",
+    "pdfjs-dist": "6.3.289",
     "perfect-freehand": "1.2.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "react-konva": "19.2.5"
+    "react-konva": "19.2.6"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

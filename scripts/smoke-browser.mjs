@@ -57,7 +57,7 @@ async function smokeDesktop(browser, baseUrl, errors) {
   watchPage(page, 'desktop', errors);
 
   await page.goto(baseUrl.href, { waitUntil: 'networkidle' });
-  await expect(page).toHaveTitle('Canvink');
+  await expect(page).toHaveTitle('Canvink — Local-first ink and PDF notebook');
   await expect(
     page.getByRole('heading', {
       level: 1,

@@ -40,7 +40,10 @@ function listFiles(directory) {
 }
 
 function validateDocument(html) {
-  assert(/<title>\s*Canvink\s*<\/title>/i.test(html), "Missing Canvink title");
+  assert(
+    /<title>\s*Canvink — Local-first ink and PDF notebook\s*<\/title>/i.test(html),
+    "Missing descriptive Canvink title",
+  );
   assert(
     /<div\s+id=["']root["']\s*><\/div>/i.test(html),
     "Missing React root element",

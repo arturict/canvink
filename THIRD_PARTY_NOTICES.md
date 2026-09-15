@@ -561,13 +561,13 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | @typescript-eslint/utils | 8.69.0 | MIT | [source](https://typescript-eslint.io/packages/utils) |
 | npm | @typescript-eslint/visitor-keys | 8.69.0 | MIT | [source](https://typescript-eslint.io) |
 | npm | @vitejs/plugin-react | 6.1.1 | MIT | [source](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#readme) |
-| npm | @vitest/expect | 4.1.10 | MIT | [source](https://vitest.dev/api/expect) |
-| npm | @vitest/mocker | 4.1.10 | MIT | [source](https://github.com/vitest-dev/vitest/tree/main/packages/mocker) |
-| npm | @vitest/pretty-format | 4.1.10 | MIT | [source](https://github.com/vitest-dev/vitest/tree/main/packages/pretty-format) |
-| npm | @vitest/runner | 4.1.10 | MIT | [source](https://vitest.dev/api/advanced/runner) |
-| npm | @vitest/snapshot | 4.1.10 | MIT | [source](https://vitest.dev/guide/snapshot) |
-| npm | @vitest/spy | 4.1.10 | MIT | [source](https://vitest.dev/api/mock) |
-| npm | @vitest/utils | 4.1.10 | MIT | [source](https://github.com/vitest-dev/vitest/tree/main/packages/utils) |
+| npm | @vitest/expect | 4.1.11 | MIT | [source](https://vitest.dev/api/expect) |
+| npm | @vitest/mocker | 4.1.11 | MIT | [source](https://github.com/vitest-dev/vitest/tree/main/packages/mocker) |
+| npm | @vitest/pretty-format | 4.1.11 | MIT | [source](https://github.com/vitest-dev/vitest/tree/main/packages/pretty-format) |
+| npm | @vitest/runner | 4.1.11 | MIT | [source](https://vitest.dev/api/advanced/runner) |
+| npm | @vitest/snapshot | 4.1.11 | MIT | [source](https://vitest.dev/guide/snapshot) |
+| npm | @vitest/spy | 4.1.11 | MIT | [source](https://vitest.dev/api/mock) |
+| npm | @vitest/utils | 4.1.11 | MIT | [source](https://github.com/vitest-dev/vitest/tree/main/packages/utils) |
 | npm | acorn-jsx | 5.3.2 | MIT | [source](https://github.com/acornjs/acorn-jsx) |
 | npm | acorn | 8.18.0 | MIT | [source](https://github.com/acornjs/acorn) |
 | npm | ajv | 6.15.0 | MIT | [source](https://github.com/ajv-validator/ajv) |
@@ -707,7 +707,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | uri-js | 4.4.1 | BSD-2-Clause | [source](https://github.com/garycourt/uri-js) |
 | npm | utrie | 1.0.2 | MIT | [source](https://github.com/niklasvh/utrie) |
 | npm | vite | 8.2.2 | MIT | [source](https://vite.dev) |
-| npm | vitest | 4.1.10 | MIT | [source](https://vitest.dev) |
+| npm | vitest | 4.1.11 | MIT | [source](https://vitest.dev) |
 | npm | which | 2.0.2 | ISC | [source](https://github.com/isaacs/node-which#readme) |
 | npm | why-is-node-running | 2.3.0 | MIT | [source](https://github.com/mafintosh/why-is-node-running) |
 | npm | word-wrap | 1.2.5 | MIT | [source](https://github.com/jonschlinkert/word-wrap) |
@@ -15541,7 +15541,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@vitest/expect@4.1.10, npm:@vitest/mocker@4.1.10, npm:@vitest/pretty-format@4.1.10, npm:@vitest/runner@4.1.10, npm:@vitest/snapshot@4.1.10, npm:@vitest/spy@4.1.10, npm:@vitest/utils@4.1.10</summary>
+<summary>npm:@vitest/expect@4.1.11, npm:@vitest/mocker@4.1.11, npm:@vitest/pretty-format@4.1.11, npm:@vitest/runner@4.1.11, npm:@vitest/snapshot@4.1.11, npm:@vitest/spy@4.1.11, npm:@vitest/utils@4.1.11</summary>
 
 Notice text SHA-256: `04575fc5bfae19a9b63100f8691f901a2e15a399011ac02db435a9ef27295551`
 
@@ -21723,7 +21723,7 @@ Repository: https://github.com/sveltejs/zimmerframe
 </details>
 
 <details>
-<summary>npm:vitest@4.1.10</summary>
+<summary>npm:vitest@4.1.11</summary>
 
 Notice text SHA-256: `881d660c26831481b697e39724d4a35c9f86e07b67156d4aeb693a0b39910435`
 

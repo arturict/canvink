@@ -517,6 +517,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | @jridgewell/remapping | 2.3.5 | MIT | [source](https://github.com/jridgewell/sourcemaps/tree/main/packages/remapping) |
 | npm | @jridgewell/resolve-uri | 3.1.2 | MIT | [source](https://github.com/jridgewell/resolve-uri#readme) |
 | npm | @jridgewell/sourcemap-codec | 1.5.5 | MIT | [source](https://github.com/jridgewell/sourcemaps/tree/main/packages/sourcemap-codec) |
+| npm | @jridgewell/sourcemap-codec | 1.6.0 | MIT | [source](https://github.com/jridgewell/sourcemaps/tree/main/packages/sourcemap-codec) |
 | npm | @jridgewell/trace-mapping | 0.3.31 | MIT | [source](https://github.com/jridgewell/sourcemaps/tree/main/packages/trace-mapping) |
 | npm | @napi-rs/canvas-linux-x64-gnu | 1.0.8 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
 | npm | @napi-rs/canvas-linux-x64-musl | 1.0.8 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
@@ -557,13 +558,13 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | @typescript-eslint/utils | 8.65.0 | MIT | [source](https://typescript-eslint.io/packages/utils) |
 | npm | @typescript-eslint/visitor-keys | 8.65.0 | MIT | [source](https://typescript-eslint.io) |
 | npm | @vitejs/plugin-react | 6.0.4 | MIT | [source](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#readme) |
-| npm | @vitest/expect | 4.1.10 | MIT | [source](https://vitest.dev/api/expect) |
-| npm | @vitest/mocker | 4.1.10 | MIT | [source](https://github.com/vitest-dev/vitest/tree/main/packages/mocker) |
-| npm | @vitest/pretty-format | 4.1.10 | MIT | [source](https://github.com/vitest-dev/vitest/tree/main/packages/pretty-format) |
-| npm | @vitest/runner | 4.1.10 | MIT | [source](https://vitest.dev/api/advanced/runner) |
-| npm | @vitest/snapshot | 4.1.10 | MIT | [source](https://vitest.dev/guide/snapshot) |
-| npm | @vitest/spy | 4.1.10 | MIT | [source](https://vitest.dev/api/mock) |
-| npm | @vitest/utils | 4.1.10 | MIT | [source](https://github.com/vitest-dev/vitest/tree/main/packages/utils) |
+| npm | @vitest/expect | 4.1.11 | MIT | [source](https://vitest.dev/api/expect) |
+| npm | @vitest/mocker | 4.1.11 | MIT | [source](https://github.com/vitest-dev/vitest/tree/main/packages/mocker) |
+| npm | @vitest/pretty-format | 4.1.11 | MIT | [source](https://github.com/vitest-dev/vitest/tree/main/packages/pretty-format) |
+| npm | @vitest/runner | 4.1.11 | MIT | [source](https://vitest.dev/api/advanced/runner) |
+| npm | @vitest/snapshot | 4.1.11 | MIT | [source](https://vitest.dev/guide/snapshot) |
+| npm | @vitest/spy | 4.1.11 | MIT | [source](https://vitest.dev/api/mock) |
+| npm | @vitest/utils | 4.1.11 | MIT | [source](https://github.com/vitest-dev/vitest/tree/main/packages/utils) |
 | npm | acorn-jsx | 5.3.2 | MIT | [source](https://github.com/acornjs/acorn-jsx) |
 | npm | acorn | 8.18.0 | MIT | [source](https://github.com/acornjs/acorn) |
 | npm | ajv | 6.15.0 | MIT | [source](https://github.com/ajv-validator/ajv) |
@@ -586,7 +587,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | detect-libc | 2.1.2 | Apache-2.0 | [source](https://github.com/lovell/detect-libc#readme) |
 | npm | dompurify | 3.4.12 | (MPL-2.0 OR Apache-2.0) | [source](https://github.com/cure53/DOMPurify) |
 | npm | electron-to-chromium | 1.5.398 | ISC | [source](https://github.com/Kilian/electron-to-chromium#readme) |
-| npm | es-module-lexer | 2.3.1 | MIT | [source](https://github.com/guybedford/es-module-lexer#readme) |
+| npm | es-module-lexer | 2.3.2 | MIT | [source](https://github.com/guybedford/es-module-lexer#readme) |
 | npm | escalade | 3.2.0 | MIT | [source](https://github.com/lukeed/escalade#readme) |
 | npm | escape-string-regexp | 4.0.0 | MIT | [source](https://github.com/sindresorhus/escape-string-regexp#readme) |
 | npm | eslint-plugin-react-hooks | 7.1.1 | MIT | [source](https://react.dev/) |
@@ -649,7 +650,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | nanoid | 3.3.16 | MIT | [source](https://github.com/ai/nanoid#readme) |
 | npm | natural-compare | 1.4.0 | MIT | [source](https://github.com/litejs/natural-compare-lite#readme) |
 | npm | node-releases | 2.0.51 | MIT | [source](https://github.com/chicoxyzzy/node-releases#readme) |
-| npm | obug | 2.1.4 | MIT | [source](https://github.com/sxzz/obug#readme) |
+| npm | obug | 2.2.1 | MIT | [source](https://github.com/sxzz/obug#readme) |
 | npm | optionator | 0.9.4 | MIT | [source](https://github.com/gkz/optionator) |
 | npm | p-limit | 3.1.0 | MIT | [source](https://github.com/sindresorhus/p-limit#readme) |
 | npm | p-locate | 5.0.0 | MIT | [source](https://github.com/sindresorhus/p-locate#readme) |
@@ -662,6 +663,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | performance-now | 2.1.0 | MIT | [source](https://github.com/braveg1rl/performance-now) |
 | npm | picocolors | 1.1.1 | ISC | [source](https://github.com/alexeyraspopov/picocolors#readme) |
 | npm | picomatch | 4.0.5 | MIT | [source](https://github.com/micromatch/picomatch) |
+| npm | picomatch | 4.0.7 | MIT | [source](https://github.com/micromatch/picomatch) |
 | npm | playwright-core | 1.62.0 | Apache-2.0 | [source](https://playwright.dev) |
 | npm | playwright | 1.62.0 | Apache-2.0 | [source](https://playwright.dev) |
 | npm | postcss | 8.5.24 | MIT | [source](https://postcss.org/) |
@@ -688,7 +690,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | svg-pathdata | 6.0.3 | MIT | [source](https://github.com/nfroidure/svg-pathdata#readme) |
 | npm | text-segmentation | 1.0.3 | MIT | [source](https://github.com/niklasvh/text-segmentation) |
 | npm | tinybench | 2.9.0 | MIT | [source](https://github.com/tinylibs/tinybench#readme) |
-| npm | tinyexec | 1.2.4 | MIT | [source](https://github.com/tinylibs/tinyexec#readme) |
+| npm | tinyexec | 1.3.1 | MIT | [source](https://github.com/tinylibs/tinyexec#readme) |
 | npm | tinyglobby | 0.2.17 | MIT | [source](https://superchupu.dev/tinyglobby) |
 | npm | tinyrainbow | 3.1.1 | MIT | [source](https://github.com/tinylibs/tinyrainbow#readme) |
 | npm | ts-api-utils | 2.5.0 | MIT | [source](https://github.com/JoshuaKGoldberg/ts-api-utils#readme) |
@@ -699,7 +701,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | uri-js | 4.4.1 | BSD-2-Clause | [source](https://github.com/garycourt/uri-js) |
 | npm | utrie | 1.0.2 | MIT | [source](https://github.com/niklasvh/utrie) |
 | npm | vite | 8.1.5 | MIT | [source](https://vite.dev) |
-| npm | vitest | 4.1.10 | MIT | [source](https://vitest.dev) |
+| npm | vitest | 4.1.11 | MIT | [source](https://vitest.dev) |
 | npm | which | 2.0.2 | ISC | [source](https://github.com/isaacs/node-which#readme) |
 | npm | why-is-node-running | 2.3.0 | MIT | [source](https://github.com/mafintosh/why-is-node-running) |
 | npm | word-wrap | 1.2.5 | MIT | [source](https://github.com/jonschlinkert/word-wrap) |
@@ -14908,7 +14910,7 @@ THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@jridgewell/gen-mapping@0.3.13, npm:@jridgewell/remapping@2.3.5, npm:@jridgewell/sourcemap-codec@1.5.5, npm:@jridgewell/trace-mapping@0.3.31</summary>
+<summary>npm:@jridgewell/gen-mapping@0.3.13, npm:@jridgewell/remapping@2.3.5, npm:@jridgewell/sourcemap-codec@1.5.5, npm:@jridgewell/sourcemap-codec@1.6.0, npm:@jridgewell/trace-mapping@0.3.31</summary>
 
 Notice text SHA-256: `769d154fbde32a915af110b1123650bc79f4cbe675acc66e005265bf069c6c6c`
 
@@ -15442,7 +15444,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@vitest/expect@4.1.10, npm:@vitest/mocker@4.1.10, npm:@vitest/pretty-format@4.1.10, npm:@vitest/runner@4.1.10, npm:@vitest/snapshot@4.1.10, npm:@vitest/spy@4.1.10, npm:@vitest/utils@4.1.10</summary>
+<summary>npm:@vitest/expect@4.1.11, npm:@vitest/mocker@4.1.11, npm:@vitest/pretty-format@4.1.11, npm:@vitest/runner@4.1.11, npm:@vitest/snapshot@4.1.11, npm:@vitest/spy@4.1.11, npm:@vitest/utils@4.1.11</summary>
 
 Notice text SHA-256: `04575fc5bfae19a9b63100f8691f901a2e15a399011ac02db435a9ef27295551`
 
@@ -16421,7 +16423,7 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 </details>
 
 <details>
-<summary>npm:es-module-lexer@2.3.1</summary>
+<summary>npm:es-module-lexer@2.3.2</summary>
 
 Notice text SHA-256: `8a4b6c44eebfb026d23719a348145a661a555568dbfdc11618ff2d0dd9306b00`
 
@@ -18436,7 +18438,7 @@ THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:obug@2.1.4</summary>
+<summary>npm:obug@2.2.1</summary>
 
 Notice text SHA-256: `ee48679d379ca6b4493d5e231094d85f818dd9be40b1a4f234fb7ff657ee35d9`
 
@@ -18672,7 +18674,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 </details>
 
 <details>
-<summary>npm:picomatch@4.0.5</summary>
+<summary>npm:picomatch@4.0.5, npm:picomatch@4.0.7</summary>
 
 Notice text SHA-256: `d0cd141b0c322fded5dfad1d4645bb2fedfc05b7321fe1009469638190d59ef9`
 
@@ -19118,7 +19120,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:tinyexec@1.2.4</summary>
+<summary>npm:tinyexec@1.3.1</summary>
 
 Notice text SHA-256: `f95f668fe64081ddb4153b322e34fdd719b991285ed08177d5ad7133b7988d92`
 
@@ -21623,7 +21625,7 @@ Repository: https://github.com/websockets/ws
 </details>
 
 <details>
-<summary>npm:vitest@4.1.10</summary>
+<summary>npm:vitest@4.1.11</summary>
 
 Notice text SHA-256: `881d660c26831481b697e39724d4a35c9f86e07b67156d4aeb693a0b39910435`
 

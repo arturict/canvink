@@ -518,10 +518,10 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | @jridgewell/resolve-uri | 3.1.2 | MIT | [source](https://github.com/jridgewell/resolve-uri#readme) |
 | npm | @jridgewell/sourcemap-codec | 1.5.5 | MIT | [source](https://github.com/jridgewell/sourcemaps/tree/main/packages/sourcemap-codec) |
 | npm | @jridgewell/trace-mapping | 0.3.31 | MIT | [source](https://github.com/jridgewell/sourcemaps/tree/main/packages/trace-mapping) |
-| npm | @napi-rs/canvas-linux-x64-gnu | 1.0.3 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
-| npm | @napi-rs/canvas-linux-x64-musl | 1.0.3 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
-| npm | @napi-rs/canvas-win32-x64-msvc | 1.0.3 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
-| npm | @napi-rs/canvas | 1.0.3 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
+| npm | @napi-rs/canvas-linux-x64-gnu | 1.0.8 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
+| npm | @napi-rs/canvas-linux-x64-musl | 1.0.8 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
+| npm | @napi-rs/canvas-win32-x64-msvc | 1.0.8 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
+| npm | @napi-rs/canvas | 1.0.8 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
 | npm | @oxc-project/types | 0.139.0 | MIT | [source](https://oxc.rs) |
 | npm | @playwright/test | 1.62.0 | Apache-2.0 | [source](https://playwright.dev) |
 | npm | @rolldown/binding-linux-x64-gnu | 1.1.5 | MIT | [source](https://rolldown.rs/) |
@@ -634,7 +634,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | json5 | 2.2.3 | MIT | [source](http://json5.org/) |
 | npm | jspdf | 4.2.1 | MIT | [source](https://github.com/parallax/jsPDF) |
 | npm | keyv | 4.5.4 | MIT | [source](https://github.com/jaredwray/keyv) |
-| npm | konva | 10.3.0 | MIT | [source](http://konvajs.org/) |
+| npm | konva | 10.3.3 | MIT | [source](https://konvajs.org/) |
 | npm | levn | 0.4.1 | MIT | [source](https://github.com/gkz/levn) |
 | npm | lightningcss-linux-x64-gnu | 1.33.0 | MPL-2.0 | [source](https://github.com/parcel-bundler/lightningcss#readme) |
 | npm | lightningcss-linux-x64-musl | 1.33.0 | MPL-2.0 | [source](https://github.com/parcel-bundler/lightningcss#readme) |
@@ -642,7 +642,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | lightningcss | 1.33.0 | MPL-2.0 | [source](https://github.com/parcel-bundler/lightningcss#readme) |
 | npm | locate-path | 6.0.0 | MIT | [source](https://github.com/sindresorhus/locate-path#readme) |
 | npm | lru-cache | 5.1.1 | ISC | [source](https://github.com/isaacs/node-lru-cache#readme) |
-| npm | lucide-react | 1.27.0 | ISC | [source](https://lucide.dev) |
+| npm | lucide-react | 1.41.0 | ISC | [source](https://lucide.dev) |
 | npm | magic-string | 0.30.21 | MIT | [source](https://github.com/Rich-Harris/magic-string#readme) |
 | npm | minimatch | 10.2.6 | BlueOak-1.0.0 | [source](https://github.com/isaacs/minimatch#readme) |
 | npm | ms | 2.1.3 | MIT | [source](https://github.com/vercel/ms#readme) |
@@ -657,7 +657,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | path-exists | 4.0.0 | MIT | [source](https://github.com/sindresorhus/path-exists#readme) |
 | npm | path-key | 3.1.1 | MIT | [source](https://github.com/sindresorhus/path-key#readme) |
 | npm | pathe | 2.0.3 | MIT | [source](https://github.com/unjs/pathe#readme) |
-| npm | pdfjs-dist | 6.2.108 | Apache-2.0 | [source](https://mozilla.github.io/pdf.js/) |
+| npm | pdfjs-dist | 6.3.289 | Apache-2.0 | [source](https://mozilla.github.io/pdf.js/) |
 | npm | perfect-freehand | 1.2.3 | MIT | [source](https://github.com/steveruizok/perfect-freehand#readme) |
 | npm | performance-now | 2.1.0 | MIT | [source](https://github.com/braveg1rl/performance-now) |
 | npm | picocolors | 1.1.1 | ISC | [source](https://github.com/alexeyraspopov/picocolors#readme) |
@@ -669,7 +669,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | punycode | 2.3.1 | MIT | [source](https://mths.be/punycode) |
 | npm | raf | 3.4.1 | MIT | [source](https://github.com/chrisdickinson/raf#readme) |
 | npm | react-dom | 19.2.8 | MIT | [source](https://react.dev/) |
-| npm | react-konva | 19.2.5 | MIT | [source](https://github.com/konvajs/react-konva#readme) |
+| npm | react-konva | 19.2.6 | MIT | [source](https://konvajs.org/docs/react/index.html) |
 | npm | react-reconciler | 0.33.0 | MIT | [source](https://react.dev/) |
 | npm | react | 19.2.8 | MIT | [source](https://react.dev/) |
 | npm | regenerator-runtime | 0.13.11 | MIT | [source](https://github.com/facebook/regenerator/tree/main#readme) |
@@ -755,9 +755,9 @@ in the inventory apply. Their source distributions remain available upstream.
 - Cargo:winapi-i686-pc-windows-gnu@0.4.0, MIT/Apache-2.0, Peter Atashian <retep998@gmail.com>
 - Cargo:winapi-x86_64-pc-windows-gnu@0.4.0, MIT/Apache-2.0, Peter Atashian <retep998@gmail.com>
 - npm:@humanfs/types@0.15.0, Apache-2.0, Nicholas C. Zakas
-- npm:@napi-rs/canvas-linux-x64-gnu@1.0.3, MIT
-- npm:@napi-rs/canvas-linux-x64-musl@1.0.3, MIT
-- npm:@napi-rs/canvas-win32-x64-msvc@1.0.3, MIT
+- npm:@napi-rs/canvas-linux-x64-gnu@1.0.8, MIT
+- npm:@napi-rs/canvas-linux-x64-musl@1.0.8, MIT
+- npm:@napi-rs/canvas-win32-x64-msvc@1.0.8, MIT
 - npm:@rolldown/binding-linux-x64-gnu@1.1.5, MIT
 - npm:@rolldown/binding-linux-x64-musl@1.1.5, MIT
 - npm:@rolldown/binding-win32-x64-msvc@1.1.5, MIT
@@ -6956,7 +6956,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>Cargo:fdeflate@0.3.7, Cargo:field-offset@0.3.6, Cargo:miniz_oxide@0.8.9, Cargo:num-conv@0.2.2, Cargo:pin-project-lite@0.2.17, Cargo:raw-window-handle@0.6.2, Cargo:sync_wrapper@1.0.2, Cargo:tauri-build@2.6.3, Cargo:tauri-codegen@2.6.3, Cargo:tauri-macros@2.6.3, Cargo:tauri-plugin-single-instance@2.4.3, Cargo:tauri-runtime-wry@2.11.4, Cargo:tauri-runtime@2.11.3, Cargo:tauri-utils@2.9.3, Cargo:tauri@2.11.5, Cargo:time-core@0.1.9, Cargo:time-macros@0.2.32, Cargo:time@0.3.54, npm:@tauri-apps/api@2.11.1, npm:@tauri-apps/cli@2.11.4, npm:pdfjs-dist@6.2.108</summary>
+<summary>Cargo:fdeflate@0.3.7, Cargo:field-offset@0.3.6, Cargo:miniz_oxide@0.8.9, Cargo:num-conv@0.2.2, Cargo:pin-project-lite@0.2.17, Cargo:raw-window-handle@0.6.2, Cargo:sync_wrapper@1.0.2, Cargo:tauri-build@2.6.3, Cargo:tauri-codegen@2.6.3, Cargo:tauri-macros@2.6.3, Cargo:tauri-plugin-single-instance@2.4.3, Cargo:tauri-runtime-wry@2.11.4, Cargo:tauri-runtime@2.11.3, Cargo:tauri-utils@2.9.3, Cargo:tauri@2.11.5, Cargo:time-core@0.1.9, Cargo:time-macros@0.2.32, Cargo:time@0.3.54, npm:@tauri-apps/api@2.11.1, npm:@tauri-apps/cli@2.11.4, npm:pdfjs-dist@6.3.289</summary>
 
 Notice text SHA-256: `bb28c48e3e078166e91cfc2b6db7ffebb8a0973b9e23b3df060561292d8d69ec`
 
@@ -14966,7 +14966,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@napi-rs/canvas@1.0.3</summary>
+<summary>npm:@napi-rs/canvas@1.0.8</summary>
 
 Notice text SHA-256: `8802fecf9da4367bc23bcf20b21cc143785fc6c92b152f3fa7fbe6ce08d344d6`
 
@@ -17762,7 +17762,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:konva@10.3.0</summary>
+<summary>npm:konva@10.3.3</summary>
 
 Notice text SHA-256: `f7cef0a46594ad495f30a37df7c218e90d5b3de0eb962da526b58ba10ee49fc3`
 
@@ -18209,7 +18209,7 @@ defined by the Mozilla Public License, v. 2.0.
 </details>
 
 <details>
-<summary>npm:lucide-react@1.27.0</summary>
+<summary>npm:lucide-react@1.41.0</summary>
 
 Notice text SHA-256: `b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57`
 
@@ -18750,7 +18750,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 </details>
 
 <details>
-<summary>npm:react-konva@19.2.5</summary>
+<summary>npm:react-konva@19.2.6</summary>
 
 Notice text SHA-256: `0874c25d40dcf71ff12256d30e15e59fd3e21a163c53448ea8bcbe6c03b663e4`
 

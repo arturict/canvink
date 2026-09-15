@@ -486,7 +486,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | @babel/code-frame | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-code-frame) |
 | npm | @babel/compat-data | 7.29.7 | MIT | [source](https://github.com/babel/babel#readme) |
 | npm | @babel/core | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-core) |
-| npm | @babel/generator | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-generator) |
+| npm | @babel/generator | 7.29.8 | MIT | [source](https://babel.dev/docs/en/next/babel-generator) |
 | npm | @babel/helper-compilation-targets | 7.29.7 | MIT | [source](https://github.com/babel/babel#readme) |
 | npm | @babel/helper-globals | 7.29.7 | MIT | [source](https://github.com/babel/babel#readme) |
 | npm | @babel/helper-module-imports | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-helper-module-imports) |
@@ -495,11 +495,13 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | @babel/helper-validator-identifier | 7.29.7 | MIT | [source](https://github.com/babel/babel#readme) |
 | npm | @babel/helper-validator-option | 7.29.7 | MIT | [source](https://github.com/babel/babel#readme) |
 | npm | @babel/helpers | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-helpers) |
-| npm | @babel/parser | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-parser) |
+| npm | @babel/parser | 7.29.8 | MIT | [source](https://babel.dev/docs/en/next/babel-parser) |
 | npm | @babel/runtime | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-runtime) |
 | npm | @babel/template | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-template) |
-| npm | @babel/traverse | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-traverse) |
-| npm | @babel/types | 7.29.7 | MIT | [source](https://babel.dev/docs/en/next/babel-types) |
+| npm | @babel/traverse | 7.29.8 | MIT | [source](https://babel.dev/docs/en/next/babel-traverse) |
+| npm | @babel/types | 7.29.8 | MIT | [source](https://babel.dev/docs/en/next/babel-types) |
+| npm | @cacheable/memory | 2.2.0 | MIT | [source](https://github.com/jaredwray/cacheable#readme) |
+| npm | @cacheable/utils | 2.5.0 | MIT | [source](https://github.com/jaredwray/cacheable#readme) |
 | npm | @eslint-community/eslint-utils | 4.10.1 | MIT | [source](https://github.com/eslint-community/eslint-utils#readme) |
 | npm | @eslint-community/regexpp | 4.12.2 | MIT | [source](https://github.com/eslint-community/regexpp#readme) |
 | npm | @eslint/config-array | 0.23.5 | Apache-2.0 | [source](https://github.com/eslint/rewrite/tree/main/packages/config-array#readme) |
@@ -507,7 +509,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | @eslint/core | 1.2.1 | Apache-2.0 | [source](https://github.com/eslint/rewrite/tree/main/packages/core#readme) |
 | npm | @eslint/js | 10.0.1 | MIT | [source](https://eslint.org) |
 | npm | @eslint/object-schema | 3.0.5 | Apache-2.0 | [source](https://github.com/eslint/rewrite/tree/main/packages/object-schema#readme) |
-| npm | @eslint/plugin-kit | 0.7.2 | Apache-2.0 | [source](https://github.com/eslint/rewrite/tree/main/packages/plugin-kit#readme) |
+| npm | @eslint/plugin-kit | 0.7.3 | Apache-2.0 | [source](https://github.com/eslint/rewrite/tree/main/packages/plugin-kit#readme) |
 | npm | @humanfs/core | 0.19.2 | Apache-2.0 | [source](https://github.com/humanwhocodes/humanfs#readme) |
 | npm | @humanfs/node | 0.16.8 | Apache-2.0 | [source](https://github.com/humanwhocodes/humanfs#readme) |
 | npm | @humanfs/types | 0.15.0 | Apache-2.0 | [source](https://github.com/humanwhocodes/humanfs#readme) |
@@ -516,18 +518,19 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | @jridgewell/gen-mapping | 0.3.13 | MIT | [source](https://github.com/jridgewell/sourcemaps/tree/main/packages/gen-mapping) |
 | npm | @jridgewell/remapping | 2.3.5 | MIT | [source](https://github.com/jridgewell/sourcemaps/tree/main/packages/remapping) |
 | npm | @jridgewell/resolve-uri | 3.1.2 | MIT | [source](https://github.com/jridgewell/resolve-uri#readme) |
-| npm | @jridgewell/sourcemap-codec | 1.5.5 | MIT | [source](https://github.com/jridgewell/sourcemaps/tree/main/packages/sourcemap-codec) |
 | npm | @jridgewell/sourcemap-codec | 1.6.0 | MIT | [source](https://github.com/jridgewell/sourcemaps/tree/main/packages/sourcemap-codec) |
 | npm | @jridgewell/trace-mapping | 0.3.31 | MIT | [source](https://github.com/jridgewell/sourcemaps/tree/main/packages/trace-mapping) |
-| npm | @napi-rs/canvas-linux-x64-gnu | 1.0.8 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
-| npm | @napi-rs/canvas-linux-x64-musl | 1.0.8 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
-| npm | @napi-rs/canvas-win32-x64-msvc | 1.0.8 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
-| npm | @napi-rs/canvas | 1.0.8 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
-| npm | @oxc-project/types | 0.139.0 | MIT | [source](https://oxc.rs) |
-| npm | @playwright/test | 1.62.0 | Apache-2.0 | [source](https://playwright.dev) |
-| npm | @rolldown/binding-linux-x64-gnu | 1.1.5 | MIT | [source](https://rolldown.rs/) |
-| npm | @rolldown/binding-linux-x64-musl | 1.1.5 | MIT | [source](https://rolldown.rs/) |
-| npm | @rolldown/binding-win32-x64-msvc | 1.1.5 | MIT | [source](https://rolldown.rs/) |
+| npm | @keyv/bigmap | 1.3.1 | MIT | [source](https://github.com/jaredwray/keyv) |
+| npm | @keyv/serialize | 1.1.1 | MIT | [source](https://github.com/jaredwray/keyv) |
+| npm | @napi-rs/canvas-linux-x64-gnu | 1.0.9 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
+| npm | @napi-rs/canvas-linux-x64-musl | 1.0.9 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
+| npm | @napi-rs/canvas-win32-x64-msvc | 1.0.9 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
+| npm | @napi-rs/canvas | 1.0.9 | MIT | [source](https://github.com/Brooooooklyn/canvas#readme) |
+| npm | @oxc-project/types | 0.149.0 | MIT | [source](https://oxc.rs) |
+| npm | @playwright/test | 1.63.0 | Apache-2.0 | [source](https://playwright.dev) |
+| npm | @rolldown/binding-linux-x64-gnu | 1.2.8 | MIT | [source](https://rolldown.rs/) |
+| npm | @rolldown/binding-linux-x64-musl | 1.2.8 | MIT | [source](https://rolldown.rs/) |
+| npm | @rolldown/binding-win32-x64-msvc | 1.2.8 | MIT | [source](https://rolldown.rs/) |
 | npm | @rolldown/pluginutils | 1.0.1 | MIT | [source](https://github.com/rolldown/plugins/tree/main/packages/pluginutils#readme) |
 | npm | @standard-schema/spec | 1.1.0 | MIT | [source](https://standardschema.dev) |
 | npm | @tauri-apps/api | 2.11.1 | Apache-2.0 OR MIT | [source](https://github.com/tauri-apps/tauri#readme) |
@@ -542,22 +545,22 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | @types/json-schema | 7.0.15 | MIT | [source](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/json-schema) |
 | npm | @types/pako | 2.0.4 | MIT | [source](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/pako) |
 | npm | @types/raf | 3.4.3 | MIT | [source](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/raf) |
-| npm | @types/react-dom | 19.2.3 | MIT | [source](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react-dom) |
+| npm | @types/react-dom | 19.2.7 | MIT | [source](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react-dom) |
 | npm | @types/react-reconciler | 0.28.9 | MIT | [source](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react-reconciler) |
 | npm | @types/react-reconciler | 0.33.0 | MIT | [source](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react-reconciler) |
-| npm | @types/react | 19.2.14 | MIT | [source](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react) |
+| npm | @types/react | 19.2.18 | MIT | [source](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react) |
 | npm | @types/trusted-types | 2.0.7 | MIT | [source](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/trusted-types) |
-| npm | @typescript-eslint/eslint-plugin | 8.65.0 | MIT | [source](https://typescript-eslint.io/packages/eslint-plugin) |
-| npm | @typescript-eslint/parser | 8.65.0 | MIT | [source](https://typescript-eslint.io/packages/parser) |
-| npm | @typescript-eslint/project-service | 8.65.0 | MIT | [source](https://typescript-eslint.io) |
-| npm | @typescript-eslint/scope-manager | 8.65.0 | MIT | [source](https://typescript-eslint.io/packages/scope-manager) |
-| npm | @typescript-eslint/tsconfig-utils | 8.65.0 | MIT | [source](https://typescript-eslint.io) |
-| npm | @typescript-eslint/type-utils | 8.65.0 | MIT | [source](https://typescript-eslint.io) |
-| npm | @typescript-eslint/types | 8.65.0 | MIT | [source](https://typescript-eslint.io) |
-| npm | @typescript-eslint/typescript-estree | 8.65.0 | MIT | [source](https://typescript-eslint.io/packages/typescript-estree) |
-| npm | @typescript-eslint/utils | 8.65.0 | MIT | [source](https://typescript-eslint.io/packages/utils) |
-| npm | @typescript-eslint/visitor-keys | 8.65.0 | MIT | [source](https://typescript-eslint.io) |
-| npm | @vitejs/plugin-react | 6.0.4 | MIT | [source](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#readme) |
+| npm | @typescript-eslint/eslint-plugin | 8.69.0 | MIT | [source](https://typescript-eslint.io/packages/eslint-plugin) |
+| npm | @typescript-eslint/parser | 8.69.0 | MIT | [source](https://typescript-eslint.io/packages/parser) |
+| npm | @typescript-eslint/project-service | 8.69.0 | MIT | [source](https://typescript-eslint.io) |
+| npm | @typescript-eslint/scope-manager | 8.69.0 | MIT | [source](https://typescript-eslint.io/packages/scope-manager) |
+| npm | @typescript-eslint/tsconfig-utils | 8.69.0 | MIT | [source](https://typescript-eslint.io) |
+| npm | @typescript-eslint/type-utils | 8.69.0 | MIT | [source](https://typescript-eslint.io) |
+| npm | @typescript-eslint/types | 8.69.0 | MIT | [source](https://typescript-eslint.io) |
+| npm | @typescript-eslint/typescript-estree | 8.69.0 | MIT | [source](https://typescript-eslint.io/packages/typescript-estree) |
+| npm | @typescript-eslint/utils | 8.69.0 | MIT | [source](https://typescript-eslint.io/packages/utils) |
+| npm | @typescript-eslint/visitor-keys | 8.69.0 | MIT | [source](https://typescript-eslint.io) |
+| npm | @vitejs/plugin-react | 6.1.1 | MIT | [source](https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#readme) |
 | npm | @vitest/expect | 4.1.11 | MIT | [source](https://vitest.dev/api/expect) |
 | npm | @vitest/mocker | 4.1.11 | MIT | [source](https://github.com/vitest-dev/vitest/tree/main/packages/mocker) |
 | npm | @vitest/pretty-format | 4.1.11 | MIT | [source](https://github.com/vitest-dev/vitest/tree/main/packages/pretty-format) |
@@ -571,22 +574,23 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | assertion-error | 2.0.1 | MIT | [source](https://github.com/chaijs/assertion-error#readme) |
 | npm | balanced-match | 4.0.4 | MIT | [source](https://github.com/juliangruber/balanced-match#readme) |
 | npm | base64-arraybuffer | 1.0.2 | MIT | [source](https://github.com/niklasvh/base64-arraybuffer) |
-| npm | baseline-browser-mapping | 2.11.6 | Apache-2.0 | [source](https://github.com/web-platform-dx/baseline-browser-mapping#readme) |
-| npm | brace-expansion | 5.0.8 | MIT | [source](https://github.com/juliangruber/brace-expansion#readme) |
-| npm | browserslist | 4.28.7 | MIT | [source](https://github.com/browserslist/browserslist#readme) |
-| npm | caniuse-lite | 1.0.30001806 | CC-BY-4.0 | [source](https://github.com/browserslist/caniuse-lite#readme) |
+| npm | baseline-browser-mapping | 2.11.23 | Apache-2.0 | [source](https://github.com/web-platform-dx/baseline-browser-mapping#readme) |
+| npm | brace-expansion | 5.0.9 | MIT | [source](https://github.com/juliangruber/brace-expansion#readme) |
+| npm | browserslist | 4.28.9 | MIT | [source](https://github.com/browserslist/browserslist#readme) |
+| npm | cacheable | 2.5.0 | MIT | [source](https://github.com/jaredwray/cacheable#readme) |
+| npm | caniuse-lite | 1.0.30001810 | CC-BY-4.0 | [source](https://github.com/browserslist/caniuse-lite#readme) |
 | npm | canvg | 3.0.11 | MIT | [source](https://github.com/canvg/canvg#readme) |
 | npm | chai | 6.2.2 | MIT | [source](http://chaijs.com) |
 | npm | convert-source-map | 2.0.0 | MIT | [source](https://github.com/thlorenz/convert-source-map) |
-| npm | core-js | 3.49.0 | MIT | [source](https://core-js.io) |
+| npm | core-js | 3.50.0 | MIT | [source](https://core-js.io) |
 | npm | cross-spawn | 7.0.6 | MIT | [source](https://github.com/moxystudio/node-cross-spawn) |
 | npm | css-line-break | 2.1.0 | MIT | [source](https://github.com/niklasvh/css-line-break#readme) |
 | npm | csstype | 3.2.3 | MIT | [source](https://github.com/frenic/csstype#readme) |
 | npm | debug | 4.4.3 | MIT | [source](https://github.com/debug-js/debug#readme) |
 | npm | deep-is | 0.1.4 | MIT | [source](https://github.com/thlorenz/deep-is#readme) |
 | npm | detect-libc | 2.1.2 | Apache-2.0 | [source](https://github.com/lovell/detect-libc#readme) |
-| npm | dompurify | 3.4.12 | (MPL-2.0 OR Apache-2.0) | [source](https://github.com/cure53/DOMPurify) |
-| npm | electron-to-chromium | 1.5.398 | ISC | [source](https://github.com/Kilian/electron-to-chromium#readme) |
+| npm | dompurify | 3.4.15 | (MPL-2.0 OR Apache-2.0) | [source](https://github.com/cure53/DOMPurify) |
+| npm | electron-to-chromium | 1.5.427 | ISC | [source](https://github.com/Kilian/electron-to-chromium#readme) |
 | npm | es-module-lexer | 2.3.2 | MIT | [source](https://github.com/guybedford/es-module-lexer#readme) |
 | npm | escalade | 3.2.0 | MIT | [source](https://github.com/lukeed/escalade#readme) |
 | npm | escape-string-regexp | 4.0.0 | MIT | [source](https://github.com/sindresorhus/escape-string-regexp#readme) |
@@ -594,7 +598,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | eslint-scope | 9.1.2 | BSD-2-Clause | [source](https://github.com/eslint/js/blob/main/packages/eslint-scope/README.md) |
 | npm | eslint-visitor-keys | 3.4.3 | Apache-2.0 | [source](https://github.com/eslint/js/blob/main/packages/eslint-visitor-keys/README.md) |
 | npm | eslint-visitor-keys | 5.0.1 | Apache-2.0 | [source](https://github.com/eslint/js/blob/main/packages/eslint-visitor-keys/README.md) |
-| npm | eslint | 10.8.0 | MIT | [source](https://eslint.org) |
+| npm | eslint | 10.10.0 | MIT | [source](https://eslint.org) |
 | npm | espree | 11.2.0 | BSD-2-Clause | [source](https://github.com/eslint/js/blob/main/packages/espree/README.md) |
 | npm | esquery | 1.7.0 | BSD-3-Clause | [source](https://github.com/estools/esquery/) |
 | npm | esrecurse | 4.3.0 | BSD-2-Clause | [source](https://github.com/estools/esrecurse) |
@@ -608,19 +612,22 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | fast-png | 6.4.0 | MIT | [source](https://github.com/image-js/fast-png#readme) |
 | npm | fdir | 6.5.0 | MIT | [source](https://github.com/thecodrr/fdir#readme) |
 | npm | fflate | 0.8.3 | MIT | [source](https://101arrowz.github.io/fflate) |
-| npm | file-entry-cache | 8.0.0 | MIT | [source](https://github.com/jaredwray/file-entry-cache#readme) |
+| npm | file-entry-cache | 11.1.5 | MIT | [source](https://github.com/jaredwray/cacheable#readme) |
 | npm | find-up | 5.0.0 | MIT | [source](https://github.com/sindresorhus/find-up#readme) |
-| npm | flat-cache | 4.0.1 | MIT | [source](https://github.com/jaredwray/flat-cache#readme) |
-| npm | flatted | 3.4.3 | ISC | [source](https://github.com/WebReflection/flatted#readme) |
+| npm | flat-cache | 6.1.23 | MIT | [source](https://github.com/jaredwray/cacheable#readme) |
+| npm | flatted | 3.4.4 | ISC | [source](https://github.com/WebReflection/flatted#readme) |
 | npm | gensync | 1.0.0-beta.2 | MIT | [source](https://github.com/loganfsmyth/gensync) |
 | npm | glob-parent | 6.0.2 | ISC | [source](https://github.com/gulpjs/glob-parent#readme) |
-| npm | globals | 17.8.0 | MIT | [source](https://github.com/sindresorhus/globals#readme) |
+| npm | globals | 17.12.0 | MIT | [source](https://github.com/sindresorhus/globals#readme) |
+| npm | hashery | 1.5.1 | MIT | [source](https://github.com/jaredwray/hashery#readme) |
 | npm | hermes-estree | 0.25.1 | MIT | [source](https://github.com/facebook/hermes#readme) |
 | npm | hermes-parser | 0.25.1 | MIT | [source](https://github.com/facebook/hermes#readme) |
+| npm | hookified | 1.15.1 | MIT | [source](https://github.com/jaredwray/hookified#readme) |
+| npm | hookified | 2.2.0 | MIT | [source](https://github.com/jaredwray/hookified#readme) |
 | npm | html2canvas | 1.4.1 | MIT | [source](https://html2canvas.hertzen.com) |
 | npm | idb-keyval | 6.3.0 | Apache-2.0 | [source](https://github.com/jakearchibald/idb-keyval#readme) |
 | npm | ignore | 5.3.2 | MIT | [source](https://github.com/kaelzhang/node-ignore#readme) |
-| npm | ignore | 7.0.6 | MIT | [source](https://github.com/kaelzhang/node-ignore#readme) |
+| npm | ignore | 7.0.9 | MIT | [source](https://github.com/kaelzhang/node-ignore#readme) |
 | npm | imurmurhash | 0.1.4 | MIT | [source](https://github.com/jensyt/imurmurhash-js) |
 | npm | iobuffer | 5.4.0 | MIT | [source](https://github.com/image-js/iobuffer#readme) |
 | npm | is-extglob | 2.1.1 | MIT | [source](https://github.com/jonschlinkert/is-extglob) |
@@ -629,12 +636,11 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | its-fine | 2.0.0 | MIT | [source](https://github.com/pmndrs/its-fine) |
 | npm | js-tokens | 4.0.0 | MIT | [source](https://github.com/lydell/js-tokens#readme) |
 | npm | jsesc | 3.1.0 | MIT | [source](https://mths.be/jsesc) |
-| npm | json-buffer | 3.0.1 | MIT | [source](https://github.com/dominictarr/json-buffer) |
 | npm | json-schema-traverse | 0.4.1 | MIT | [source](https://github.com/epoberezkin/json-schema-traverse#readme) |
 | npm | json-stable-stringify-without-jsonify | 1.0.1 | MIT | [source](https://github.com/samn/json-stable-stringify) |
 | npm | json5 | 2.2.3 | MIT | [source](http://json5.org/) |
 | npm | jspdf | 4.2.1 | MIT | [source](https://github.com/parallax/jsPDF) |
-| npm | keyv | 4.5.4 | MIT | [source](https://github.com/jaredwray/keyv) |
+| npm | keyv | 5.6.0 | MIT | [source](https://github.com/jaredwray/keyv) |
 | npm | konva | 10.3.3 | MIT | [source](https://konvajs.org/) |
 | npm | levn | 0.4.1 | MIT | [source](https://github.com/gkz/levn) |
 | npm | lightningcss-linux-x64-gnu | 1.33.0 | MPL-2.0 | [source](https://github.com/parcel-bundler/lightningcss#readme) |
@@ -647,9 +653,9 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | magic-string | 0.30.21 | MIT | [source](https://github.com/Rich-Harris/magic-string#readme) |
 | npm | minimatch | 10.2.6 | BlueOak-1.0.0 | [source](https://github.com/isaacs/minimatch#readme) |
 | npm | ms | 2.1.3 | MIT | [source](https://github.com/vercel/ms#readme) |
-| npm | nanoid | 3.3.16 | MIT | [source](https://github.com/ai/nanoid#readme) |
+| npm | nanoid | 3.3.19 | MIT | [source](https://github.com/ai/nanoid#readme) |
 | npm | natural-compare | 1.4.0 | MIT | [source](https://github.com/litejs/natural-compare-lite#readme) |
-| npm | node-releases | 2.0.51 | MIT | [source](https://github.com/chicoxyzzy/node-releases#readme) |
+| npm | node-releases | 2.0.55 | MIT | [source](https://github.com/chicoxyzzy/node-releases#readme) |
 | npm | obug | 2.2.1 | MIT | [source](https://github.com/sxzz/obug#readme) |
 | npm | optionator | 0.9.4 | MIT | [source](https://github.com/gkz/optionator) |
 | npm | p-limit | 3.1.0 | MIT | [source](https://github.com/sindresorhus/p-limit#readme) |
@@ -662,13 +668,13 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | perfect-freehand | 1.2.3 | MIT | [source](https://github.com/steveruizok/perfect-freehand#readme) |
 | npm | performance-now | 2.1.0 | MIT | [source](https://github.com/braveg1rl/performance-now) |
 | npm | picocolors | 1.1.1 | ISC | [source](https://github.com/alexeyraspopov/picocolors#readme) |
-| npm | picomatch | 4.0.5 | MIT | [source](https://github.com/micromatch/picomatch) |
 | npm | picomatch | 4.0.7 | MIT | [source](https://github.com/micromatch/picomatch) |
-| npm | playwright-core | 1.62.0 | Apache-2.0 | [source](https://playwright.dev) |
-| npm | playwright | 1.62.0 | Apache-2.0 | [source](https://playwright.dev) |
-| npm | postcss | 8.5.24 | MIT | [source](https://postcss.org/) |
+| npm | playwright-core | 1.63.0 | Apache-2.0 | [source](https://playwright.dev) |
+| npm | playwright | 1.63.0 | Apache-2.0 | [source](https://playwright.dev) |
+| npm | postcss | 8.5.28 | MIT | [source](https://postcss.org/) |
 | npm | prelude-ls | 1.2.1 | MIT | [source](http://preludels.com) |
 | npm | punycode | 2.3.1 | MIT | [source](https://mths.be/punycode) |
+| npm | qified | 0.10.1 | MIT | [source](https://github.com/jaredwray/qified#readme) |
 | npm | raf | 3.4.1 | MIT | [source](https://github.com/chrisdickinson/raf#readme) |
 | npm | react-dom | 19.2.8 | MIT | [source](https://react.dev/) |
 | npm | react-konva | 19.2.6 | MIT | [source](https://konvajs.org/docs/react/index.html) |
@@ -676,7 +682,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | react | 19.2.8 | MIT | [source](https://react.dev/) |
 | npm | regenerator-runtime | 0.13.11 | MIT | [source](https://github.com/facebook/regenerator/tree/main#readme) |
 | npm | rgbcolor | 1.0.1 | MIT | [source](https://github.com/yetzt/node-rgbcolor#readme) |
-| npm | rolldown | 1.1.5 | MIT | [source](https://rolldown.rs/) |
+| npm | rolldown | 1.2.8 | MIT | [source](https://rolldown.rs/) |
 | npm | scheduler | 0.27.0 | MIT | [source](https://react.dev/) |
 | npm | semver | 6.3.1 | ISC | [source](https://github.com/npm/node-semver#readme) |
 | npm | semver | 7.8.5 | ISC | [source](https://github.com/npm/node-semver#readme) |
@@ -695,12 +701,12 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | tinyrainbow | 3.1.1 | MIT | [source](https://github.com/tinylibs/tinyrainbow#readme) |
 | npm | ts-api-utils | 2.5.0 | MIT | [source](https://github.com/JoshuaKGoldberg/ts-api-utils#readme) |
 | npm | type-check | 0.4.0 | MIT | [source](https://github.com/gkz/type-check) |
-| npm | typescript-eslint | 8.65.0 | MIT | [source](https://typescript-eslint.io/packages/typescript-eslint) |
+| npm | typescript-eslint | 8.69.0 | MIT | [source](https://typescript-eslint.io/packages/typescript-eslint) |
 | npm | typescript | 6.0.3 | Apache-2.0 | [source](https://www.typescriptlang.org/) |
-| npm | update-browserslist-db | 1.2.3 | MIT | [source](https://github.com/browserslist/update-db#readme) |
+| npm | update-browserslist-db | 1.3.3 | MIT | [source](https://github.com/browserslist/update-db#readme) |
 | npm | uri-js | 4.4.1 | BSD-2-Clause | [source](https://github.com/garycourt/uri-js) |
 | npm | utrie | 1.0.2 | MIT | [source](https://github.com/niklasvh/utrie) |
-| npm | vite | 8.1.5 | MIT | [source](https://vite.dev) |
+| npm | vite | 8.2.2 | MIT | [source](https://vite.dev) |
 | npm | vitest | 4.1.11 | MIT | [source](https://vitest.dev) |
 | npm | which | 2.0.2 | ISC | [source](https://github.com/isaacs/node-which#readme) |
 | npm | why-is-node-running | 2.3.0 | MIT | [source](https://github.com/mafintosh/why-is-node-running) |
@@ -708,7 +714,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | npm | yallist | 3.1.1 | ISC | [source](https://github.com/isaacs/yallist#readme) |
 | npm | yocto-queue | 0.1.0 | MIT | [source](https://github.com/sindresorhus/yocto-queue#readme) |
 | npm | zod-validation-error | 4.0.2 | MIT | [source](https://github.com/causaly/zod-validation-error#readme) |
-| npm | zod | 4.4.3 | MIT | [source](https://zod.dev) |
+| npm | zod | 4.6.5 | MIT | [source](https://zod.dev) |
 
 ## Packages without a bundled top-level notice file
 
@@ -757,18 +763,17 @@ in the inventory apply. Their source distributions remain available upstream.
 - Cargo:winapi-i686-pc-windows-gnu@0.4.0, MIT/Apache-2.0, Peter Atashian <retep998@gmail.com>
 - Cargo:winapi-x86_64-pc-windows-gnu@0.4.0, MIT/Apache-2.0, Peter Atashian <retep998@gmail.com>
 - npm:@humanfs/types@0.15.0, Apache-2.0, Nicholas C. Zakas
-- npm:@napi-rs/canvas-linux-x64-gnu@1.0.8, MIT
-- npm:@napi-rs/canvas-linux-x64-musl@1.0.8, MIT
-- npm:@napi-rs/canvas-win32-x64-msvc@1.0.8, MIT
-- npm:@rolldown/binding-linux-x64-gnu@1.1.5, MIT
-- npm:@rolldown/binding-linux-x64-musl@1.1.5, MIT
-- npm:@rolldown/binding-win32-x64-msvc@1.1.5, MIT
+- npm:@napi-rs/canvas-linux-x64-gnu@1.0.9, MIT
+- npm:@napi-rs/canvas-linux-x64-musl@1.0.9, MIT
+- npm:@napi-rs/canvas-win32-x64-msvc@1.0.9, MIT
+- npm:@rolldown/binding-linux-x64-gnu@1.2.8, MIT
+- npm:@rolldown/binding-linux-x64-musl@1.2.8, MIT
+- npm:@rolldown/binding-win32-x64-msvc@1.2.8, MIT
 - npm:@tauri-apps/cli-linux-x64-gnu@2.11.4, Apache-2.0 OR MIT
 - npm:@tauri-apps/cli-linux-x64-musl@2.11.4, Apache-2.0 OR MIT
 - npm:@tauri-apps/cli-win32-x64-msvc@2.11.4, Apache-2.0 OR MIT
 - npm:esrecurse@4.3.0, BSD-2-Clause
 - npm:imurmurhash@0.1.4, MIT, Jens Taylor
-- npm:keyv@4.5.4, MIT, Jared Wray
 - npm:natural-compare@1.4.0, MIT, Lauri Rooden
 - npm:stackback@0.0.2, MIT, Roman Shtylman
 
@@ -4531,7 +4536,7 @@ DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>Cargo:cssparser-macros@0.6.1, Cargo:cssparser@0.36.0, npm:dompurify@3.4.12</summary>
+<summary>Cargo:cssparser-macros@0.6.1, Cargo:cssparser@0.36.0, npm:dompurify@3.4.15</summary>
 
 Notice text SHA-256: `fab3dd6bdab226f1c08630b1dd917e11fcb4ec5e1e020e2c16f83a0a13863e85`
 
@@ -6331,7 +6336,7 @@ express Statement of Purpose.
 </details>
 
 <details>
-<summary>Cargo:embed_plist@1.2.2, Cargo:serialize-to-javascript-impl@0.1.2, Cargo:serialize-to-javascript@0.1.2, Cargo:tinyvec@1.12.0, Cargo:utf8_iter@1.0.4, npm:@eslint/config-array@0.23.5, npm:@eslint/config-helpers@0.7.0, npm:@eslint/core@1.2.1, npm:@eslint/object-schema@3.0.5, npm:@eslint/plugin-kit@0.7.2, npm:@humanfs/core@0.19.2, npm:@humanfs/node@0.16.8, npm:@humanwhocodes/module-importer@1.0.1, npm:@humanwhocodes/retry@0.4.3, npm:baseline-browser-mapping@2.11.6, npm:dompurify@3.4.12</summary>
+<summary>Cargo:embed_plist@1.2.2, Cargo:serialize-to-javascript-impl@0.1.2, Cargo:serialize-to-javascript@0.1.2, Cargo:tinyvec@1.12.0, Cargo:utf8_iter@1.0.4, npm:@eslint/config-array@0.23.5, npm:@eslint/config-helpers@0.7.0, npm:@eslint/core@1.2.1, npm:@eslint/object-schema@3.0.5, npm:@eslint/plugin-kit@0.7.3, npm:@humanfs/core@0.19.2, npm:@humanfs/node@0.16.8, npm:@humanwhocodes/module-importer@1.0.1, npm:@humanwhocodes/retry@0.4.3, npm:baseline-browser-mapping@2.11.23, npm:dompurify@3.4.15</summary>
 
 Notice text SHA-256: `50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a`
 
@@ -14572,7 +14577,7 @@ Apache License
 </details>
 
 <details>
-<summary>Cargo:windows-collections@0.2.0, Cargo:windows-core@0.61.2, Cargo:windows-core@0.62.2, Cargo:windows-future@0.2.1, Cargo:windows-implement@0.60.2, Cargo:windows-interface@0.59.3, Cargo:windows-link@0.1.3, Cargo:windows-link@0.2.1, Cargo:windows-numerics@0.2.0, Cargo:windows-result@0.3.4, Cargo:windows-result@0.4.1, Cargo:windows-strings@0.4.2, Cargo:windows-strings@0.5.1, Cargo:windows-sys@0.45.0, Cargo:windows-sys@0.59.0, Cargo:windows-sys@0.60.2, Cargo:windows-sys@0.61.2, Cargo:windows-targets@0.42.2, Cargo:windows-targets@0.52.6, Cargo:windows-targets@0.53.5, Cargo:windows-threading@0.1.0, Cargo:windows-version@0.1.7, Cargo:windows@0.61.3, Cargo:windows_aarch64_gnullvm@0.42.2, Cargo:windows_aarch64_gnullvm@0.52.6, Cargo:windows_aarch64_gnullvm@0.53.1, Cargo:windows_aarch64_msvc@0.42.2, Cargo:windows_aarch64_msvc@0.52.6, Cargo:windows_aarch64_msvc@0.53.1, Cargo:windows_i686_gnu@0.42.2, Cargo:windows_i686_gnu@0.52.6, Cargo:windows_i686_gnu@0.53.1, Cargo:windows_i686_gnullvm@0.52.6, Cargo:windows_i686_gnullvm@0.53.1, Cargo:windows_i686_msvc@0.42.2, Cargo:windows_i686_msvc@0.52.6, Cargo:windows_i686_msvc@0.53.1, Cargo:windows_x86_64_gnu@0.42.2, Cargo:windows_x86_64_gnu@0.52.6, Cargo:windows_x86_64_gnu@0.53.1, Cargo:windows_x86_64_gnullvm@0.42.2, Cargo:windows_x86_64_gnullvm@0.52.6, Cargo:windows_x86_64_gnullvm@0.53.1, Cargo:windows_x86_64_msvc@0.42.2, Cargo:windows_x86_64_msvc@0.52.6, Cargo:windows_x86_64_msvc@0.53.1, npm:@types/chai@5.2.3, npm:@types/deep-eql@4.0.2, npm:@types/esrecurse@4.3.1, npm:@types/estree@1.0.9, npm:@types/json-schema@7.0.15, npm:@types/pako@2.0.4, npm:@types/raf@3.4.3, npm:@types/react-dom@19.2.3, npm:@types/react-reconciler@0.28.9, npm:@types/react-reconciler@0.33.0, npm:@types/react@19.2.14, npm:@types/trusted-types@2.0.7</summary>
+<summary>Cargo:windows-collections@0.2.0, Cargo:windows-core@0.61.2, Cargo:windows-core@0.62.2, Cargo:windows-future@0.2.1, Cargo:windows-implement@0.60.2, Cargo:windows-interface@0.59.3, Cargo:windows-link@0.1.3, Cargo:windows-link@0.2.1, Cargo:windows-numerics@0.2.0, Cargo:windows-result@0.3.4, Cargo:windows-result@0.4.1, Cargo:windows-strings@0.4.2, Cargo:windows-strings@0.5.1, Cargo:windows-sys@0.45.0, Cargo:windows-sys@0.59.0, Cargo:windows-sys@0.60.2, Cargo:windows-sys@0.61.2, Cargo:windows-targets@0.42.2, Cargo:windows-targets@0.52.6, Cargo:windows-targets@0.53.5, Cargo:windows-threading@0.1.0, Cargo:windows-version@0.1.7, Cargo:windows@0.61.3, Cargo:windows_aarch64_gnullvm@0.42.2, Cargo:windows_aarch64_gnullvm@0.52.6, Cargo:windows_aarch64_gnullvm@0.53.1, Cargo:windows_aarch64_msvc@0.42.2, Cargo:windows_aarch64_msvc@0.52.6, Cargo:windows_aarch64_msvc@0.53.1, Cargo:windows_i686_gnu@0.42.2, Cargo:windows_i686_gnu@0.52.6, Cargo:windows_i686_gnu@0.53.1, Cargo:windows_i686_gnullvm@0.52.6, Cargo:windows_i686_gnullvm@0.53.1, Cargo:windows_i686_msvc@0.42.2, Cargo:windows_i686_msvc@0.52.6, Cargo:windows_i686_msvc@0.53.1, Cargo:windows_x86_64_gnu@0.42.2, Cargo:windows_x86_64_gnu@0.52.6, Cargo:windows_x86_64_gnu@0.53.1, Cargo:windows_x86_64_gnullvm@0.42.2, Cargo:windows_x86_64_gnullvm@0.52.6, Cargo:windows_x86_64_gnullvm@0.53.1, Cargo:windows_x86_64_msvc@0.42.2, Cargo:windows_x86_64_msvc@0.52.6, Cargo:windows_x86_64_msvc@0.53.1, npm:@types/chai@5.2.3, npm:@types/deep-eql@4.0.2, npm:@types/esrecurse@4.3.1, npm:@types/estree@1.0.9, npm:@types/json-schema@7.0.15, npm:@types/pako@2.0.4, npm:@types/raf@3.4.3, npm:@types/react-dom@19.2.7, npm:@types/react-reconciler@0.28.9, npm:@types/react-reconciler@0.33.0, npm:@types/react@19.2.18, npm:@types/trusted-types@2.0.7</summary>
 
 Notice text SHA-256: `3d4ada4e04d153d74f5bc4e5e6aebd12ef20077716529c36089dc07f14fd0dcf`
 
@@ -14756,7 +14761,7 @@ DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@babel/code-frame@7.29.7, npm:@babel/compat-data@7.29.7, npm:@babel/core@7.29.7, npm:@babel/generator@7.29.7, npm:@babel/helper-compilation-targets@7.29.7, npm:@babel/helper-globals@7.29.7, npm:@babel/helper-module-imports@7.29.7, npm:@babel/helper-module-transforms@7.29.7, npm:@babel/helper-string-parser@7.29.7, npm:@babel/helper-validator-identifier@7.29.7, npm:@babel/helper-validator-option@7.29.7, npm:@babel/runtime@7.29.7, npm:@babel/template@7.29.7, npm:@babel/traverse@7.29.7, npm:@babel/types@7.29.7</summary>
+<summary>npm:@babel/code-frame@7.29.7, npm:@babel/compat-data@7.29.7, npm:@babel/core@7.29.7, npm:@babel/generator@7.29.8, npm:@babel/helper-compilation-targets@7.29.7, npm:@babel/helper-globals@7.29.7, npm:@babel/helper-module-imports@7.29.7, npm:@babel/helper-module-transforms@7.29.7, npm:@babel/helper-string-parser@7.29.7, npm:@babel/helper-validator-identifier@7.29.7, npm:@babel/helper-validator-option@7.29.7, npm:@babel/runtime@7.29.7, npm:@babel/template@7.29.7, npm:@babel/traverse@7.29.8, npm:@babel/types@7.29.8</summary>
 
 Notice text SHA-256: `117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76`
 
@@ -14821,7 +14826,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@babel/parser@7.29.7</summary>
+<summary>npm:@babel/parser@7.29.8</summary>
 
 Notice text SHA-256: `2e97627cb278aa7556fb9e8817368302301a595b6c7582512b8d74c57b773652`
 
@@ -14845,6 +14850,35 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+~~~~
+
+</details>
+
+<details>
+<summary>npm:@cacheable/memory@2.2.0, npm:@cacheable/utils@2.5.0, npm:cacheable@2.5.0, npm:file-entry-cache@11.1.5, npm:flat-cache@6.1.23</summary>
+
+Notice text SHA-256: `465e8da349d50d8512e4a0e9b26d2bee50392c394f17edaa3be6e0df7c2b27ad`
+
+~~~~text
+MIT License & © Jared Wray 
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to
+deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
 ~~~~
 
 </details>
@@ -14881,7 +14915,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@eslint/js@10.0.1, npm:eslint@10.8.0</summary>
+<summary>npm:@eslint/js@10.0.1, npm:eslint@10.10.0</summary>
 
 Notice text SHA-256: `3b6be04f862a077a4b97929dbf247299360824d9365f8603c263769303ace18c`
 
@@ -14910,7 +14944,7 @@ THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@jridgewell/gen-mapping@0.3.13, npm:@jridgewell/remapping@2.3.5, npm:@jridgewell/sourcemap-codec@1.5.5, npm:@jridgewell/sourcemap-codec@1.6.0, npm:@jridgewell/trace-mapping@0.3.31</summary>
+<summary>npm:@jridgewell/gen-mapping@0.3.13, npm:@jridgewell/remapping@2.3.5, npm:@jridgewell/sourcemap-codec@1.6.0, npm:@jridgewell/trace-mapping@0.3.31</summary>
 
 Notice text SHA-256: `769d154fbde32a915af110b1123650bc79f4cbe675acc66e005265bf069c6c6c`
 
@@ -14968,7 +15002,70 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@napi-rs/canvas@1.0.8</summary>
+<summary>npm:@keyv/bigmap@1.3.1</summary>
+
+Notice text SHA-256: `f18cad8d98d4454ad42c33f1950d642cd3b939f2ccd3c36710fa8f50842cacc0`
+
+~~~~text
+MIT License
+
+Copyright (c) Jared Wray
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+~~~~
+
+</details>
+
+<details>
+<summary>npm:@keyv/serialize@1.1.1, npm:keyv@5.6.0</summary>
+
+Notice text SHA-256: `1f7dca26d2d328c3dbb9b6fe3b15ec3cda08ffe2288e47b73d617454b256f959`
+
+~~~~text
+MIT License
+
+Copyright (c) 2017-2021 Luke Childs
+Copyright (c) 2021-2022 Jared Wray
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+~~~~
+
+</details>
+
+<details>
+<summary>npm:@napi-rs/canvas@1.0.9</summary>
 
 Notice text SHA-256: `8802fecf9da4367bc23bcf20b21cc143785fc6c92b152f3fa7fbe6ce08d344d6`
 
@@ -14999,7 +15096,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@oxc-project/types@0.139.0</summary>
+<summary>npm:@oxc-project/types@0.149.0</summary>
 
 Notice text SHA-256: `95ced5ecf1133fbf41d409b5555c86c344f83f3b019926057ddbc07cfdcc27b3`
 
@@ -15031,7 +15128,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@playwright/test@1.62.0, npm:playwright-core@1.62.0, npm:playwright@1.62.0</summary>
+<summary>npm:@playwright/test@1.63.0, npm:playwright-core@1.63.0, npm:playwright@1.63.0</summary>
 
 Notice text SHA-256: `37bdf4db7e3aad1c8775b0aaf09baddfe442a8c621afd5eca9da2d7cc6e51f42`
 
@@ -15243,7 +15340,7 @@ Apache License
 </details>
 
 <details>
-<summary>npm:@playwright/test@1.62.0, npm:playwright-core@1.62.0, npm:playwright@1.62.0</summary>
+<summary>npm:@playwright/test@1.63.0, npm:playwright-core@1.63.0, npm:playwright@1.63.0</summary>
 
 Notice text SHA-256: `6d602191187b35b9b01d2cffa01c8469c2c8d9de8a96f1bf868e0f264f51c81d`
 
@@ -15320,7 +15417,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@typescript-eslint/eslint-plugin@8.65.0, npm:@typescript-eslint/parser@8.65.0, npm:@typescript-eslint/scope-manager@8.65.0, npm:@typescript-eslint/types@8.65.0, npm:@typescript-eslint/typescript-estree@8.65.0, npm:@typescript-eslint/utils@8.65.0, npm:@typescript-eslint/visitor-keys@8.65.0, npm:typescript-eslint@8.65.0</summary>
+<summary>npm:@typescript-eslint/eslint-plugin@8.69.0, npm:@typescript-eslint/parser@8.69.0, npm:@typescript-eslint/scope-manager@8.69.0, npm:@typescript-eslint/types@8.69.0, npm:@typescript-eslint/typescript-estree@8.69.0, npm:@typescript-eslint/utils@8.69.0, npm:@typescript-eslint/visitor-keys@8.69.0, npm:typescript-eslint@8.69.0</summary>
 
 Notice text SHA-256: `2eb5c7a0bba9deb77a98c81bf6b9d3fb1c67118eebf968b6b1a787b3f8928ee0`
 
@@ -15351,7 +15448,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@typescript-eslint/project-service@8.65.0, npm:@typescript-eslint/tsconfig-utils@8.65.0</summary>
+<summary>npm:@typescript-eslint/project-service@8.69.0, npm:@typescript-eslint/tsconfig-utils@8.69.0</summary>
 
 Notice text SHA-256: `053a75a14b7508a897466b65e12797201a06b0e9b5066d1223da72cac99601b5`
 
@@ -15382,7 +15479,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@typescript-eslint/type-utils@8.65.0</summary>
+<summary>npm:@typescript-eslint/type-utils@8.69.0</summary>
 
 Notice text SHA-256: `f3c51ace7f159b21566d72535e84ff354505ae7ffdca835dac81fcdafbf9e879`
 
@@ -15413,7 +15510,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:@vitejs/plugin-react@6.0.4</summary>
+<summary>npm:@vitejs/plugin-react@6.1.1</summary>
 
 Notice text SHA-256: `29b68325fe026047d13e187b44c33b2acacf7dc647dec4583702e59f235e13b5`
 
@@ -15662,7 +15759,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:brace-expansion@5.0.8</summary>
+<summary>npm:brace-expansion@5.0.9</summary>
 
 Notice text SHA-256: `9c63a23124d68cd30cd316a94a1a0bca34f032786df6df69fc4b5f136bac8d2e`
 
@@ -15695,7 +15792,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:browserslist@4.28.7</summary>
+<summary>npm:browserslist@4.28.9</summary>
 
 Notice text SHA-256: `21c2679a63d7699c0e644409e2f17d0adbc7a965003feb06b3ff4b833d21f722`
 
@@ -15725,7 +15822,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:caniuse-lite@1.0.30001806</summary>
+<summary>npm:caniuse-lite@1.0.30001810</summary>
 
 Notice text SHA-256: `fd3a263fe19ed8faa9068b43abaebafc02c77897b0c6fc09abc04bb592e5f16e`
 
@@ -16225,7 +16322,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:core-js@3.49.0</summary>
+<summary>npm:core-js@3.50.0</summary>
 
 Notice text SHA-256: `b87653fff2d44426ab5cd4723cee3b1364dc8d35a0acdf098c54689543123bf8`
 
@@ -16408,7 +16505,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:electron-to-chromium@1.5.398</summary>
+<summary>npm:electron-to-chromium@1.5.427</summary>
 
 Notice text SHA-256: `25ba5c59dad3e0dd8f9540beaa0f0a86a10e3aec35af5fdc8e88c5f6a5c0d8c6`
 
@@ -16462,7 +16559,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 </details>
 
 <details>
-<summary>npm:escape-string-regexp@4.0.0, npm:find-up@5.0.0, npm:globals@17.8.0, npm:locate-path@6.0.0, npm:p-limit@3.1.0, npm:p-locate@5.0.0, npm:yocto-queue@0.1.0</summary>
+<summary>npm:escape-string-regexp@4.0.0, npm:find-up@5.0.0, npm:globals@17.12.0, npm:locate-path@6.0.0, npm:p-limit@3.1.0, npm:p-locate@5.0.0, npm:yocto-queue@0.1.0</summary>
 
 Notice text SHA-256: `5c932d88256b4ab958f64a856fa48e8bd1f55bc1d96b8149c65689e0c61789d3`
 
@@ -17246,69 +17343,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:file-entry-cache@8.0.0</summary>
-
-Notice text SHA-256: `750315e157c49f551560b05004c439ad6a3b41caf03847dfec9aad8c81d2501f`
-
-~~~~text
-The MIT License (MIT)
-
-Copyright (c) Roy Riojas & Jared Wray
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-~~~~
-
-</details>
-
-<details>
-<summary>npm:flat-cache@4.0.1</summary>
-
-Notice text SHA-256: `47bb0c0aaf5c075e11acfaed88f890b6a12740bd7c771d449f7b6934f6c5a229`
-
-~~~~text
-The MIT License (MIT)
-
-Copyright (c) Roy Riojas and Jared Wray
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-~~~~
-
-</details>
-
-<details>
-<summary>npm:flatted@3.4.3</summary>
+<summary>npm:flatted@3.4.4</summary>
 
 Notice text SHA-256: `148718606d34f467fd08a2176bb4c1ab275f999576f779368503d8d3e3642861`
 
@@ -17375,6 +17410,66 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 </details>
 
 <details>
+<summary>npm:hashery@1.5.1</summary>
+
+Notice text SHA-256: `2eef776efe4bae7fcd2d8162ecadf2b0873aae20afac343a936ddb0de3d79253`
+
+~~~~text
+MIT License
+
+Copyright (c) 2025 Jared Wray
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+~~~~
+
+</details>
+
+<details>
+<summary>npm:hookified@1.15.1, npm:hookified@2.2.0, npm:qified@0.10.1</summary>
+
+Notice text SHA-256: `3902e57e73412bd91ba81a47fa2cef45e1729c152c835114c1692cc5e685ddbe`
+
+~~~~text
+MIT License & © Jared Wray
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+~~~~
+
+</details>
+
+<details>
 <summary>npm:idb-keyval@6.3.0</summary>
 
 Notice text SHA-256: `c57566d2d186739879c079ddbc84b69fc11654a9dde44c79d71ea91cbd41a945`
@@ -17398,7 +17493,7 @@ limitations under the License.
 </details>
 
 <details>
-<summary>npm:ignore@5.3.2, npm:ignore@7.0.6</summary>
+<summary>npm:ignore@5.3.2, npm:ignore@7.0.9</summary>
 
 Notice text SHA-256: `542e7521fab287d3d2ea83e0145692c7d82ea81b28f141be6686364929d33079`
 
@@ -17634,38 +17729,6 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-~~~~
-
-</details>
-
-<details>
-<summary>npm:json-buffer@3.0.1</summary>
-
-Notice text SHA-256: `715f1f0f2eb7688e53e4e958acdc7fc9e365ae3eaf26efc2604b93cc65fdc3f5`
-
-~~~~text
-Copyright (c) 2013 Dominic Tarr
-
-Permission is hereby granted, free of charge, 
-to any person obtaining a copy of this software and 
-associated documentation files (the "Software"), to 
-deal in the Software without restriction, including 
-without limitation the rights to use, copy, modify, 
-merge, publish, distribute, sublicense, and/or sell 
-copies of the Software, and to permit persons to whom 
-the Software is furnished to do so, 
-subject to the following conditions:
-
-The above copyright notice and this permission notice 
-shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
-ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ~~~~
 
 </details>
@@ -18377,7 +18440,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>npm:nanoid@3.3.16</summary>
+<summary>npm:nanoid@3.3.19</summary>
 
 Notice text SHA-256: `da4db1480d9beea3483a2eda5c53b22238d0827d57da162b48f122e04d2d9987`
 
@@ -18407,7 +18470,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:node-releases@2.0.51</summary>
+<summary>npm:node-releases@2.0.55</summary>
 
 Notice text SHA-256: `3706296ed611888111ceccc1dff4712844dea4bde0b185c82d718c3b69895abe`
 
@@ -18674,7 +18737,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 </details>
 
 <details>
-<summary>npm:picomatch@4.0.5, npm:picomatch@4.0.7</summary>
+<summary>npm:picomatch@4.0.7</summary>
 
 Notice text SHA-256: `d0cd141b0c322fded5dfad1d4645bb2fedfc05b7321fe1009469638190d59ef9`
 
@@ -18705,7 +18768,7 @@ THE SOFTWARE.
 </details>
 
 <details>
-<summary>npm:postcss@8.5.24</summary>
+<summary>npm:postcss@8.5.28</summary>
 
 Notice text SHA-256: `5be1f3465bba68a626777f984878814aaf35e7ef8e9fd314d469bcf887050fb8`
 
@@ -18850,7 +18913,7 @@ Please either apply this, the MIT license, or the license in './FEEL-FREE.md'
 </details>
 
 <details>
-<summary>npm:rolldown@1.1.5</summary>
+<summary>npm:rolldown@1.2.8</summary>
 
 Notice text SHA-256: `23ecfff35a5a2e80d92142f75228912c3b1abc4b5a8337a821ff4397e2f9f734`
 
@@ -19277,14 +19340,14 @@ END OF TERMS AND CONDITIONS
 </details>
 
 <details>
-<summary>npm:update-browserslist-db@1.2.3</summary>
+<summary>npm:update-browserslist-db@1.3.3</summary>
 
-Notice text SHA-256: `c414dde36704bd9c8a76c7aa2921b19270ff9abeb478ea0050250d16cf29b0f6`
+Notice text SHA-256: `9877e90da14aa8c931a1f9d07cc2a20ce119106e5dab1ebb41af865266d0cd2a`
 
 ~~~~text
 The MIT License (MIT)
 
-Copyright 2022 Andrey Sitnik <andrey@sitnik.ru> and other contributors
+Copyright 2022 Andrey Sitnik <andrey@sitnik.es> and other contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -19328,9 +19391,9 @@ The views and conclusions contained in the software and documentation are those 
 </details>
 
 <details>
-<summary>npm:vite@8.1.5</summary>
+<summary>npm:vite@8.2.2</summary>
 
-Notice text SHA-256: `b1d741c26b53de1bbc0d4d7d3365b79888f9fe511527544a8a7b8e24dec43147`
+Notice text SHA-256: `387dd7baa307083401a27c58c362c30832f5ba1dba84f10cc22c33401523f45c`
 
 ~~~~text
 # Vite core license
@@ -20554,6 +20617,13 @@ Repository: https://github.com/micromatch/is-glob
 
 ---------------------------------------
 
+## is-reference
+License: MIT
+By: Rich Harris
+Repository: https://github.com/Rich-Harris/is-reference
+
+---------------------------------------
+
 ## isexe, which
 License: ISC
 By: Isaac Z. Schlueter
@@ -20584,7 +20654,7 @@ Repository: https://github.com/lydell/js-tokens
 
 > The MIT License (MIT)
 > 
-> Copyright (c) 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Simon Lydell
+> Copyright (c) 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Simon Lydell
 > 
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
@@ -21620,6 +21690,34 @@ Repository: https://github.com/websockets/ws
 > COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 > IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 > CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---------------------------------------
+
+## zimmerframe
+License: MIT
+Repository: https://github.com/sveltejs/zimmerframe
+
+> MIT License
+> 
+> Copyright (c) 2023 [these people](https://github.com/Rich-Harris/zimmerframe/graphs/contributors)
+> 
+> Permission is hereby granted, free of charge, to any person obtaining a copy
+> of this software and associated documentation files (the "Software"), to deal
+> in the Software without restriction, including without limitation the rights
+> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+> copies of the Software, and to permit persons to whom the Software is
+> furnished to do so, subject to the following conditions:
+> 
+> The above copyright notice and this permission notice shall be included in all
+> copies or substantial portions of the Software.
+> 
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+> SOFTWARE.
 ~~~~
 
 </details>
@@ -22496,7 +22594,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 </details>
 
 <details>
-<summary>npm:zod@4.4.3</summary>
+<summary>npm:zod@4.6.5</summary>
 
 Notice text SHA-256: `3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8`
 

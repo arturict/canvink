@@ -197,7 +197,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | Cargo | libdbus-sys | 0.2.7 | Apache-2.0/MIT | [source](https://github.com/diwic/dbus-rs) |
 | Cargo | libloading | 0.7.4 | ISC | [source](https://github.com/nagisa/rust_libloading/) |
 | Cargo | libredox | 0.1.18 | MIT | [source](https://gitlab.redox-os.org/redox-os/libredox.git) |
-| Cargo | libsqlite3-sys | 0.38.1 | MIT | [source](https://github.com/rusqlite/rusqlite) |
+| Cargo | libsqlite3-sys | 0.38.2 | MIT | [source](https://github.com/rusqlite/rusqlite) |
 | Cargo | linux-raw-sys | 0.12.1 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT | [source](https://github.com/sunfishcode/linux-raw-sys) |
 | Cargo | litemap | 0.8.2 | Unicode-3.0 | [source](https://github.com/unicode-org/icu4x) |
 | Cargo | lock_api | 0.4.14 | MIT OR Apache-2.0 | [source](https://github.com/Amanieu/parking_lot) |
@@ -277,7 +277,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | Cargo | regex | 1.13.1 | MIT OR Apache-2.0 | [source](https://github.com/rust-lang/regex) |
 | Cargo | reqwest | 0.13.4 | MIT OR Apache-2.0 | [source](https://github.com/seanmonstar/reqwest) |
 | Cargo | rsqlite-vfs | 0.1.1 | MIT |  |
-| Cargo | rusqlite | 0.40.1 | MIT | [source](https://github.com/rusqlite/rusqlite) |
+| Cargo | rusqlite | 0.40.2 | MIT | [source](https://github.com/rusqlite/rusqlite) |
 | Cargo | rustc_version | 0.4.1 | MIT OR Apache-2.0 | [source](https://github.com/djc/rustc-version-rs) |
 | Cargo | rustc-hash | 2.1.3 | Apache-2.0 OR MIT | [source](https://github.com/rust-lang/rustc-hash) |
 | Cargo | rustix | 1.1.4 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT | [source](https://github.com/bytecodealliance/rustix) |
@@ -333,7 +333,7 @@ following sections reproduce license and notice files shipped by dependencies.
 | Cargo | tauri-build | 2.6.3 | Apache-2.0 OR MIT | [source](https://github.com/tauri-apps/tauri) |
 | Cargo | tauri-codegen | 2.6.3 | Apache-2.0 OR MIT | [source](https://github.com/tauri-apps/tauri) |
 | Cargo | tauri-macros | 2.6.3 | Apache-2.0 OR MIT | [source](https://github.com/tauri-apps/tauri) |
-| Cargo | tauri-plugin-single-instance | 2.4.3 | Apache-2.0 OR MIT | [source](https://github.com/tauri-apps/plugins-workspace) |
+| Cargo | tauri-plugin-single-instance | 2.4.4 | Apache-2.0 OR MIT | [source](https://github.com/tauri-apps/plugins-workspace) |
 | Cargo | tauri-runtime-wry | 2.11.4 | Apache-2.0 OR MIT | [source](https://github.com/tauri-apps/tauri) |
 | Cargo | tauri-runtime | 2.11.3 | Apache-2.0 OR MIT | [source](https://github.com/tauri-apps/tauri) |
 | Cargo | tauri-utils | 2.9.3 | Apache-2.0 OR MIT | [source](https://github.com/tauri-apps/tauri) |
@@ -342,9 +342,9 @@ following sections reproduce license and notice files shipped by dependencies.
 | Cargo | tempfile | 3.27.0 | MIT OR Apache-2.0 | [source](https://github.com/Stebalien/tempfile) |
 | Cargo | tendril | 0.5.1 | MIT OR Apache-2.0 | [source](https://github.com/servo/html5ever) |
 | Cargo | thiserror-impl | 1.0.69 | MIT OR Apache-2.0 | [source](https://github.com/dtolnay/thiserror) |
-| Cargo | thiserror-impl | 2.0.19 | MIT OR Apache-2.0 | [source](https://github.com/dtolnay/thiserror) |
+| Cargo | thiserror-impl | 2.0.20 | MIT OR Apache-2.0 | [source](https://github.com/dtolnay/thiserror) |
 | Cargo | thiserror | 1.0.69 | MIT OR Apache-2.0 | [source](https://github.com/dtolnay/thiserror) |
-| Cargo | thiserror | 2.0.19 | MIT OR Apache-2.0 | [source](https://github.com/dtolnay/thiserror) |
+| Cargo | thiserror | 2.0.20 | MIT OR Apache-2.0 | [source](https://github.com/dtolnay/thiserror) |
 | Cargo | time-core | 0.1.9 | MIT OR Apache-2.0 | [source](https://github.com/time-rs/time) |
 | Cargo | time-macros | 0.2.32 | MIT OR Apache-2.0 | [source](https://github.com/time-rs/time) |
 | Cargo | time | 0.3.54 | MIT OR Apache-2.0 | [source](https://github.com/time-rs/time) |
@@ -1006,7 +1006,7 @@ limitations under the License.
 </details>
 
 <details>
-<summary>Cargo:adler2@2.0.1, Cargo:anyhow@1.0.104, Cargo:async-channel@2.5.0, Cargo:async-executor@1.14.0, Cargo:async-io@2.6.0, Cargo:async-lock@3.4.2, Cargo:async-process@2.5.0, Cargo:async-recursion@1.1.1, Cargo:async-signal@0.2.14, Cargo:async-task@4.7.1, Cargo:async-trait@0.1.91, Cargo:atomic-waker@1.1.2, Cargo:blocking@1.6.2, Cargo:camino@1.2.5, Cargo:cargo-platform@0.1.9, Cargo:cargo_metadata@0.19.2, Cargo:concurrent-queue@2.5.0, Cargo:displaydoc@0.2.7, Cargo:dtoa@1.0.11, Cargo:dyn-clone@1.0.20, Cargo:endi@1.1.1, Cargo:erased-serde@0.4.10, Cargo:event-listener-strategy@0.5.4, Cargo:event-listener@5.4.2, Cargo:fastrand@2.5.0, Cargo:futures-lite@2.6.1, Cargo:hermit-abi@0.5.2, Cargo:itoa@1.0.18, Cargo:linux-raw-sys@0.12.1, Cargo:num_enum@0.7.6, Cargo:num_enum_derive@0.7.6, Cargo:once_cell@1.21.4, Cargo:ordered-stream@0.2.0, Cargo:parking@2.2.1, Cargo:pin-project-lite@0.2.17, Cargo:piper@0.2.5, Cargo:polling@3.11.0, Cargo:proc-macro-crate@1.3.1, Cargo:proc-macro-crate@2.0.2, Cargo:proc-macro-crate@3.5.0, Cargo:proc-macro2@1.0.107, Cargo:quote@1.0.47, Cargo:ref-cast-impl@1.0.26, Cargo:ref-cast@1.0.26, Cargo:rustc-hash@2.1.3, Cargo:rustix@1.1.4, Cargo:rustversion@1.0.23, Cargo:semver@1.0.28, Cargo:serde-untagged@0.1.9, Cargo:serde@1.0.229, Cargo:serde_core@1.0.229, Cargo:serde_derive@1.0.229, Cargo:serde_derive_internals@0.29.1, Cargo:serde_json@1.0.151, Cargo:serde_repr@0.1.21, Cargo:servo_arc@0.4.3, Cargo:syn@1.0.109, Cargo:syn@2.0.119, Cargo:syn@3.0.3, Cargo:system-deps@6.2.2, Cargo:thiserror-impl@1.0.69, Cargo:thiserror-impl@2.0.19, Cargo:thiserror@1.0.69, Cargo:thiserror@2.0.19, Cargo:typeid@1.0.3, Cargo:unicode-ident@1.0.24, Cargo:wasi@0.11.1+wasi-snapshot-preview1, Cargo:wasip2@1.0.4+wasi-0.2.12, Cargo:wasm-streams@0.5.0, Cargo:wit-bindgen@0.57.1, Cargo:x11-dl@2.21.0, Cargo:x11@2.21.0, Cargo:zmij@1.0.23, Cargo:zvariant_utils@3.5.0</summary>
+<summary>Cargo:adler2@2.0.1, Cargo:anyhow@1.0.104, Cargo:async-channel@2.5.0, Cargo:async-executor@1.14.0, Cargo:async-io@2.6.0, Cargo:async-lock@3.4.2, Cargo:async-process@2.5.0, Cargo:async-recursion@1.1.1, Cargo:async-signal@0.2.14, Cargo:async-task@4.7.1, Cargo:async-trait@0.1.91, Cargo:atomic-waker@1.1.2, Cargo:blocking@1.6.2, Cargo:camino@1.2.5, Cargo:cargo-platform@0.1.9, Cargo:cargo_metadata@0.19.2, Cargo:concurrent-queue@2.5.0, Cargo:displaydoc@0.2.7, Cargo:dtoa@1.0.11, Cargo:dyn-clone@1.0.20, Cargo:endi@1.1.1, Cargo:erased-serde@0.4.10, Cargo:event-listener-strategy@0.5.4, Cargo:event-listener@5.4.2, Cargo:fastrand@2.5.0, Cargo:futures-lite@2.6.1, Cargo:hermit-abi@0.5.2, Cargo:itoa@1.0.18, Cargo:linux-raw-sys@0.12.1, Cargo:num_enum@0.7.6, Cargo:num_enum_derive@0.7.6, Cargo:once_cell@1.21.4, Cargo:ordered-stream@0.2.0, Cargo:parking@2.2.1, Cargo:pin-project-lite@0.2.17, Cargo:piper@0.2.5, Cargo:polling@3.11.0, Cargo:proc-macro-crate@1.3.1, Cargo:proc-macro-crate@2.0.2, Cargo:proc-macro-crate@3.5.0, Cargo:proc-macro2@1.0.107, Cargo:quote@1.0.47, Cargo:ref-cast-impl@1.0.26, Cargo:ref-cast@1.0.26, Cargo:rustc-hash@2.1.3, Cargo:rustix@1.1.4, Cargo:rustversion@1.0.23, Cargo:semver@1.0.28, Cargo:serde-untagged@0.1.9, Cargo:serde@1.0.229, Cargo:serde_core@1.0.229, Cargo:serde_derive@1.0.229, Cargo:serde_derive_internals@0.29.1, Cargo:serde_json@1.0.151, Cargo:serde_repr@0.1.21, Cargo:servo_arc@0.4.3, Cargo:syn@1.0.109, Cargo:syn@2.0.119, Cargo:syn@3.0.3, Cargo:system-deps@6.2.2, Cargo:thiserror-impl@1.0.69, Cargo:thiserror-impl@2.0.20, Cargo:thiserror@1.0.69, Cargo:thiserror@2.0.20, Cargo:typeid@1.0.3, Cargo:unicode-ident@1.0.24, Cargo:wasi@0.11.1+wasi-snapshot-preview1, Cargo:wasip2@1.0.4+wasi-0.2.12, Cargo:wasm-streams@0.5.0, Cargo:wit-bindgen@0.57.1, Cargo:x11-dl@2.21.0, Cargo:x11@2.21.0, Cargo:zmij@1.0.23, Cargo:zvariant_utils@3.5.0</summary>
 
 Notice text SHA-256: `23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3`
 
@@ -1158,7 +1158,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </details>
 
 <details>
-<summary>Cargo:anyhow@1.0.104, Cargo:async-trait@0.1.91, Cargo:dtoa@1.0.11, Cargo:dyn-clone@1.0.20, Cargo:erased-serde@0.4.10, Cargo:itoa@1.0.18, Cargo:libc@0.2.189, Cargo:num_enum@0.7.6, Cargo:num_enum_derive@0.7.6, Cargo:proc-macro2@1.0.107, Cargo:quote@1.0.47, Cargo:ref-cast-impl@1.0.26, Cargo:ref-cast@1.0.26, Cargo:rustc-hash@2.1.3, Cargo:rustversion@1.0.23, Cargo:semver@1.0.28, Cargo:serde-untagged@0.1.9, Cargo:serde@1.0.229, Cargo:serde_core@1.0.229, Cargo:serde_derive@1.0.229, Cargo:serde_derive_internals@0.29.1, Cargo:serde_json@1.0.151, Cargo:serde_repr@0.1.21, Cargo:syn@2.0.119, Cargo:syn@3.0.3, Cargo:thiserror-impl@1.0.69, Cargo:thiserror-impl@2.0.19, Cargo:thiserror@1.0.69, Cargo:thiserror@2.0.19, Cargo:typeid@1.0.3, Cargo:unicode-ident@1.0.24, Cargo:wasm-streams@0.5.0</summary>
+<summary>Cargo:anyhow@1.0.104, Cargo:async-trait@0.1.91, Cargo:dtoa@1.0.11, Cargo:dyn-clone@1.0.20, Cargo:erased-serde@0.4.10, Cargo:itoa@1.0.18, Cargo:libc@0.2.189, Cargo:num_enum@0.7.6, Cargo:num_enum_derive@0.7.6, Cargo:proc-macro2@1.0.107, Cargo:quote@1.0.47, Cargo:ref-cast-impl@1.0.26, Cargo:ref-cast@1.0.26, Cargo:rustc-hash@2.1.3, Cargo:rustversion@1.0.23, Cargo:semver@1.0.28, Cargo:serde-untagged@0.1.9, Cargo:serde@1.0.229, Cargo:serde_core@1.0.229, Cargo:serde_derive@1.0.229, Cargo:serde_derive_internals@0.29.1, Cargo:serde_json@1.0.151, Cargo:serde_repr@0.1.21, Cargo:syn@2.0.119, Cargo:syn@3.0.3, Cargo:thiserror-impl@1.0.69, Cargo:thiserror-impl@2.0.20, Cargo:thiserror@1.0.69, Cargo:thiserror@2.0.20, Cargo:typeid@1.0.3, Cargo:unicode-ident@1.0.24, Cargo:wasm-streams@0.5.0</summary>
 
 Notice text SHA-256: `b30df9a48463d1c99c6a66cdee623b1b0832c3811d58a80b338268d71cea190e`
 
@@ -6956,7 +6956,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>Cargo:fdeflate@0.3.7, Cargo:field-offset@0.3.6, Cargo:miniz_oxide@0.8.9, Cargo:num-conv@0.2.2, Cargo:pin-project-lite@0.2.17, Cargo:raw-window-handle@0.6.2, Cargo:sync_wrapper@1.0.2, Cargo:tauri-build@2.6.3, Cargo:tauri-codegen@2.6.3, Cargo:tauri-macros@2.6.3, Cargo:tauri-plugin-single-instance@2.4.3, Cargo:tauri-runtime-wry@2.11.4, Cargo:tauri-runtime@2.11.3, Cargo:tauri-utils@2.9.3, Cargo:tauri@2.11.5, Cargo:time-core@0.1.9, Cargo:time-macros@0.2.32, Cargo:time@0.3.54, npm:@tauri-apps/api@2.11.1, npm:@tauri-apps/cli@2.11.4, npm:pdfjs-dist@6.2.108</summary>
+<summary>Cargo:fdeflate@0.3.7, Cargo:field-offset@0.3.6, Cargo:miniz_oxide@0.8.9, Cargo:num-conv@0.2.2, Cargo:pin-project-lite@0.2.17, Cargo:raw-window-handle@0.6.2, Cargo:sync_wrapper@1.0.2, Cargo:tauri-build@2.6.3, Cargo:tauri-codegen@2.6.3, Cargo:tauri-macros@2.6.3, Cargo:tauri-plugin-single-instance@2.4.4, Cargo:tauri-runtime-wry@2.11.4, Cargo:tauri-runtime@2.11.3, Cargo:tauri-utils@2.9.3, Cargo:tauri@2.11.5, Cargo:time-core@0.1.9, Cargo:time-macros@0.2.32, Cargo:time@0.3.54, npm:@tauri-apps/api@2.11.1, npm:@tauri-apps/cli@2.11.4, npm:pdfjs-dist@6.2.108</summary>
 
 Notice text SHA-256: `bb28c48e3e078166e91cfc2b6db7ffebb8a0973b9e23b3df060561292d8d69ec`
 
@@ -9779,7 +9779,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>Cargo:libsqlite3-sys@0.38.1, Cargo:rusqlite@0.40.1</summary>
+<summary>Cargo:libsqlite3-sys@0.38.2, Cargo:rusqlite@0.40.2</summary>
 
 Notice text SHA-256: `c10c1f27337546471e5f7e4e97fdd398b35b9d4e126115dcd22de8d8e65abf6f`
 
@@ -12960,7 +12960,7 @@ SOFTWARE.
 </details>
 
 <details>
-<summary>Cargo:tauri-plugin-single-instance@2.4.3</summary>
+<summary>Cargo:tauri-plugin-single-instance@2.4.4</summary>
 
 Notice text SHA-256: `9c1db6b7e7eb83e1cb2af973b5df2bdc63651ede0f38506ab98dfa0940487759`
 
@@ -12990,7 +12990,7 @@ Creator: Person: Daniel Thompson-Yvetot
 </details>
 
 <details>
-<summary>Cargo:tauri-plugin-single-instance@2.4.3</summary>
+<summary>Cargo:tauri-plugin-single-instance@2.4.4</summary>
 
 Notice text SHA-256: `af76c60594af325c4efdcbcd27f5d34ff441c11f09b46b627b378d04d5aa1f1d`
 

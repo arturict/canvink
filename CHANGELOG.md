@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Unreleased
 
+### Security
+
+- Restrict the Unix desktop database directory, database, and SQLite companion files to the owning user, including repair of permissive legacy modes
+
 ### Planned
 
 - Reliability and accessibility improvements driven by public alpha feedback

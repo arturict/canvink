@@ -45,11 +45,15 @@ pnpm tauri:dev
 Run the same core checks expected in continuous integration:
 
 ```bash
+pnpm exec playwright install chromium
 pnpm typecheck
 pnpm lint
 pnpm test
+pnpm test:e2e
 pnpm build
 ```
+
+On a supported Linux development or CI host, use `pnpm exec playwright install --with-deps chromium` when the browser's operating-system dependencies are not already installed.
 
 For Rust or Tauri changes, also run:
 

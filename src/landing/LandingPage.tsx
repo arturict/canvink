@@ -3,7 +3,6 @@ import {
   BookOpen,
   Check,
   Code2,
-  Download,
   FileText,
   Image as ImageIcon,
   Layers3,
@@ -15,14 +14,16 @@ import {
 import "./landing.css";
 
 const repositoryUrl = "https://github.com/arturict/canvink";
-const releaseUrl = `${repositoryUrl}/releases/latest`;
 
 const alphaFeatures = [
-  "Notebook, section, page, and subpage hierarchy",
+  "Blank quick note, optional guide, and focused text capture",
+  "Notebook, section, page, and subpage hierarchy with page actions",
   "Free canvas and printable A4 page modes",
   "Pressure-aware pen and highlighter",
-  "Movable text, images, and PDF previews",
-  "Local autosave, search, trash, and portable export",
+  "Formatted text, checklists, images, and PDF previews on one canvas",
+  "Tags, tasks, and search across text and checklist content",
+  "Local autosave with retry, recovery, rescue export, and trash",
+  "Installable offline app shell and rootless Docker self-hosting",
 ];
 
 export function LandingPage() {
@@ -59,13 +60,14 @@ export function LandingPage() {
             Open source. Local first. Mixed media.
           </div>
           <h1>
-            Your notes. Your files.
-            <span>Your canvas.</span>
+            Capture it now.
+            <span>Find it when it matters.</span>
           </h1>
           <p className="hero-lede">
-            Canvink is the open notebook where handwriting, movable text, images,
-            and PDF previews live together on one page. No required account. No
-            cloud lock-in.
+            Open straight into a local note, write or draw, turn ideas into a
+            checklist, and find them again by text, tag, or task state.
+            Organize later, recover mistakes, and export your work without a
+            required account or cloud lock-in.
           </p>
           <div className="hero-actions">
             <a className="primary-cta" href="/app">
@@ -74,22 +76,22 @@ export function LandingPage() {
             </a>
             <a
               className="secondary-cta"
-              href={releaseUrl}
+              href={`${repositoryUrl}#build-from-source`}
               target="_blank"
               rel="noreferrer"
             >
-              <Download size={18} />
-              Download latest alpha
+              <Code2 size={18} />
+              Build or self-host
             </a>
           </div>
           <p className="demo-note">
             The demo saves only in this browser. Desktop builds use a local
-            SQLite notebook file. Current Windows and Linux packages are
-            unsigned public-alpha builds.
+            SQLite notebook file. Any desktop packages in the public alpha are
+            unsigned.
           </p>
         </div>
 
-        <div className="product-frame" aria-label="Canvink product preview">
+        <div className="product-frame" aria-hidden="true">
           <div className="window-bar">
             <span />
             <span />
@@ -271,8 +273,9 @@ export function LandingPage() {
           <h2>Small enough to test. Honest enough to trust.</h2>
           <p>
             This is an early, local-only release, not a finished OneNote
-            replacement. The goal is to validate the mixed-object page and its
-            storage model before adding sync.
+            replacement. The current beta candidate targets documented everyday
+            individual workflows while sync, collaboration, OCR, and broader
+            capture integrations remain outside the delivered scope.
           </p>
           <a href="/app" className="text-link">
             Open the demo <ArrowRight size={17} />
@@ -286,8 +289,9 @@ export function LandingPage() {
             </div>
           ))}
           <div className="future-item">
-            <span>Next</span>
-            Encrypted sync, native attachment storage, OCR, and importers
+            <span>Not in this alpha</span>
+            Sync, native attachment storage, OCR, and broader importers remain
+            research directions, not commitments
           </div>
         </div>
       </section>
@@ -298,8 +302,8 @@ export function LandingPage() {
         </div>
         <h2>Bring one real notebook.</h2>
         <p>
-          Try the alpha, inspect the source, and tell us where the first five
-          minutes break.
+          Try the alpha, inspect the source, and tell us where the capture flow
+          breaks.
         </p>
         <div className="hero-actions closing-actions">
           <a className="primary-cta" href="/app">

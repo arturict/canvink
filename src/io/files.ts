@@ -1,4 +1,5 @@
 import { createId } from '../domain/ids';
+import { formattedText } from '../domain/textFormatting';
 import {
   MAX_IMAGE_FILE_BYTES,
   MAX_IMAGE_PIXELS,
@@ -35,11 +36,14 @@ function safeFilename(value: string): string {
 
 function triggerDownload(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename;
-  anchor.click();
-  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  try {
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+  } finally {
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
 }
 
 function workspaceBackup(workspace: WorkspaceState): { blob: Blob; filename: string } {
@@ -620,14 +624,24 @@ export async function createPagePdf(context: ActiveContext): Promise<JsPDF> {
     if (element.kind === 'text') {
       const [red, green, blue] = colorChannels(element.color);
       pdf.setTextColor(red, green, blue);
-      pdf.setFont('helvetica', element.fontWeight >= 600 ? 'bold' : 'normal');
+      const fontStyle = element.fontWeight >= 600
+        ? element.fontStyle === 'italic' ? 'bolditalic' : 'bold'
+        : element.fontStyle === 'italic' ? 'italic' : 'normal';
+      pdf.setFont('helvetica', fontStyle);
       pdf.setFontSize(Math.max(5, element.fontSize * scale * 2.8346));
-      const lines = pdf.splitTextToSize(element.text, element.width * scale);
+      const lines = pdf.splitTextToSize(formattedText(element), element.width * scale);
       pdf.text(
         lines,
-        offsetX + element.x * scale,
+        offsetX +
+          element.x * scale +
+          (element.textAlign === 'center'
+            ? element.width * scale * 0.5
+            : element.textAlign === 'right'
+              ? element.width * scale
+              : 0),
         offsetY + (element.y + element.fontSize) * scale,
         {
+          align: element.textAlign ?? 'left',
           lineHeightFactor: 1.35,
           baseline: 'alphabetic',
           maxWidth: element.width * scale,
@@ -636,27 +650,57 @@ export async function createPagePdf(context: ActiveContext): Promise<JsPDF> {
       continue;
     }
 
-    const source = element.kind === 'image' ? element.dataUrl : element.previewDataUrl;
-    try {
-      pdf.addImage(
-        source,
-        jsPdfImageFormat(source),
-        offsetX + element.x * scale,
-        offsetY + element.y * scale,
-        element.width * scale,
-        element.height * scale,
-        undefined,
-        'FAST',
-      );
-    } catch {
-      pdf.setDrawColor(180, 185, 180);
-      pdf.rect(
-        offsetX + element.x * scale,
-        offsetY + element.y * scale,
-        element.width * scale,
-        element.height * scale,
-      );
+    if (element.kind === 'checklist') {
+      const [red, green, blue] = colorChannels(element.color);
+      pdf.setTextColor(red, green, blue);
+      pdf.setDrawColor(63, 104, 89);
+      pdf.setFillColor(63, 104, 89);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(Math.max(5, element.fontSize * scale * 2.8346));
+      const lineHeight = Math.max(30, element.fontSize * 1.55) * scale;
+      const boxSize = Math.max(2.5, 16 * scale);
+      element.items.forEach((item, index) => {
+        const itemX = offsetX + (element.x + 12) * scale;
+        const itemY = offsetY + (element.y + 15) * scale + index * lineHeight;
+        pdf.rect(itemX, itemY, boxSize, boxSize, item.checked ? 'FD' : 'S');
+        if (item.checked) {
+          pdf.setDrawColor(255, 255, 255);
+          pdf.setLineWidth(Math.max(0.25, boxSize * 0.12));
+          pdf.line(
+            itemX + boxSize * 0.2,
+            itemY + boxSize * 0.52,
+            itemX + boxSize * 0.42,
+            itemY + boxSize * 0.74,
+          );
+          pdf.line(
+            itemX + boxSize * 0.42,
+            itemY + boxSize * 0.74,
+            itemX + boxSize * 0.82,
+            itemY + boxSize * 0.28,
+          );
+          pdf.setDrawColor(63, 104, 89);
+        }
+        pdf.text(
+          item.text || 'New task',
+          itemX + boxSize + 3,
+          itemY + boxSize * 0.85,
+          { maxWidth: Math.max(10, (element.width - 54) * scale) },
+        );
+      });
+      continue;
     }
+
+    const source = element.kind === 'image' ? element.dataUrl : element.previewDataUrl;
+    pdf.addImage(
+      source,
+      jsPdfImageFormat(source),
+      offsetX + element.x * scale,
+      offsetY + element.y * scale,
+      element.width * scale,
+      element.height * scale,
+      undefined,
+      'FAST',
+    );
   }
 
   return pdf;

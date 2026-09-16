@@ -112,7 +112,7 @@ The following example is shortened but structurally complete:
 | `activeSectionId` | string | Last active section |
 | `activePageId` | string | Last active page |
 
-Each notebook contains ordered sections. Each section contains ordered pages. Each page contains ordered elements and a `mode` of `free` or `a4`.
+Each notebook contains ordered sections. Each section contains ordered pages. Each page contains ordered elements and a `mode` of `free` or `a4`. A page may also contain a `parentPageId`, a bounded `tags` array using `important`, `todo`, `question`, or `idea`, and a `taskState` of `open` or `done`.
 
 The three active IDs are interface state. A repair tool may choose the first valid nested item when an active ID no longer resolves, but it must not discard valid content.
 
@@ -136,9 +136,15 @@ Every element has:
 
 ### Text
 
-`kind` is `text`. The element stores plain `text`, `width`, `height`, `color`, `fontSize`, `fontFamily`, and `fontWeight`.
+`kind` is `text`. The element stores plain `text`, `width`, `height`, `color`, `fontSize`, `fontFamily`, and `fontWeight`. Additive optional fields store `fontStyle` (`normal` or `italic`), `textDecoration` (`none`, `underline`, or `line-through`), `textAlign` (`left`, `center`, or `right`), and `listStyle` (`none`, `bullet`, or `numbered`).
 
 Rich text is not part of schema v1. Readers must treat text as text, not trusted HTML.
+
+### Checklist
+
+`kind` is `checklist`. The element stores `width`, `height`, `color`, `fontSize`, and a bounded ordered `items` array. Each item has an opaque `id`, plain `text`, and a boolean `checked` value. Checklist text is not trusted HTML.
+
+Checklist support was added during the 0.x alpha while the logical schema remained version 1. Earlier alpha readers that do not recognize the element kind fail closed and leave the workspace unchanged; they do not silently discard the checklist. Export a backup before moving a workspace back to an earlier build.
 
 ### Image
 

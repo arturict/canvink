@@ -1,8 +1,17 @@
 export const WORKSPACE_SCHEMA_VERSION = 1 as const;
 
 export type PageMode = 'free' | 'a4';
-export type EditorTool = 'select' | 'pen' | 'highlighter' | 'eraser' | 'text';
+export type EditorTool =
+  | 'select'
+  | 'pen'
+  | 'highlighter'
+  | 'eraser'
+  | 'text'
+  | 'checklist';
 export type TrashKind = 'notebook' | 'section' | 'page' | 'element';
+export type PageTag = 'important' | 'todo' | 'question' | 'idea';
+export type PageTaskState = 'open' | 'done';
+export type TextListStyle = 'none' | 'bullet' | 'numbered';
 
 export interface InkPoint {
   x: number;
@@ -40,6 +49,25 @@ export interface TextElement extends ElementBase {
   fontSize: number;
   fontFamily: string;
   fontWeight: 400 | 500 | 600 | 700;
+  fontStyle?: 'normal' | 'italic';
+  textDecoration?: 'none' | 'underline' | 'line-through';
+  textAlign?: 'left' | 'center' | 'right';
+  listStyle?: TextListStyle;
+}
+
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  checked: boolean;
+}
+
+export interface ChecklistElement extends ElementBase {
+  kind: 'checklist';
+  width: number;
+  height: number;
+  color: string;
+  fontSize: number;
+  items: ChecklistItem[];
 }
 
 export interface ImageElement extends ElementBase {
@@ -60,12 +88,19 @@ export interface PdfElement extends ElementBase {
   height: number;
 }
 
-export type PageElement = StrokeElement | TextElement | ImageElement | PdfElement;
+export type PageElement =
+  | StrokeElement
+  | TextElement
+  | ChecklistElement
+  | ImageElement
+  | PdfElement;
 
 export interface Page {
   id: string;
   parentPageId?: string;
   title: string;
+  tags?: PageTag[];
+  taskState?: PageTaskState;
   mode: PageMode;
   createdAt: string;
   updatedAt: string;
@@ -126,7 +161,7 @@ export interface ActiveContext {
 
 export interface WorkspaceSearchResult {
   id: string;
-  kind: 'notebook' | 'section' | 'page' | 'text';
+  kind: 'notebook' | 'section' | 'page' | 'text' | 'checklist';
   title: string;
   excerpt: string;
   notebookId: string;

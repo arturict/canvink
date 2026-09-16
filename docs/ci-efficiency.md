@@ -4,6 +4,96 @@ This note records the July 29, 2026 GitHub Actions baseline and the reasoning
 behind the first cost-reduction pass. The reliability contract in
 [`release-process.md`](release-process.md) remains authoritative.
 
+## Historical local and Fleet rule, 2026-07-29 through 2026-07-31
+
+During this dated cost-control window, development changes were held locally
+until a real review gate was reached. A work-in-progress branch was not pushed
+merely to obtain hosted feedback. A push to an open pull request triggers the
+required CI, CodeQL, and Dependency Review workflows even while the pull
+request is a draft.
+
+Before dispatching a gate, verify the worker is online, is not a production
+system, has adequate CPU, memory, and disk headroom, and is not carrying
+another material workload. VM 120 and `pers-agent` are never general build
+workers. Do not power on a machine for an inventory check.
+
+The following sequence reproduces the normal `required` job on a suitable
+Ubuntu Fleet worker:
+
+```bash
+set -euo pipefail
+
+npm install --global pnpm@11.18.0
+pnpm install --frozen-lockfile
+
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm release-marker:check
+pnpm licenses:npm
+pnpm build
+pnpm notices:check
+node scripts/smoke-site.mjs dist
+
+pnpm exec playwright install --with-deps chromium
+CI=true PLAYWRIGHT_PREBUILT=true pnpm test:e2e
+
+sudo apt-get update
+sudo apt-get install --yes --no-install-recommends \
+  libappindicator3-dev \
+  librsvg2-dev \
+  libssl-dev \
+  libwebkit2gtk-4.1-dev \
+  patchelf
+
+rustc --version
+cargo --version
+rustup component list --installed
+cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
+cargo clippy --manifest-path src-tauri/Cargo.toml \
+  --all-targets --all-features --locked -- -D warnings
+cargo test --manifest-path src-tauri/Cargo.toml --all-features --locked
+
+cargo install --locked cargo-audit --version 0.22.2
+cargo install --locked cargo-deny --version 0.20.2
+cargo audit --file src-tauri/Cargo.lock
+cargo deny \
+  --manifest-path src-tauri/Cargo.toml \
+  --config .github/cargo-deny.toml \
+  check licenses advisories bans sources
+```
+
+`pnpm check` is a shorter frontend convenience command. It does not include
+the notices check, static-site smoke, Playwright, Rust, or dependency-policy
+gates. `CI=true` enables the one-worker CI configuration, retries,
+`forbidOnly`, and CI reporters. `PLAYWRIGHT_PREBUILT=true` tests the same
+already-built `dist` directory that passed the static smoke.
+
+Each evidence record must identify:
+
+- worker alias and UTC start time;
+- Git HEAD, dirty status, and SHA-256 of the transferred source archive;
+- Node, pnpm, Rust, Cargo, and Chromium versions;
+- each command, exit code, and duration;
+- any skipped gate and its concrete reason.
+
+Keep raw local logs outside Git or under an ignored `*.log` path. A concise,
+non-sensitive summary can be added to the pull request only after push
+approval.
+
+Fleet can reproduce product gates, but it cannot create GitHub's protected
+status contexts. Dependency Review's pull-request diff, CodeQL's protected
+result and SARIF upload, the Vercel deployment status, release attestations,
+and GitHub environment promotion remain GitHub-only gates. Local evidence
+must not be reported as those checks having passed.
+
+For current work, use the reproducible commands in
+[`local-release-pipeline.md`](local-release-pipeline.md) and the current task's
+explicit Fleet, cost, and publishing authority. Do not silently extend this
+historical no-Actions window beyond its stated end date.
+
+The hosted-run costs below are a historical baseline.
+
 ## Measured baseline
 
 The baseline uses successful hosted runs from the repository, not local timing.

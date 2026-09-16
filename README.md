@@ -9,14 +9,17 @@ The project is for people who like the freedom of a spatial notebook but want un
 
 ## What the alpha includes
 
-- A notebook, section, and page hierarchy
+- A notebook, section, page, and subpage hierarchy with page duplication and sibling reordering
+- A blank Quick note start, optional resumable guide, and keyboard-accessible text capture
 - Free-canvas and A4 page modes
 - Pressure-aware vector ink built with `perfect-freehand`
-- Freely positioned ink, text, image, and PDF objects rendered with Konva
-- Basic text search, autosave, trash, and page export foundations
+- Freely positioned ink, formatted text, checklist, image, and PDF objects rendered with Konva
+- Page tags, open/done task state, and search across titles, text, checklists, tags, and tasks
+- Local autosave, reviewed crash-draft recovery, persistent save retry, rescue export, trash, and page export foundations
 - A Tauri 2 desktop shell with SQLite as the authoritative desktop store
-- A browser demo that persists locally in IndexedDB
+- An installable browser app that persists locally in IndexedDB
 - A public landing page and web demo built with React, TypeScript, and Vite
+- A hardened, rootless container for self-hosting the static browser build
 - No account requirement and no application telemetry
 
 The order of objects on a page is meaningful. Text, ink, images, and PDF previews share one coordinate system and can be layered together instead of being isolated in separate editors.
@@ -31,6 +34,10 @@ The hosted browser build is a demo, not a cloud notebook. Its content stays in t
 
 For durable use, prefer the desktop build and maintain backups. Desktop data is stored locally in SQLite. It is not encrypted by Canvink in the current alpha.
 
+After one successful online load, the production browser build caches its application shell. An activated service worker can reopen the interface offline, while notebook content continues to come only from that origin's IndexedDB. A first visit still needs the site, browser storage can still be cleared, and offline support is not sync. A failed save remains visible with a retry action and a JSON rescue-copy download. During the autosave window, Canvink also keeps a separate temporary recovery draft. After an interrupted session, a valid draft is offered for review, download, restoration, or discard and never silently replaces the last successful save.
+
+To host the browser build on your own machine or server, follow the [self-hosting guide](docs/self-hosting.md). The container serves static application files only. It does not receive, sync, or back up notebook content.
+
 ## Build from source
 
 ### Prerequisites
@@ -43,8 +50,11 @@ Install dependencies and run the web app:
 
 ```bash
 pnpm install
+pnpm exec playwright install chromium
 pnpm dev
 ```
+
+The Playwright command installs the local Chromium binary used by `pnpm test:e2e`. On a supported Linux development or CI host, use `pnpm exec playwright install --with-deps chromium` to install its operating-system dependencies too.
 
 The landing page is served at `/` and the notebook at `/app`.
 
@@ -59,6 +69,7 @@ Run the quality gates:
 ```bash
 pnpm check
 pnpm test
+pnpm test:e2e
 pnpm build
 ```
 
@@ -91,6 +102,10 @@ Read more:
 - [File format v1](docs/file-format-v1.md)
 - [Security model](docs/security-model.md)
 - [Release process](docs/release-process.md)
+- [Self-hosting](docs/self-hosting.md)
+- [Local release pipeline](docs/local-release-pipeline.md)
+- [Beta readiness](docs/beta-readiness.md)
+- [OneNote use-case coverage](docs/onenote-use-case-coverage.md)
 - [Community and marketing rules](docs/community-and-marketing.md)
 
 ## Privacy

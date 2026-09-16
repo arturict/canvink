@@ -6,6 +6,7 @@ import {
   FileText,
   Highlighter,
   ImagePlus,
+  ListChecks,
   MousePointer2,
   PenLine,
   Type,
@@ -28,17 +29,82 @@ interface ToolbarProps {
   onExportPdf: () => void;
 }
 
+export const TOOL_KEYBOARD_SHORTCUTS: Readonly<
+  Record<EditorTool, `Alt+Shift+${string}`>
+> = {
+  select: 'Alt+Shift+V',
+  pen: 'Alt+Shift+P',
+  highlighter: 'Alt+Shift+H',
+  eraser: 'Alt+Shift+E',
+  text: 'Alt+Shift+T',
+  checklist: 'Alt+Shift+C',
+};
+
+const toolByShortcutKey: Readonly<Record<string, EditorTool>> = {
+  v: 'select',
+  p: 'pen',
+  h: 'highlighter',
+  e: 'eraser',
+  t: 'text',
+  c: 'checklist',
+};
+
+export function editorToolForKeyboardShortcut(
+  event: Pick<KeyboardEvent, 'altKey' | 'ctrlKey' | 'key' | 'metaKey' | 'shiftKey'>,
+): EditorTool | null {
+  if (!event.altKey || !event.shiftKey || event.ctrlKey || event.metaKey) return null;
+  return toolByShortcutKey[event.key.toLocaleLowerCase()] ?? null;
+}
+
 const tools: Array<{
   id: EditorTool;
   label: string;
-  shortcut: string;
+  shortcut: `Alt+Shift+${string}`;
+  shortcutDisplay: string;
   icon: typeof MousePointer2;
 }> = [
-  { id: 'select', label: 'Select', shortcut: 'V', icon: MousePointer2 },
-  { id: 'pen', label: 'Pen', shortcut: 'P', icon: PenLine },
-  { id: 'highlighter', label: 'Highlight', shortcut: 'H', icon: Highlighter },
-  { id: 'eraser', label: 'Erase', shortcut: 'E', icon: Eraser },
-  { id: 'text', label: 'Text', shortcut: 'T', icon: Type },
+  {
+    id: 'select',
+    label: 'Select',
+    shortcut: TOOL_KEYBOARD_SHORTCUTS.select,
+    shortcutDisplay: 'Alt+⇧+V',
+    icon: MousePointer2,
+  },
+  {
+    id: 'pen',
+    label: 'Pen',
+    shortcut: TOOL_KEYBOARD_SHORTCUTS.pen,
+    shortcutDisplay: 'Alt+⇧+P',
+    icon: PenLine,
+  },
+  {
+    id: 'highlighter',
+    label: 'Highlight',
+    shortcut: TOOL_KEYBOARD_SHORTCUTS.highlighter,
+    shortcutDisplay: 'Alt+⇧+H',
+    icon: Highlighter,
+  },
+  {
+    id: 'eraser',
+    label: 'Erase',
+    shortcut: TOOL_KEYBOARD_SHORTCUTS.eraser,
+    shortcutDisplay: 'Alt+⇧+E',
+    icon: Eraser,
+  },
+  {
+    id: 'text',
+    label: 'Text',
+    shortcut: TOOL_KEYBOARD_SHORTCUTS.text,
+    shortcutDisplay: 'Alt+⇧+T',
+    icon: Type,
+  },
+  {
+    id: 'checklist',
+    label: 'Checklist',
+    shortcut: TOOL_KEYBOARD_SHORTCUTS.checklist,
+    shortcutDisplay: 'Alt+⇧+C',
+    icon: ListChecks,
+  },
 ];
 
 export default function Toolbar({
@@ -58,127 +124,132 @@ export default function Toolbar({
 }: ToolbarProps) {
   return (
     <div className="editor-toolbar" role="toolbar" aria-label="Canvas tools">
-      <div className="tool-group">
-        {tools.map(({ id, label, shortcut, icon: Icon }) => (
+      <div className="editor-toolbar__scroll">
+        <div className="tool-group">
+          {tools.map(({ id, label, shortcut, shortcutDisplay, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              className={`tool-button ${tool === id ? 'is-active' : ''}`}
+              aria-pressed={tool === id}
+              aria-keyshortcuts={shortcut}
+              title={`${label} (${shortcut})`}
+              onClick={() => onToolChange(id)}
+            >
+              <Icon size={18} strokeWidth={2} />
+              <span>{label}</span>
+              <kbd>{shortcutDisplay}</kbd>
+            </button>
+          ))}
+        </div>
+
+        <span className="toolbar-rule" aria-hidden="true" />
+
+        <div className="brush-controls" aria-label="Brush settings">
+          <label className="color-control" title="Ink color">
+            <span className="sr-only">Ink color</span>
+            <input
+              type="color"
+              value={brush.color}
+              onChange={(event) => onBrushChange({ ...brush, color: event.target.value })}
+            />
+          </label>
+          <label className="size-control">
+            <span>Size</span>
+            <input
+              type="range"
+              min="2"
+              max="24"
+              step="1"
+              value={brush.size}
+              onChange={(event) =>
+                onBrushChange({ ...brush, size: Number(event.target.value) })
+              }
+            />
+            <output>{brush.size}</output>
+          </label>
+        </div>
+
+        <span className="toolbar-spacer" />
+
+        <div className="mode-switch" aria-label="Page mode">
           <button
-            key={id}
             type="button"
-            className={`tool-button ${tool === id ? 'is-active' : ''}`}
-            aria-pressed={tool === id}
-            title={`${label} (${shortcut})`}
-            onClick={() => onToolChange(id)}
+            className={pageMode === 'free' ? 'is-active' : ''}
+            aria-pressed={pageMode === 'free'}
+            onClick={() => onPageModeChange('free')}
           >
-            <Icon size={18} strokeWidth={2} />
-            <span>{label}</span>
-            <kbd>{shortcut}</kbd>
+            Free
           </button>
-        ))}
-      </div>
-
-      <span className="toolbar-rule" aria-hidden="true" />
-
-      <div className="brush-controls" aria-label="Brush settings">
-        <label className="color-control" title="Ink color">
-          <span className="sr-only">Ink color</span>
-          <input
-            type="color"
-            value={brush.color}
-            onChange={(event) => onBrushChange({ ...brush, color: event.target.value })}
-          />
-        </label>
-        <label className="size-control">
-          <span>Size</span>
-          <input
-            type="range"
-            min="2"
-            max="24"
-            step="1"
-            value={brush.size}
-            onChange={(event) =>
-              onBrushChange({ ...brush, size: Number(event.target.value) })
-            }
-          />
-          <output>{brush.size}</output>
-        </label>
-      </div>
-
-      <span className="toolbar-spacer" />
-
-      <div className="mode-switch" aria-label="Page mode">
-        <button
-          type="button"
-          className={pageMode === 'free' ? 'is-active' : ''}
-          aria-pressed={pageMode === 'free'}
-          onClick={() => onPageModeChange('free')}
-        >
-          Free
-        </button>
-        <button
-          type="button"
-          className={pageMode === 'a4' ? 'is-active' : ''}
-          aria-pressed={pageMode === 'a4'}
-          onClick={() => onPageModeChange('a4')}
-        >
-          A4
-        </button>
-      </div>
-
-      <div className="asset-actions">
-        <button type="button" className="icon-action" title="Add image" onClick={onImportImage}>
-          <ImagePlus size={18} />
-          <span className="sr-only">Add image</span>
-        </button>
-        <button type="button" className="icon-action" title="Add PDF preview" onClick={onImportPdf}>
-          <FileText size={18} />
-          <span className="sr-only">Add PDF preview</span>
-        </button>
-      </div>
-
-      <details className="action-menu">
-        <summary>
-          <FileInput size={17} />
-          Import
-        </summary>
-        <div className="action-menu__popover">
-          <button type="button" onClick={onPortableImport}>
-            <FileInput size={16} />
-            JSON or Markdown
-          </button>
-          <button type="button" onClick={onImportImage}>
-            <ImagePlus size={16} />
-            Image
-          </button>
-          <button type="button" onClick={onImportPdf}>
-            <FileText size={16} />
-            PDF preview
+          <button
+            type="button"
+            className={pageMode === 'a4' ? 'is-active' : ''}
+            aria-pressed={pageMode === 'a4'}
+            onClick={() => onPageModeChange('a4')}
+          >
+            A4
           </button>
         </div>
-      </details>
 
-      <details className="action-menu action-menu--right">
-        <summary>
-          <Download size={17} />
-          Export
-        </summary>
-        <div className="action-menu__popover">
-          <button type="button" onClick={onExportJson}>
-            <FileDown size={16} />
-            Workspace JSON
+        <div className="asset-actions">
+          <button type="button" className="icon-action" title="Add image" onClick={onImportImage}>
+            <ImagePlus size={18} />
+            <span className="sr-only">Add image</span>
           </button>
-          <button type="button" onClick={onExportMarkdown}>
-            <FileText size={16} />
-            Page Markdown
-          </button>
-          <button type="button" onClick={onExportPng}>
-            <ImagePlus size={16} />
-            Page PNG
-          </button>
-          <button type="button" onClick={onExportPdf}>
-            <FileText size={16} />
-            Vector PDF
+          <button type="button" className="icon-action" title="Add PDF preview" onClick={onImportPdf}>
+            <FileText size={18} />
+            <span className="sr-only">Add PDF preview</span>
           </button>
         </div>
-      </details>
+      </div>
+
+      <div className="editor-toolbar__menus">
+        <details className="action-menu">
+          <summary>
+            <FileInput size={17} />
+            Import
+          </summary>
+          <div className="action-menu__popover">
+            <button type="button" onClick={onPortableImport}>
+              <FileInput size={16} />
+              JSON or Markdown
+            </button>
+            <button type="button" onClick={onImportImage}>
+              <ImagePlus size={16} />
+              Image
+            </button>
+            <button type="button" onClick={onImportPdf}>
+              <FileText size={16} />
+              PDF preview
+            </button>
+          </div>
+        </details>
+
+        <details className="action-menu action-menu--right">
+          <summary>
+            <Download size={17} />
+            Export
+          </summary>
+          <div className="action-menu__popover">
+            <button type="button" onClick={onExportJson}>
+              <FileDown size={16} />
+              Workspace JSON
+            </button>
+            <button type="button" onClick={onExportMarkdown}>
+              <FileText size={16} />
+              Page Markdown
+            </button>
+            <button type="button" onClick={onExportPng}>
+              <ImagePlus size={16} />
+              Page PNG
+            </button>
+            <button type="button" onClick={onExportPdf}>
+              <FileText size={16} />
+              Vector PDF
+            </button>
+          </div>
+        </details>
+      </div>
     </div>
   );
 }

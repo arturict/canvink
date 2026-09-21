@@ -18,11 +18,11 @@ importers:
         specifier: 4.2.1
         version: 4.2.1
       konva:
-        specifier: 10.3.3
-        version: 10.3.3
+        specifier: 10.5.0
+        version: 10.5.0
       lucide-react:
-        specifier: 1.41.0
-        version: 1.41.0(react@19.2.8)
+        specifier: 1.45.0
+        version: 1.45.0(react@19.3.0)
       pdfjs-dist:
         specifier: 6.3.289
         version: 6.3.289
@@ -30,14 +30,14 @@ importers:
         specifier: 1.2.3
         version: 1.2.3
       react:
-        specifier: 19.2.8
-        version: 19.2.8
+        specifier: 19.3.0
+        version: 19.3.0
       react-dom:
-        specifier: 19.2.8
-        version: 19.2.8(react@19.2.8)
+        specifier: 19.3.0
+        version: 19.3.0(react@19.3.0)
       react-konva:
-        specifier: 19.2.6
-        version: 19.2.6(@types/react@19.2.18)(konva@10.3.3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: 19.2.7
+        version: 19.2.7(@types/react@19.3.0)(konva@10.5.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
     devDependencies:
       '@eslint/js':
         specifier: 10.0.1
@@ -49,11 +49,11 @@ importers:
         specifier: 2.11.4
         version: 2.11.4
       '@types/react':
-        specifier: 19.2.18
-        version: 19.2.18
+        specifier: 19.3.0
+        version: 19.3.0
       '@types/react-dom':
-        specifier: 19.2.7
-        version: 19.2.7(@types/react@19.2.18)
+        specifier: 19.3.0
+        version: 19.3.0(@types/react@19.3.0)
       '@vitejs/plugin-react':
         specifier: 6.1.1
         version: 6.1.1(vite@8.2.2)
@@ -527,10 +527,10 @@ packages:
   '@types/raf@3.4.3':
     resolution: {integrity: sha512-c4YAvMedbPZ5tEyxzQdMoOhhJ4RD3rngZIdwC2/qDN3d7JpEhB6fiBRKVY1lg5B7Wk+uPBjn5f39j1/2MY1oOw==}
 
-  '@types/react-dom@19.2.7':
-    resolution: {integrity: sha512-I8bPpDLcHBv1qiIiXDCy71Rt8eQDKJP0sMSWJphDdAcdqiJ1sGpZamavoEIRZmYzjia9LuEb2HlYdDpmoENpvQ==}
+  '@types/react-dom@19.3.0':
+    resolution: {integrity: sha512-ZI7bU42mZXXKHn/qNLEw2IrbiINU7X5+vfgdixBHkCNpYWXjKgfQ/P+uyGb5CjOLB9UcnTeg3rylQtV2hym44Q==}
     peerDependencies:
-      '@types/react': ^19.2.0
+      '@types/react': ^19.3.0
 
   '@types/react-reconciler@0.28.9':
     resolution: {integrity: sha512-HHM3nxyUZ3zAylX8ZEyrDNd2XZOnQ0D5XfunJF5FLQnZbHHYq4UWvW1QfelQNXv1ICNkwYhfxjwfnqivYB6bFg==}
@@ -542,8 +542,8 @@ packages:
     peerDependencies:
       '@types/react': '*'
 
-  '@types/react@19.2.18':
-    resolution: {integrity: sha512-AnzbBERsrLKtk2XSfTbYRLjQPdy116Sty4q+T+Bp3IC4l6jNBvreVPAHmpq9qhXQM7CXZPjLVmGMw9sy+hxQ3w==}
+  '@types/react@19.3.0':
+    resolution: {integrity: sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg==}
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
@@ -942,8 +942,8 @@ packages:
   keyv@5.6.0:
     resolution: {integrity: sha512-CYDD3SOtsHtyXeEORYRx2qBtpDJFjRTGXUtmNEMGyzYOKj1TE3tycdlho7kA1Ufx9OYWZzg52QFBGALTirzDSw==}
 
-  konva@10.3.3:
-    resolution: {integrity: sha512-j3Rrn504bYFwJ0zV0ZbSOQRsM9KMBLOpEq6xZuyIjbaKeFbBXwgiM5SA4IDq4nwM1l49GVKs66Mo+sl7+4G7PQ==}
+  konva@10.5.0:
+    resolution: {integrity: sha512-gTVQ12CVE2vCaP8g+Ag6lYf9LIo1s1lr7bXLNTbF5pcXbdRFCA3Oy1fFxDN/wK7RklJ9e8oqTiSsqmUtfQx91w==}
     peerDependencies:
       canvas: ^3.0.0
       skia-canvas: ^3.0.0
@@ -1038,8 +1038,8 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
-  lucide-react@1.41.0:
-    resolution: {integrity: sha512-6lksP35l6KszDKUeRTi4LV7i6DEe0Yzl2ALJm9j4c5xEYN91GdW1xGsawGMOg2mgjF5GHBVX8pKX9kP+cWsP3Q==}
+  lucide-react@1.45.0:
+    resolution: {integrity: sha512-yH1ubCAduho9UR7oJhRXIQXogksRILBiTuZC4/bQIGeB9JOkxMlSuEHyyZpo1Z3S0yWJO2KTSUZbjiNvVxeOUw==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -1141,13 +1141,13 @@ packages:
   raf@3.4.1:
     resolution: {integrity: sha512-Sq4CW4QhwOHE8ucn6J34MqtZCeWFP2aQSmrlroYgqAV1PjStIhJXxYuTgUIfkEk7zTLjmIjLmU5q+fbD1NnOJA==}
 
-  react-dom@19.2.8:
-    resolution: {integrity: sha512-rVprimfGBG3DR+Tq0IQG2DT5PxKth1WIGDmj5yPmlzr4YBe7uyE+Du4oVqTDXZSHGGGXRtTJEGSSePyQCMBglQ==}
+  react-dom@19.3.0:
+    resolution: {integrity: sha512-JDk8dgif51OjFoDE70+OT9ICyYr+69HlmihNwp1+Nsfbna3t5sIiCa9ZJktDmQ4/1b/rn26hIAR2uYXDMr5r0Q==}
     peerDependencies:
-      react: ^19.2.8
+      react: ^19.3.0
 
-  react-konva@19.2.6:
-    resolution: {integrity: sha512-8njLrhzEW+G3J1YoI1cscd7Dlc5ib9rnN1/5LS2AMvXC2DYUWCsxt242q0cYYdPNUDF7jEETChcGa2yzYfwG4w==}
+  react-konva@19.2.7:
+    resolution: {integrity: sha512-z/mxVITj2W+MQ8+TeD7ONMnMvy99hj4NJ4UfmWbjJcdeUOm8AZR41cCfwRZTryE3/z4r2/nOyckRNlr0GP+G3w==}
     peerDependencies:
       konva: ^8.0.1 || ^7.2.5 || ^9.0.0 || ^10.0.0
       react: ^19.2.0
@@ -1159,8 +1159,8 @@ packages:
     peerDependencies:
       react: ^19.2.0
 
-  react@19.2.8:
-    resolution: {integrity: sha512-PWaYA1L/q9u2u7xYQi+Y3L3Yfnie7XyLeaJICV1MGD6LprsBxcAqGjYyr0eY3p+QdsA+x/Irkt4Qif8D63+Sbw==}
+  react@19.3.0:
+    resolution: {integrity: sha512-E8LUcbtBWt20bbl2YoHfx4ZDBdxVTfOKtCZn9cDSJ4l6/nuoApcpIBcj47t2wZoVX8g2ZHuMHbiShgCR1T5Sog==}
     engines: {node: '>=0.10.0'}
 
   regenerator-runtime@0.13.11:
@@ -1177,6 +1177,9 @@ packages:
 
   scheduler@0.27.0:
     resolution: {integrity: sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q==}
+
+  scheduler@0.28.0:
+    resolution: {integrity: sha512-juorfCmIkIw8tT+p5BXSm6PJjQF/ycEYmKyzURCIt/RaZIhL+PulbQ9Yu2z1HdOJDdqDTlxA1+xKBmHXJsczAw==}
 
   semver@6.3.1:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
@@ -1745,19 +1748,19 @@ snapshots:
   '@types/raf@3.4.3':
     optional: true
 
-  '@types/react-dom@19.2.7(@types/react@19.2.18)':
+  '@types/react-dom@19.3.0(@types/react@19.3.0)':
     dependencies:
-      '@types/react': 19.2.18
+      '@types/react': 19.3.0
 
-  '@types/react-reconciler@0.28.9(@types/react@19.2.18)':
+  '@types/react-reconciler@0.28.9(@types/react@19.3.0)':
     dependencies:
-      '@types/react': 19.2.18
+      '@types/react': 19.3.0
 
-  '@types/react-reconciler@0.33.0(@types/react@19.2.18)':
+  '@types/react-reconciler@0.33.0(@types/react@19.3.0)':
     dependencies:
-      '@types/react': 19.2.18
+      '@types/react': 19.3.0
 
-  '@types/react@19.2.18':
+  '@types/react@19.3.0':
     dependencies:
       csstype: 3.2.3
 
@@ -2163,10 +2166,10 @@ snapshots:
 
   isexe@2.0.0: {}
 
-  its-fine@2.0.0(@types/react@19.2.18)(react@19.2.8):
+  its-fine@2.0.0(@types/react@19.3.0)(react@19.3.0):
     dependencies:
-      '@types/react-reconciler': 0.28.9(@types/react@19.2.18)
-      react: 19.2.8
+      '@types/react-reconciler': 0.28.9(@types/react@19.3.0)
+      react: 19.3.0
     transitivePeerDependencies:
       - '@types/react'
 
@@ -2195,7 +2198,7 @@ snapshots:
     dependencies:
       '@keyv/serialize': 1.1.1
 
-  konva@10.3.3: {}
+  konva@10.5.0: {}
 
   levn@0.4.1:
     dependencies:
@@ -2259,9 +2262,9 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lucide-react@1.41.0(react@19.2.8):
+  lucide-react@1.45.0(react@19.3.0):
     dependencies:
-      react: 19.2.8
+      react: 19.3.0
 
   magic-string@0.30.21:
     dependencies:
@@ -2344,29 +2347,29 @@ snapshots:
       performance-now: 2.1.0
     optional: true
 
-  react-dom@19.2.8(react@19.2.8):
+  react-dom@19.3.0(react@19.3.0):
     dependencies:
-      react: 19.2.8
-      scheduler: 0.27.0
+      react: 19.3.0
+      scheduler: 0.28.0
 
-  react-konva@19.2.6(@types/react@19.2.18)(konva@10.3.3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  react-konva@19.2.7(@types/react@19.3.0)(konva@10.5.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
     dependencies:
-      '@types/react-reconciler': 0.33.0(@types/react@19.2.18)
-      its-fine: 2.0.0(@types/react@19.2.18)(react@19.2.8)
-      konva: 10.3.3
-      react: 19.2.8
-      react-dom: 19.2.8(react@19.2.8)
-      react-reconciler: 0.33.0(react@19.2.8)
+      '@types/react-reconciler': 0.33.0(@types/react@19.3.0)
+      its-fine: 2.0.0(@types/react@19.3.0)(react@19.3.0)
+      konva: 10.5.0
+      react: 19.3.0
+      react-dom: 19.3.0(react@19.3.0)
+      react-reconciler: 0.33.0(react@19.3.0)
       scheduler: 0.27.0
     transitivePeerDependencies:
       - '@types/react'
 
-  react-reconciler@0.33.0(react@19.2.8):
+  react-reconciler@0.33.0(react@19.3.0):
     dependencies:
-      react: 19.2.8
+      react: 19.3.0
       scheduler: 0.27.0
 
-  react@19.2.8: {}
+  react@19.3.0: {}
 
   regenerator-runtime@0.13.11:
     optional: true
@@ -2396,6 +2399,8 @@ snapshots:
       '@rolldown/binding-win32-x64-msvc': 1.2.8
 
   scheduler@0.27.0: {}
+
+  scheduler@0.28.0: {}
 
   semver@6.3.1: {}
 

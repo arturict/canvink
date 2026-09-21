@@ -388,7 +388,7 @@ jobs:
           cp -- "${INSTALLERS[@]}" release-staging/
 
       - name: Generate Linux SPDX SBOM
-        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
         with:
           path: src-tauri/target/release/bundle
           format: spdx-json
@@ -729,7 +729,7 @@ jobs:
           Copy-Item -LiteralPath $installers.FullName -Destination 'release-staging'
 
       - name: Generate Windows SPDX SBOM
-        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
         with:
           path: src-tauri/target/release/bundle
           format: spdx-json
@@ -861,12 +861,12 @@ jobs:
           )
 
       - name: Attest release provenance
-        uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.2.0
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: release-assets/*
 
       - name: Attest Linux SBOM
-        uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.2.0
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: |
             release-assets/*.AppImage
@@ -874,7 +874,7 @@ jobs:
           sbom-path: release-assets/sbom-linux.spdx.json
 
       - name: Attest Windows SBOM
-        uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.2.0
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: |
             release-assets/*.exe

@@ -64,7 +64,7 @@
     "@automerge/automerge-repo": "2.5.6",
     "@automerge/prosemirror": "0.2.0",
     "@azure/msal-browser": "5.17.3",
-    "@clerk/clerk-react": "^5.61.3",
+    "@clerk/clerk-react": "^5.61.6",
     "@clerk/localizations": "3.37.9",
     "@cortex-js/compute-engine": "0.100.1",
     "@tauri-apps/api": "2.11.1",

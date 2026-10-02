@@ -22,11 +22,8 @@ export default defineConfig({
           // PERSONAL-SYNC.md §3.7: device access-token key, test-only here.
           DEVICE_TOKEN_SECRET: "test-device-token-secret-for-vitest-only",
         },
-        // The `ASSETS` R2 binding is deliberately NOT declared in
-        // wrangler.jsonc yet (R2 isn't enabled on the deploy account — see
-        // that file's comment), so it is injected only here: Miniflare
-        // simulates R2 entirely locally, with no real Cloudflare API access,
-        // which is exactly what lets the asset-route tests run today. One
+        // Miniflare simulates the `ASSETS` R2 binding entirely locally,
+        // with no real Cloudflare API access. One
         // test (test/assets.spec.ts) also exercises the `env.ASSETS`-absent
         // 503 path directly, since every test in this file otherwise has the
         // binding present.

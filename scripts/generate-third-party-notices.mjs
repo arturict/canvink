@@ -63,7 +63,12 @@ function noticeFiles(directory) {
 }
 
 function normalizeText(value) {
-  return value.replaceAll('\r\n', '\n').trim() + '\n';
+  return value
+    .replaceAll('\r\n', '\n')
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .join('\n')
+    .trim() + '\n';
 }
 
 function escapeCell(value) {
@@ -152,7 +157,8 @@ const lines = [
   'This file is generated from the exact npm and Cargo lock graphs used by Canvink.',
   'It is distributed with the application together with the Canvink AGPL license.',
   'The inventory records declared SPDX expressions and upstream sources. The',
-  'following sections reproduce license and notice files shipped by dependencies.',
+  'following sections reproduce license and notice files shipped by dependencies,',
+  'normalizing line endings and trailing whitespace only.',
   '',
   '## Dependency inventory',
   '',

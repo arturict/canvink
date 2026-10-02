@@ -1,0 +1,526 @@
+[
+  {
+    "$id": "sync_notebooks",
+    "$permissions": [],
+    "databaseId": "canvink-sync",
+    "name": "Sync notebook sequence counters",
+    "enabled": true,
+    "rowSecurity": false,
+    "columns": [
+      {
+        "key": "currentSequence",
+        "type": "integer",
+        "required": true,
+        "min": 0,
+        "max": 9007199254740991
+      },
+      { "key": "createdBy", "type": "varchar", "required": true, "size": 36 }
+    ],
+    "indexes": []
+  },
+  {
+    "$id": "sync_device_accounts",
+    "$permissions": [],
+    "databaseId": "canvink-sync",
+    "name": "Server-only first-device bootstrap guards",
+    "enabled": true,
+    "rowSecurity": false,
+    "columns": [
+      { "key": "accountId", "type": "varchar", "required": true, "size": 36 },
+      {
+        "key": "bootstrapDeviceId",
+        "type": "varchar",
+        "required": true,
+        "size": 128
+      },
+      { "key": "createdAt", "type": "datetime", "required": true }
+    ],
+    "indexes": [
+      {
+        "key": "bootstrap_account",
+        "type": "unique",
+        "attributes": ["accountId"],
+        "orders": ["ASC"]
+      }
+    ]
+  },
+  {
+    "$id": "sync_devices",
+    "$permissions": [],
+    "databaseId": "canvink-sync",
+    "name": "Account-bound public device directory",
+    "enabled": true,
+    "rowSecurity": true,
+    "columns": [
+      {
+        "key": "protocolVersion",
+        "type": "integer",
+        "required": true,
+        "min": 1,
+        "max": 1
+      },
+      { "key": "accountId", "type": "varchar", "required": true, "size": 36 },
+      { "key": "deviceId", "type": "varchar", "required": true, "size": 128 },
+      {
+        "key": "encryptionPublicKey",
+        "type": "varchar",
+        "required": true,
+        "size": 43
+      },
+      {
+        "key": "signingPublicKey",
+        "type": "varchar",
+        "required": true,
+        "size": 43
+      },
+      {
+        "key": "status",
+        "type": "enum",
+        "required": true,
+        "elements": ["pending", "active", "revoked"]
+      },
+      { "key": "bootstrap", "type": "boolean", "required": true },
+      {
+        "key": "challengeVersion",
+        "type": "integer",
+        "required": true,
+        "min": 0,
+        "max": 2147483647
+      },
+      { "key": "createdAt", "type": "datetime", "required": true },
+      { "key": "updatedAt", "type": "datetime", "required": true },
+      { "key": "revokedAt", "type": "datetime", "required": false }
+    ],
+    "indexes": [
+      {
+        "key": "device_identity",
+        "type": "unique",
+        "attributes": ["deviceId"],
+        "orders": ["ASC"]
+      },
+      {
+        "key": "device_account",
+        "type": "key",
+        "attributes": ["accountId"],
+        "orders": ["ASC"]
+      },
+      {
+        "key": "device_member_status",
+        "type": "key",
+        "attributes": ["accountId", "status"],
+        "orders": ["ASC", "ASC"]
+      }
+    ]
+  },
+  {
+    "$id": "sync_device_challenges",
+    "$permissions": [],
+    "databaseId": "canvink-sync",
+    "name": "One-time device approval challenges",
+    "enabled": true,
+    "rowSecurity": false,
+    "columns": [
+      {
+        "key": "protocolVersion",
+        "type": "integer",
+        "required": true,
+        "min": 1,
+        "max": 1
+      },
+      { "key": "notebookId", "type": "varchar", "required": true, "size": 36 },
+      { "key": "accountId", "type": "varchar", "required": true, "size": 36 },
+      {
+        "key": "requestingDeviceId",
+        "type": "varchar",
+        "required": true,
+        "size": 128
+      },
+      {
+        "key": "requestingEncryptionPublicKey",
+        "type": "varchar",
+        "required": true,
+        "size": 43
+      },
+      {
+        "key": "requestingSigningPublicKey",
+        "type": "varchar",
+        "required": true,
+        "size": 43
+      },
+      { "key": "nonce", "type": "varchar", "required": true, "size": 43 },
+      {
+        "key": "issuedAt",
+        "type": "integer",
+        "required": true,
+        "min": 0,
+        "max": 9007199254740991
+      },
+      {
+        "key": "expiresAt",
+        "type": "integer",
+        "required": true,
+        "min": 1,
+        "max": 9007199254740991
+      },
+      {
+        "key": "status",
+        "type": "enum",
+        "required": true,
+        "elements": ["pending", "consumed"]
+      },
+      { "key": "consumedAt", "type": "datetime", "required": false },
+      {
+        "key": "approvalKind",
+        "type": "enum",
+        "required": false,
+        "elements": ["device", "recovery"]
+      },
+      {
+        "key": "approverDeviceId",
+        "type": "varchar",
+        "required": false,
+        "size": 128
+      },
+      {
+        "key": "recoveryKeyId",
+        "type": "varchar",
+        "required": false,
+        "size": 128
+      },
+      {
+        "key": "proofChallengeHash",
+        "type": "varchar",
+        "required": false,
+        "size": 43
+      },
+      {
+        "key": "approvalSignature",
+        "type": "varchar",
+        "required": false,
+        "size": 86
+      }
+    ],
+    "indexes": [
+      {
+        "key": "live_device_challenges",
+        "type": "key",
+        "attributes": [
+          "accountId",
+          "requestingDeviceId",
+          "status",
+          "expiresAt"
+        ],
+        "orders": ["ASC", "ASC", "ASC", "ASC"]
+      }
+    ]
+  },
+  {
+    "$id": "sync_changes",
+    "$permissions": [],
+    "databaseId": "canvink-sync",
+    "name": "Opaque encrypted CRDT changes",
+    "enabled": true,
+    "rowSecurity": true,
+    "columns": [
+      {
+        "key": "protocolVersion",
+        "type": "integer",
+        "required": true,
+        "min": 1,
+        "max": 1
+      },
+      { "key": "notebookId", "type": "varchar", "required": true, "size": 36 },
+      { "key": "documentId", "type": "varchar", "required": true, "size": 128 },
+      { "key": "deviceId", "type": "varchar", "required": true, "size": 128 },
+      {
+        "key": "keyEpoch",
+        "type": "integer",
+        "required": true,
+        "min": 1,
+        "max": 2147483647
+      },
+      {
+        "key": "sequence",
+        "type": "integer",
+        "required": true,
+        "min": 1,
+        "max": 9007199254740991
+      },
+      { "key": "changeHash", "type": "varchar", "required": true, "size": 43 },
+      { "key": "nonce", "type": "varchar", "required": true, "size": 32 },
+      { "key": "ciphertext", "type": "mediumtext", "required": true },
+      { "key": "signature", "type": "varchar", "required": true, "size": 86 }
+    ],
+    "indexes": [
+      {
+        "key": "notebook_sequence",
+        "type": "unique",
+        "attributes": ["notebookId", "sequence"],
+        "orders": ["ASC", "ASC"]
+      },
+      {
+        "key": "notebook_device_hash",
+        "type": "unique",
+        "attributes": ["notebookId", "deviceId", "changeHash"],
+        "orders": ["ASC", "ASC", "ASC"]
+      },
+      {
+        "key": "notebook_document_sequence",
+        "type": "key",
+        "attributes": ["notebookId", "documentId", "sequence"],
+        "orders": ["ASC", "ASC", "ASC"]
+      }
+    ]
+  },
+  {
+    "$id": "sync_heads",
+    "$permissions": [],
+    "databaseId": "canvink-sync",
+    "name": "Opaque device head acknowledgements",
+    "enabled": true,
+    "rowSecurity": false,
+    "columns": [
+      {
+        "key": "protocolVersion",
+        "type": "integer",
+        "required": true,
+        "min": 1,
+        "max": 1
+      },
+      { "key": "notebookId", "type": "varchar", "required": true, "size": 36 },
+      { "key": "documentId", "type": "varchar", "required": true, "size": 128 },
+      { "key": "deviceId", "type": "varchar", "required": true, "size": 128 },
+      {
+        "key": "sequence",
+        "type": "integer",
+        "required": true,
+        "min": 0,
+        "max": 9007199254740991
+      },
+      { "key": "heads", "type": "text", "required": true }
+    ],
+    "indexes": [
+      {
+        "key": "heads_lookup",
+        "type": "unique",
+        "attributes": ["notebookId", "deviceId", "documentId"],
+        "orders": ["ASC", "ASC", "ASC"]
+      }
+    ]
+  },
+  {
+    "$id": "sync_key_envelopes",
+    "$permissions": [],
+    "databaseId": "canvink-sync",
+    "name": "Opaque wrapped notebook keys",
+    "enabled": true,
+    "rowSecurity": true,
+    "columns": [
+      {
+        "key": "protocolVersion",
+        "type": "integer",
+        "required": true,
+        "min": 1,
+        "max": 1
+      },
+      { "key": "notebookId", "type": "varchar", "required": true, "size": 36 },
+      {
+        "key": "keyEpoch",
+        "type": "integer",
+        "required": true,
+        "min": 1,
+        "max": 2147483647
+      },
+      {
+        "key": "senderDeviceId",
+        "type": "varchar",
+        "required": true,
+        "size": 128
+      },
+      {
+        "key": "recipientKind",
+        "type": "enum",
+        "required": true,
+        "elements": ["account", "device", "recovery"]
+      },
+      {
+        "key": "recipientId",
+        "type": "varchar",
+        "required": true,
+        "size": 128
+      },
+      {
+        "key": "senderEncryptionPublicKey",
+        "type": "varchar",
+        "required": true,
+        "size": 43
+      },
+      {
+        "key": "recipientEncryptionPublicKey",
+        "type": "varchar",
+        "required": true,
+        "size": 43
+      },
+      {
+        "key": "recoverySigningPublicKey",
+        "type": "varchar",
+        "required": false,
+        "size": 43
+      },
+      { "key": "nonce", "type": "varchar", "required": true, "size": 32 },
+      { "key": "ciphertext", "type": "text", "required": true },
+      { "key": "signature", "type": "varchar", "required": true, "size": 86 },
+      { "key": "envelopeHash", "type": "varchar", "required": true, "size": 43 }
+    ],
+    "indexes": [
+      {
+        "key": "key_recipient_epoch",
+        "type": "unique",
+        "attributes": [
+          "notebookId",
+          "keyEpoch",
+          "recipientKind",
+          "recipientId"
+        ],
+        "orders": ["ASC", "ASC", "ASC", "ASC"]
+      },
+      {
+        "key": "key_recipient_list",
+        "type": "key",
+        "attributes": [
+          "notebookId",
+          "recipientKind",
+          "recipientId",
+          "keyEpoch"
+        ],
+        "orders": ["ASC", "ASC", "ASC", "ASC"]
+      }
+    ]
+  },
+  {
+    "$id": "sync_assets",
+    "$permissions": [],
+    "databaseId": "canvink-sync",
+    "name": "Encrypted asset upload reservations",
+    "enabled": true,
+    "rowSecurity": true,
+    "columns": [
+      {
+        "key": "protocolVersion",
+        "type": "integer",
+        "required": true,
+        "min": 1,
+        "max": 1
+      },
+      { "key": "notebookId", "type": "varchar", "required": true, "size": 36 },
+      { "key": "deviceId", "type": "varchar", "required": true, "size": 128 },
+      { "key": "fileId", "type": "varchar", "required": true, "size": 36 },
+      {
+        "key": "encryptedHash",
+        "type": "varchar",
+        "required": true,
+        "size": 43
+      },
+      {
+        "key": "encryptedSize",
+        "type": "integer",
+        "required": true,
+        "min": 1,
+        "max": 67108864
+      },
+      {
+        "key": "uploadSignature",
+        "type": "varchar",
+        "required": true,
+        "size": 86
+      },
+      {
+        "key": "chunkCount",
+        "type": "integer",
+        "required": true,
+        "min": 1,
+        "max": 22
+      },
+      {
+        "key": "status",
+        "type": "enum",
+        "required": true,
+        "elements": ["pending", "uploading", "cleaning", "complete"]
+      },
+      { "key": "expiresAt", "type": "datetime", "required": true },
+      { "key": "leaseExpiresAt", "type": "datetime", "required": false },
+      { "key": "completedAt", "type": "datetime", "required": false }
+    ],
+    "indexes": [
+      {
+        "key": "asset_identity",
+        "type": "unique",
+        "attributes": ["notebookId", "encryptedHash"],
+        "orders": ["ASC", "ASC"]
+      },
+      {
+        "key": "asset_pending_expiry",
+        "type": "key",
+        "attributes": ["status", "expiresAt"],
+        "orders": ["ASC", "ASC"]
+      },
+      {
+        "key": "asset_pending_notebook",
+        "type": "key",
+        "attributes": ["notebookId", "status", "expiresAt"],
+        "orders": ["ASC", "ASC", "ASC"]
+      },
+      {
+        "key": "asset_pending_device",
+        "type": "key",
+        "attributes": ["notebookId", "deviceId", "status", "expiresAt"],
+        "orders": ["ASC", "ASC", "ASC", "ASC"]
+      },
+      {
+        "key": "asset_uploading_lease",
+        "type": "key",
+        "attributes": ["status", "leaseExpiresAt"],
+        "orders": ["ASC", "ASC"]
+      }
+    ]
+  },
+  {
+    "$id": "sync_asset_quotas",
+    "$permissions": [],
+    "databaseId": "canvink-sync",
+    "name": "Encrypted asset pending quota counters",
+    "enabled": true,
+    "rowSecurity": true,
+    "columns": [
+      {
+        "key": "scope",
+        "type": "enum",
+        "required": true,
+        "elements": ["notebook", "device"]
+      },
+      { "key": "notebookId", "type": "varchar", "required": true, "size": 36 },
+      { "key": "deviceId", "type": "varchar", "required": false, "size": 128 },
+      {
+        "key": "pendingCount",
+        "type": "integer",
+        "required": true,
+        "min": 0,
+        "max": 64
+      }
+    ],
+    "indexes": [
+      {
+        "key": "asset_quota_notebook",
+        "type": "key",
+        "attributes": ["notebookId", "scope"],
+        "orders": ["ASC", "ASC"]
+      },
+      {
+        "key": "asset_quota_device",
+        "type": "key",
+        "attributes": ["notebookId", "deviceId", "scope"],
+        "orders": ["ASC", "ASC", "ASC"]
+      }
+    ]
+  }
+]

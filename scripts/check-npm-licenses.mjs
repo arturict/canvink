@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { delimiter, join, resolve } from 'node:path';
 import { existsSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 
 const allowedIdentifiers = new Set([
   '0BSD',
@@ -14,11 +15,15 @@ const allowedIdentifiers = new Set([
   'MIT',
   'MIT-0',
   'MPL-2.0',
+  // argparse, a dependency of markdown-it's command line tool (not bundled).
+  // The PSF license is permissive and GPL-compatible.
+  'Python-2.0',
   'Unlicense',
   'Zlib',
 ]);
 const operators = new Set(['AND', 'OR', 'WITH']);
 const root = resolve(import.meta.dirname, '..');
+const jsxGraphDualLicense = '(MIT OR LGPL-3.0-or-later)';
 
 function runPnpmLicenses() {
   let executable = 'pnpm';
@@ -66,58 +71,79 @@ function runPnpmLicenses() {
   return report;
 }
 
-const report = runPnpmLicenses();
-const licenseBuckets = Object.entries(report);
-if (licenseBuckets.length === 0) {
-  throw new TypeError('pnpm returned an empty license report.');
-}
-const violations = [];
-
-for (const [expression, packages] of licenseBuckets) {
-  if (!Array.isArray(packages) || packages.length === 0) {
-    throw new TypeError(
-      `pnpm returned an invalid package list for license key ${expression}.`,
-    );
+export function findLicenseViolations(report) {
+  if (report === null || Array.isArray(report) || typeof report !== 'object') {
+    throw new TypeError('pnpm returned an invalid top-level license report.');
   }
-  for (const entry of packages) {
-    if (
-      entry === null ||
-      typeof entry !== 'object' ||
-      typeof entry.name !== 'string' ||
-      !Array.isArray(entry.versions) ||
-      entry.versions.length === 0 ||
-      entry.versions.some((version) => typeof version !== 'string')
-    ) {
+  const licenseBuckets = Object.entries(report);
+  if (licenseBuckets.length === 0) {
+    throw new TypeError('pnpm returned an empty license report.');
+  }
+  const violations = [];
+
+  for (const [expression, packages] of licenseBuckets) {
+    if (!Array.isArray(packages) || packages.length === 0) {
       throw new TypeError(
-        `pnpm returned an invalid package entry for license key ${expression}.`,
+        `pnpm returned an invalid package list for license key ${expression}.`,
       );
     }
+    for (const entry of packages) {
+      if (
+        entry === null ||
+        typeof entry !== 'object' ||
+        typeof entry.name !== 'string' ||
+        !Array.isArray(entry.versions) ||
+        entry.versions.length === 0 ||
+        entry.versions.some((version) => typeof version !== 'string')
+      ) {
+        throw new TypeError(
+          `pnpm returned an invalid package entry for license key ${expression}.`,
+        );
+      }
+    }
+    const normalizedExpression = expression.trim().replace(/\s+/g, ' ');
+    const isPinnedJsxGraphChoice =
+      normalizedExpression === jsxGraphDualLicense &&
+      packages.every(
+        (entry) => entry.name === 'jsxgraph' && entry.versions.every((version) => version === '1.13.1'),
+      );
+    const identifiers = normalizedExpression.match(/[A-Za-z0-9.-]+/g) ?? [];
+    const unsupported = identifiers.filter(
+      (identifier) =>
+        !operators.has(identifier) &&
+        !allowedIdentifiers.has(identifier) &&
+        !(isPinnedJsxGraphChoice && identifier === 'LGPL-3.0-or-later'),
+    );
+    if (unsupported.length === 0) continue;
+    violations.push({
+      expression,
+      packages: packages.map((entry) => `${entry.name}@${entry.versions.join(',')}`),
+      unsupported,
+    });
   }
-  const identifiers = expression.match(/[A-Za-z0-9.-]+/g) ?? [];
-  const unsupported = identifiers.filter(
-    (identifier) =>
-      !operators.has(identifier) && !allowedIdentifiers.has(identifier),
-  );
-  if (unsupported.length === 0) continue;
-  violations.push({
-    expression,
-    packages: packages.map((entry) => `${entry.name}@${entry.versions.join(',')}`),
-    unsupported,
-  });
+  return violations;
 }
 
-if (violations.length > 0) {
-  for (const violation of violations) {
-    console.error(
-      `Unsupported npm license expression ${violation.expression} ` +
-        `(${violation.packages.join(', ')}); unexpected identifiers: ` +
-        violation.unsupported.join(', '),
-    );
+export function main() {
+  const report = runPnpmLicenses();
+  const violations = findLicenseViolations(report);
+  if (violations.length > 0) {
+    for (const violation of violations) {
+      console.error(
+        `Unsupported npm license expression ${violation.expression} ` +
+          `(${violation.packages.join(', ')}); unexpected identifiers: ` +
+          violation.unsupported.join(', '),
+      );
+    }
+    process.exitCode = 1;
+    return;
   }
-  process.exitCode = 1;
-} else {
   const packageCount = Object.values(report)
     .flat()
     .reduce((count, entry) => count + entry.versions.length, 0);
   console.log(`npm dependency license policy passed for ${packageCount} package versions.`);
+}
+
+if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
+  main();
 }

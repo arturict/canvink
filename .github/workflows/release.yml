@@ -21,6 +21,11 @@ on:
         description: SHA-256 of the prior draft's SHA256SUMS; required only when publish is true
         required: false
         type: string
+      sign_windows:
+        description: Request trusted Authenticode signing for Windows artifacts
+        required: true
+        default: false
+        type: boolean
 
 permissions: {}
 
@@ -39,7 +44,7 @@ jobs:
       contents: read
     outputs:
       sha: ${{ steps.release.outputs.sha }}
-      signing: ${{ steps.release.outputs.signing }}
+      signing: ${{ inputs.sign_windows && 'windows-authenticode' || 'unsigned' }}
       tag: ${{ steps.release.outputs.tag }}
       version: ${{ steps.release.outputs.version }}
 
@@ -439,12 +444,102 @@ jobs:
           rustc --version
           cargo --version
 
+      - name: Import protected Windows signing certificate and fail-closed preflight
+        if: ${{ inputs.sign_windows }}
+        shell: pwsh
+        env:
+          WINDOWS_SIGNING_PFX_BASE64: ${{ secrets.WINDOWS_SIGNING_PFX_BASE64 }}
+          WINDOWS_SIGNING_PFX_PASSWORD: ${{ secrets.WINDOWS_SIGNING_PFX_PASSWORD }}
+          WINDOWS_TIMESTAMP_URL: ${{ vars.WINDOWS_TIMESTAMP_URL }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Set-StrictMode -Version Latest
+          if (
+            [string]::IsNullOrWhiteSpace($env:WINDOWS_SIGNING_PFX_BASE64) -or
+            [string]::IsNullOrWhiteSpace($env:WINDOWS_SIGNING_PFX_PASSWORD) -or
+            [string]::IsNullOrWhiteSpace($env:WINDOWS_TIMESTAMP_URL)
+          ) {
+            throw 'Signed Windows mode requires the protected PFX, its password, and timestamp URL.'
+          }
+          $pfxPath = Join-Path $env:RUNNER_TEMP 'canvink-signing.pfx'
+          $imported = @()
+          $keepSigner = $false
+          try {
+            [IO.File]::WriteAllBytes(
+              $pfxPath,
+              [Convert]::FromBase64String($env:WINDOWS_SIGNING_PFX_BASE64)
+            )
+            $securePassword = ConvertTo-SecureString `
+              -String $env:WINDOWS_SIGNING_PFX_PASSWORD `
+              -AsPlainText `
+              -Force
+            $imported = @(
+              Import-PfxCertificate `
+                -FilePath $pfxPath `
+                -CertStoreLocation 'Cert:\CurrentUser\My' `
+                -Password $securePassword `
+                -Exportable:$false
+            )
+            $signingCertificates = @(
+              $imported | Where-Object {
+                $ekuOids = @(
+                  $_.EnhancedKeyUsageList | ForEach-Object { $_.ObjectId.Value }
+                )
+                $_.HasPrivateKey -and $ekuOids -contains '1.3.6.1.5.5.7.3.3'
+              }
+            )
+            if ($signingCertificates.Count -ne 1) {
+              throw 'The protected PFX must contain exactly one private-key Code Signing certificate.'
+            }
+            $signer = $signingCertificates[0]
+            $importedThumbprints = @($imported | ForEach-Object { $_.Thumbprint })
+            "CANVINK_WINDOWS_SIGNED=1" >> $env:GITHUB_ENV
+            "CANVINK_WINDOWS_SIGN_PROVIDER=windows-store" >> $env:GITHUB_ENV
+            "CANVINK_WINDOWS_CERTIFICATE_THUMBPRINT=$($signer.Thumbprint)" >> $env:GITHUB_ENV
+            "CANVINK_WINDOWS_IMPORTED_CERTIFICATE_THUMBPRINTS=$($importedThumbprints -join ',')" >> $env:GITHUB_ENV
+            "CANVINK_WINDOWS_TIMESTAMP_URL=$env:WINDOWS_TIMESTAMP_URL" >> $env:GITHUB_ENV
+            $env:CANVINK_WINDOWS_SIGNED = '1'
+            $env:CANVINK_WINDOWS_SIGN_PROVIDER = 'windows-store'
+            $env:CANVINK_WINDOWS_CERTIFICATE_THUMBPRINT = $signer.Thumbprint
+            $env:CANVINK_WINDOWS_TIMESTAMP_URL = $env:WINDOWS_TIMESTAMP_URL
+            pnpm release:preflight:signed
+            if ($LASTEXITCODE -ne 0) {
+              throw 'Signed Windows preflight was blocked.'
+            }
+            $keepSigner = $true
+          } finally {
+            if (Test-Path -LiteralPath $pfxPath) {
+              Remove-Item -LiteralPath $pfxPath -Force
+            }
+            if (-not $keepSigner) {
+              foreach ($certificate in $imported) {
+                if (Test-Path -LiteralPath $certificate.PSPath) {
+                  Remove-Item -LiteralPath $certificate.PSPath -Force
+                }
+              }
+            }
+          }
+
       - name: Build unsigned Windows bundles
+        if: ${{ !inputs.sign_windows }}
         uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
         with:
           tauriScript: pnpm tauri
           args: --bundles nsis,msi --ci -- --locked
           retryAttempts: 0
+
+      - name: Build Authenticode-signed Windows bundles
+        if: ${{ inputs.sign_windows }}
+        uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
+        with:
+          tauriScript: pnpm tauri
+          args: --bundles nsis,msi --config src-tauri/tauri.signing.conf.json --ci -- --locked
+          retryAttempts: 0
+
+      - name: Verify signed executable and installer artifacts
+        if: ${{ inputs.sign_windows }}
+        shell: pwsh
+        run: pnpm release:verify:signed
 
       - name: Install, launch, and uninstall Windows packages
         shell: pwsh
@@ -549,6 +644,23 @@ jobs:
             }
           }
 
+          function Require-PackagedSignature {
+            param([Parameter(Mandatory)][string] $Executable)
+            if ($env:CANVINK_WINDOWS_SIGNED -ne '1') {
+              return
+            }
+            & powershell.exe `
+              -NoProfile `
+              -NonInteractive `
+              -ExecutionPolicy Bypass `
+              -File scripts/windows-signing.ps1 `
+              -Mode Verify `
+              -TargetPath $Executable
+            if ($LASTEXITCODE -ne 0) {
+              throw 'Installed nested executable failed Authenticode verification.'
+            }
+          }
+
           $nsisAppPath = $null
           $nsisInstalled = $false
           try {
@@ -574,6 +686,7 @@ jobs:
               throw 'NSIS installation did not produce exactly one Canvink.exe.'
             }
             $nsisAppPath = $nsisApps[0].FullName
+            Require-PackagedSignature -Executable $nsisAppPath
             Invoke-PackagedLaunchSmoke `
               -Label 'nsis' `
               -Executable $nsisAppPath
@@ -681,6 +794,7 @@ jobs:
               -ExitCode $msiInstall.ExitCode
             $msiInstalled = $true
             $msiAppPath = Find-MsiCanvinkExecutable
+            Require-PackagedSignature -Executable $msiAppPath
             Invoke-PackagedLaunchSmoke `
               -Label 'msi' `
               -Executable $msiAppPath
@@ -705,7 +819,7 @@ jobs:
             }
           }
 
-      - name: Verify and stage unsigned Windows installers
+      - name: Verify signing policy and stage Windows installers
         shell: pwsh
         run: |
           $installers = Get-ChildItem `
@@ -719,14 +833,41 @@ jobs:
           }
 
           foreach ($installer in $installers) {
-            $signature = Get-AuthenticodeSignature -LiteralPath $installer.FullName
-            if ($signature.Status -ne 'NotSigned') {
-              throw "Unsigned release invariant failed for $($installer.Name): $($signature.Status)"
+            if ($env:CANVINK_WINDOWS_SIGNED -eq '1') {
+              & powershell.exe `
+                -NoProfile `
+                -NonInteractive `
+                -ExecutionPolicy Bypass `
+                -File scripts/windows-signing.ps1 `
+                -Mode Verify `
+                -TargetPath $installer.FullName
+              if ($LASTEXITCODE -ne 0) {
+                throw "Signed release verification failed for $($installer.Name)."
+              }
+            } else {
+              $signature = Get-AuthenticodeSignature -LiteralPath $installer.FullName
+              if ($signature.Status -ne 'NotSigned') {
+                throw "Unsigned release invariant failed for $($installer.Name): $($signature.Status)"
+              }
             }
           }
 
           New-Item -ItemType Directory -Path 'release-staging' -Force | Out-Null
           Copy-Item -LiteralPath $installers.FullName -Destination 'release-staging'
+
+      - name: Remove imported signing certificate
+        if: ${{ always() && inputs.sign_windows }}
+        shell: pwsh
+        run: |
+          foreach ($value in @($env:CANVINK_WINDOWS_IMPORTED_CERTIFICATE_THUMBPRINTS -split ',')) {
+            $thumbprint = $value -replace '[^0-9A-Fa-f]', ''
+            if ($thumbprint -match '^[0-9A-Fa-f]{40}$') {
+              $path = "Cert:\CurrentUser\My\$thumbprint"
+              if (Test-Path -LiteralPath $path) {
+                Remove-Item -LiteralPath $path -Force
+              }
+            }
+          }
 
       - name: Generate Windows SPDX SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
@@ -812,12 +953,14 @@ jobs:
           if find release-assets -type f \
             \( -name '*.sig' -o -name 'latest.json' \) \
             -print -quit | grep -q .; then
-            echo "::error::Unsigned releases must not contain updater signatures or manifests."
+            echo "::error::Updater artifacts are disabled for this release process."
             exit 1
           fi
 
       - name: Record signing status and checksums
         shell: bash
+        env:
+          WINDOWS_SIGNED: ${{ inputs.sign_windows }}
         run: |
           jq -n \
             --arg tag "$RELEASE_TAG" \
@@ -846,8 +989,13 @@ jobs:
           {
             echo "Canvink ${RELEASE_TAG}"
             echo
-            echo "Signing status: UNSIGNED"
-            echo "Windows installers are not Authenticode-signed."
+            if test "$WINDOWS_SIGNED" = "true"; then
+              echo "Signing status: WINDOWS AUTHENTICODE SIGNED"
+              echo "The Windows executable, NSIS installer, and MSI package passed fail-closed Authenticode verification."
+            else
+              echo "Signing status: UNSIGNED"
+              echo "Windows installers are not Authenticode-signed."
+            fi
             echo "Tauri updater signing is disabled and no updater artifacts are included."
             echo "Verify downloads with SHA256SUMS and GitHub artifact attestations."
           } > release-assets/SIGNING-STATUS.txt
@@ -883,6 +1031,8 @@ jobs:
 
       - name: Create or refresh verified draft
         shell: bash
+        env:
+          WINDOWS_SIGNED: ${{ inputs.sign_windows }}
         run: |
           if ! gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" >/dev/null 2>&1; then
             gh api \
@@ -912,18 +1062,28 @@ jobs:
             echo
             echo "## Packages and verification"
             echo
-            echo "- Windows: unsigned NSIS and MSI packages, built on GitHub's Windows 2025 runner."
+            if test "$WINDOWS_SIGNED" = "true"; then
+              echo "- Windows: Authenticode-signed NSIS and MSI packages, built and verified on GitHub's Windows 2025 runner."
+            else
+              echo "- Windows: unsigned NSIS and MSI packages, built on GitHub's Windows 2025 runner."
+            fi
             echo "- Linux: unsigned AppImage and deb packages, built on GitHub's Ubuntu 24.04 runner."
             echo "- AppImage and deb packages opened a Canvink window under isolated Linux display and profile state."
             echo "- NSIS and MSI passed quiet installation, installed-app launch, normal window close, and quiet uninstall on the disposable Windows runner."
             echo "- Frontend tests, Rust tests, linting, dependency policy, CodeQL, checksums, SBOMs, launch smokes, and provenance attestations gate publication."
-            echo "- This alpha has no sync, collaboration, encryption, OCR, mobile app, or complete OneNote importer."
-            echo "- Schema v1 is the first public format. Keep backups because compatibility can still change during 0.x."
+            echo "- Local indexed search, Windows OCR, bounded OneNote import, history, and an opt-in encrypted-sync client are implemented; Appwrite deployment/two-account acceptance and personal OneNote/OCR/PDF gates are not claimed."
+            echo "- No mobile app, handwriting recognition, broad OneNote parity, local notebook-store encryption at rest, or independent security audit is claimed."
+            echo "- Schema v2 is current; schema v1 remains migration input and rollback evidence. Keep backups because compatibility can still change during 0.x."
             echo
             echo "## Signing status"
             echo
-            echo "This public alpha is intentionally **unsigned**."
-            echo "Windows may display an unknown-publisher warning."
+            if test "$WINDOWS_SIGNED" = "true"; then
+              echo "The Windows executable and installers are **Authenticode-signed** and were verified as valid against the configured certificate."
+              echo "Linux packages remain unsigned."
+            else
+              echo "This public alpha is intentionally **unsigned**."
+              echo "Windows may display an unknown-publisher warning."
+            fi
             echo "The Tauri updater is disabled, so this release contains no updater manifest or updater signatures."
             echo
             echo "Verify each download with \`SHA256SUMS\` and GitHub artifact attestations:"

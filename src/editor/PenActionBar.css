@@ -1,0 +1,35 @@
+.pen-action-bar {
+  position: absolute;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  transform-origin: top left;
+  white-space: nowrap;
+  font-size: 13px;
+  color: #1e293b;
+  border: 1px solid #d5dbd7;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgb(15 23 42 / 18%);
+  touch-action: none;
+}
+
+.pen-action-bar__status {
+  padding: 0 6px;
+  color: #1f4d3b;
+}
+
+.pen-action-bar button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid #e1e5e2;
+  border-radius: 6px;
+  background: #f7faf8;
+  cursor: pointer;
+}
+
+.pen-action-bar button:hover {
+  background: #eaf2ee;
+}

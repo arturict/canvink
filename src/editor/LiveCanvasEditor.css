@@ -1,0 +1,865 @@
+.live-canvas-viewport {
+  position: relative;
+  min-width: 0;
+  min-height: 420px;
+  overflow: hidden;
+  touch-action: none;
+  /* No long-press callout or image drag from a finger or a pen on the canvas. */
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  /* A plain desk: only the paper layer carries a rule pattern. */
+  background: #eceeeb;
+  contain: layout paint;
+}
+
+.live-canvas-viewport .live-canvas-surface {
+  min-width: 0;
+  min-height: 0;
+  margin: 24px;
+  overflow: visible;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+:is(.live-canvas-editor, .v2-canvas-toolbar-host) > .live-canvas-toolbar.live-canvas-toolbar {
+  position: relative;
+  z-index: 30;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  min-height: 46px;
+  padding: 6px 8px;
+  overflow: visible;
+  border-bottom: 1px solid rgb(54 69 62 / 18%);
+  background: rgb(255 254 250 / 98%);
+}
+
+.live-canvas-toolbar__separator {
+  align-self: stretch;
+  width: 1px;
+  margin: 2px 3px;
+  background: rgb(54 69 62 / 18%);
+}
+
+.live-canvas-toolbar .live-canvas-toolbar__icon-button,
+.live-canvas-toolbar__menu > summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 32px;
+  margin: 0;
+  color: #334155;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.live-canvas-toolbar .live-canvas-toolbar__icon-button {
+  flex: 0 0 32px;
+  width: 32px;
+  padding: 0;
+}
+
+.live-canvas-toolbar svg {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.8;
+}
+
+.live-canvas-toolbar .live-canvas-toolbar__icon-button:hover:not(:disabled),
+.live-canvas-toolbar__menu > summary:hover {
+  color: #315c4c;
+  border-color: rgb(63 104 89 / 18%);
+  background: #edf4ef;
+}
+
+.live-canvas-toolbar .live-canvas-toolbar__icon-button:focus-visible,
+.live-canvas-toolbar__menu > summary:focus-visible,
+.live-canvas-toolbar__popover button:focus-visible,
+.live-canvas-toolbar__popover select:focus-visible,
+.live-canvas-toolbar__popover input:focus-visible {
+  outline: 2px solid #4f7a69;
+  outline-offset: 2px;
+}
+
+.live-canvas-toolbar .live-canvas-toolbar__icon-button[aria-pressed="true"] {
+  color: #fff;
+  border-color: #3f6859;
+  background: #3f6859;
+  box-shadow: 0 3px 10px rgb(63 104 89 / 20%);
+}
+
+.live-canvas-toolbar__menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.live-canvas-toolbar__menu > summary {
+  gap: 5px;
+  padding: 0 7px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.78rem;
+  font-weight: 650;
+  user-select: none;
+}
+
+.live-canvas-toolbar__menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.live-canvas-toolbar__chevron {
+  width: 13px !important;
+  height: 13px !important;
+  transition: transform 120ms ease;
+}
+
+.live-canvas-toolbar__menu[open] > summary {
+  color: #315c4c;
+  border-color: rgb(63 104 89 / 28%);
+  background: #e4eee8;
+}
+
+.live-canvas-toolbar__menu[data-active="true"] > summary {
+  color: #fff;
+  border-color: #3f6859;
+  background: #3f6859;
+  box-shadow: 0 3px 10px rgb(63 104 89 / 20%);
+}
+
+.live-canvas-toolbar__menu[data-active="true"][open] > summary {
+  color: #315c4c;
+  border-color: rgb(63 104 89 / 32%);
+  background: #e4eee8;
+  box-shadow: none;
+}
+
+.live-canvas-toolbar__menu[open] .live-canvas-toolbar__chevron {
+  transform: rotate(180deg);
+}
+
+.live-canvas-toolbar__popover {
+  position: absolute;
+  z-index: 1000001;
+  top: calc(100% + 7px);
+  left: 0;
+  display: grid;
+  grid-template-columns: minmax(12.5rem, 1fr);
+  gap: 4px;
+  box-sizing: border-box;
+  width: max-content;
+  min-width: 14.5rem;
+  max-width: min(22rem, calc(100vw - 16px));
+  padding: 8px;
+  border: 1px solid #d8dfda;
+  border-radius: 15px;
+  background: rgb(255 255 252 / 98%);
+  box-shadow:
+    0 1px 2px rgb(22 35 29 / 8%),
+    0 14px 36px rgb(22 35 29 / 14%);
+  backdrop-filter: blur(18px);
+  transform-origin: top left;
+  animation: canvas-menu-in 120ms ease-out;
+}
+
+.live-canvas-toolbar__popover--tools {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+  width: min(29rem, calc(100vw - 24px));
+  max-height: min(40rem, calc(100vh - 9rem));
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.live-canvas-toolbar__menu-group {
+  display: grid;
+  grid-auto-rows: min-content;
+  gap: 4px;
+  min-width: 0;
+}
+
+.live-canvas-toolbar__menu-group:nth-child(2) {
+  padding-left: 10px;
+  border-left: 1px solid #e7ebe8;
+}
+
+.live-canvas-toolbar__menu-group--shapes {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  padding-top: 7px;
+  border-top: 1px solid #e7ebe8;
+}
+
+.live-canvas-toolbar__menu-items {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.live-canvas-toolbar__menu-items--shapes {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.live-canvas-toolbar__section-label {
+  padding: 8px 10px 4px;
+  color: #6b7972;
+  font-size: 0.66rem;
+  font-weight: 750;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.live-canvas-toolbar__menu--end > .live-canvas-toolbar__popover {
+  right: 0;
+  left: auto;
+}
+
+.live-canvas-toolbar__popover button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+  min-height: 38px;
+  padding: 7px 10px;
+  text-align: left;
+  white-space: nowrap;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #34463f;
+  font-size: 0.81rem;
+  font-weight: 590;
+}
+
+.live-canvas-toolbar__popover button:hover:not(:disabled),
+.live-canvas-toolbar__popover button[aria-pressed="true"] {
+  color: #315c4c;
+  background: #edf4ef;
+}
+
+.live-canvas-toolbar__popover button[aria-pressed="true"]::after {
+  width: 6px;
+  height: 6px;
+  margin-left: auto;
+  content: "";
+  border-radius: 999px;
+  background: currentcolor;
+}
+
+.live-canvas-toolbar__field {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px !important;
+  min-height: 40px;
+  padding: 5px 10px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.live-canvas-toolbar__field select,
+.live-canvas-toolbar__field input {
+  box-sizing: border-box;
+  min-height: 32px;
+  max-width: 10rem;
+  border: 1px solid #d9dfdb;
+  border-radius: 8px;
+  background: #f8faf8;
+}
+
+.live-canvas-toolbar__popover--tools .live-canvas-toolbar__field {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 5px !important;
+}
+
+.live-canvas-toolbar__popover--tools .live-canvas-toolbar__field select,
+.live-canvas-toolbar__popover--tools .live-canvas-toolbar__field input {
+  width: 100%;
+  max-width: none;
+}
+
+.live-canvas-toolbar__zoom {
+  display: grid;
+  grid-template-columns: 34px minmax(5.5rem, 1fr) 34px;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 8px 5px 3px;
+  border-top: 1px solid #e7ebe8;
+}
+
+.live-canvas-toolbar__zoom > button {
+  justify-content: center;
+  min-height: 32px;
+  padding: 4px 7px;
+}
+
+.live-canvas-toolbar__zoom > button[aria-label] {
+  padding: 0;
+}
+
+@media (max-width: 560px) {
+  :is(.live-canvas-editor, .v2-canvas-toolbar-host) > .live-canvas-toolbar.live-canvas-toolbar:not(:has(details[open])) {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+  }
+
+  .live-canvas-toolbar__popover--tools {
+    grid-template-columns: minmax(13.5rem, 1fr);
+    width: min(22rem, calc(100vw - 16px));
+  }
+
+  .live-canvas-toolbar__menu-group:nth-child(2) {
+    padding-top: 7px;
+    padding-left: 0;
+    border-top: 1px solid #e7ebe8;
+    border-left: 0;
+  }
+
+  .live-canvas-toolbar__menu-group--shapes {
+    grid-column: auto;
+  }
+
+  .live-canvas-toolbar__menu-items--shapes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+@media (min-width: 561px) and (max-width: 760px) {
+  .live-canvas-toolbar__popover--tools {
+    left: -8px;
+  }
+}
+
+@keyframes canvas-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 1100px) {
+  .live-canvas-toolbar__menu > summary span {
+    display: none;
+  }
+
+  .live-canvas-toolbar__menu > summary {
+    width: 32px;
+    padding: 0;
+  }
+
+  .live-canvas-toolbar__menu > summary .live-canvas-toolbar__chevron {
+    display: none;
+  }
+}
+
+/*
+ * The paper is its own layer in screen space (see LiveCanvasEditor): the
+ * surface above it is transparent and only carries elements and ink. That
+ * keeps the rule pattern crisp at every zoom and on the sheet itself, with a
+ * neutral desk around a fixed-size sheet.
+ */
+.live-canvas-viewport > .live-canvas-surface.live-canvas-surface {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.live-canvas-paper {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  /* Panning moves this layer; its pattern is not painted again (see paperStyleFor). */
+  will-change: transform;
+}
+
+.live-canvas-paper--sheet {
+  box-shadow: 0 0 0 1px rgb(54 69 62 / 16%), 0 10px 30px rgb(36 43 40 / 14%);
+}
+
+.live-canvas-shape {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  border: 0;
+}
+
+.live-canvas-held-shape-preview {
+  position: absolute;
+  z-index: 2147483647;
+  box-sizing: border-box;
+  pointer-events: none;
+  transform-origin: center;
+  filter: drop-shadow(0 0 3px rgb(29 78 216 / 18%));
+}
+
+.live-canvas-selection-resize {
+  position: absolute;
+  z-index: 2147483646;
+  box-sizing: border-box;
+  pointer-events: none;
+  border: 1px solid #2563eb;
+  box-shadow: 0 0 0 2px rgb(37 99 235 / 12%);
+}
+
+.live-canvas-selection-resize__handle {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  padding: 0;
+  pointer-events: auto;
+  border: 2px solid #2563eb;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgb(15 23 42 / 22%);
+  touch-action: none;
+}
+
+.live-canvas-selection-resize__handle:focus-visible {
+  outline: 3px solid #0f172a;
+  outline-offset: 3px;
+}
+
+.live-canvas-selection-resize__handle--north-west {
+  top: -7px;
+  left: -7px;
+  cursor: nwse-resize;
+}
+
+.live-canvas-selection-resize__handle--north-east {
+  top: -7px;
+  right: -7px;
+  cursor: nesw-resize;
+}
+
+.live-canvas-selection-resize__handle--south-east {
+  right: -7px;
+  bottom: -7px;
+  cursor: nwse-resize;
+}
+
+.live-canvas-selection-resize__handle--south-west {
+  bottom: -7px;
+  left: -7px;
+  cursor: nesw-resize;
+}
+
+.live-canvas-toolbar__zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.live-canvas-toolbar__ruler-angle input {
+  width: 4.75rem;
+}
+
+.live-canvas-ruler {
+  position: absolute;
+  z-index: 1000000;
+  box-sizing: border-box;
+  transform-origin: center;
+  outline: none;
+  touch-action: none;
+  user-select: none;
+}
+
+.live-canvas-ruler:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 4px;
+}
+
+.live-canvas-ruler[aria-readonly="true"] {
+  pointer-events: none;
+  opacity: 0.78;
+}
+
+.live-canvas-ruler__body {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  cursor: grab;
+  border: 1px solid #806b17;
+  border-radius: 5px;
+  background:
+    linear-gradient(180deg, rgb(255 250 202 / 92%), rgb(244 219 102 / 86%));
+  box-shadow: 0 5px 14px rgb(71 57 4 / 20%);
+}
+
+.live-canvas-ruler__body:active {
+  cursor: grabbing;
+}
+
+.live-canvas-ruler__edge {
+  position: absolute;
+  inset: -1px 0 auto;
+  height: 3px;
+  background: #5f4b08;
+}
+
+.live-canvas-ruler__body i {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 13px;
+  pointer-events: none;
+  background: #5f4b08;
+}
+
+.live-canvas-ruler__body i.is-half-centimetre {
+  height: 21px;
+}
+
+.live-canvas-ruler__body i.is-centimetre {
+  width: 2px;
+  height: 29px;
+}
+
+.live-canvas-ruler__rotate {
+  position: absolute;
+  top: 50%;
+  right: -34px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  cursor: crosshair;
+  border: 3px solid #1d4ed8;
+  border-radius: 999px;
+  background: #fff;
+  transform: translateY(-50%);
+  box-shadow: 0 2px 8px rgb(15 23 42 / 24%);
+}
+
+.live-canvas-ruler__rotate::after {
+  position: absolute;
+  inset: 5px;
+  content: "";
+  border: 2px solid #1d4ed8;
+  border-left-color: transparent;
+  border-radius: 999px;
+}
+
+.live-canvas-ruler__rotate:focus-visible {
+  outline: 3px solid #0f172a;
+  outline-offset: 3px;
+}
+
+@media (forced-colors: active) {
+  .live-canvas-ruler__body,
+  .live-canvas-ruler__rotate {
+    forced-color-adjust: none;
+    color: CanvasText;
+    border-color: CanvasText;
+    background: Canvas;
+  }
+}
+
+.canvink-rich-text-content {
+  white-space: pre-wrap;
+}
+
+.live-canvas-element[data-element-kind="math"],
+.live-canvas-element[data-element-kind="graph"] {
+  overflow: auto;
+  background: Canvas;
+}
+
+.live-canvas-element[data-element-kind="math"] > .math-element-view,
+.live-canvas-element[data-element-kind="graph"] > .graph-element-view {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.live-canvas-element[data-element-kind="math"] .math-block {
+  box-sizing: border-box;
+  min-height: 100%;
+}
+
+.live-canvas-element[data-element-kind="graph"] > .graph-element-view {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.live-canvas-element[data-element-kind="graph"] .graph-board {
+  display: grid;
+  grid-template-rows: auto minmax(1px, 1fr) auto;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.live-canvas-element[data-element-kind="math"] .math-block__ink svg {
+  display: block;
+  width: 100%;
+  max-height: 5rem;
+}
+
+.live-canvas-element[data-element-kind="graph"] .graph-board__surface-frame,
+.live-canvas-element[data-element-kind="graph"] .graph-board__surface {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-width: 1px;
+  min-height: 1px;
+}
+
+.live-canvas-element[data-element-kind="graph"] .graph-board__surface-frame {
+  overflow: hidden;
+  margin-block: 0.5rem;
+}
+
+.live-canvas-element[data-element-kind="graph"] .graph-board__surface {
+  margin-block: 0;
+}
+
+.math-canvas-sidebar {
+  position: relative;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 0.75rem;
+  max-height: 42vh;
+  padding: 0.75rem;
+  overflow: auto;
+  border-block: 1px solid rgb(54 69 62 / 20%);
+  background: Canvas;
+}
+
+@media (max-width: 760px) {
+  .math-canvas-sidebar {
+    grid-template-columns: minmax(0, 1fr);
+    max-height: min(48vh, 28rem);
+  }
+}
+
+.math-canvas-sidebar__setting,
+.graph-element-view__coordinate {
+  display: block;
+  padding: 0.45rem 0.6rem;
+  color: #334155;
+  font-size: 0.82rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .live-canvas-toolbar button {
+    transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease;
+  }
+}
+
+.live-canvas-toolbar__format-slot {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.live-canvas-toolbar__format-slot:not(:empty) {
+  margin-inline-start: 3px;
+  padding-inline-start: 8px;
+  border-inline-start: 1px solid rgb(54 69 62 / 18%);
+}
+
+.live-canvas-element[data-element-kind="richText"] > .canvink-rich-text-editor,
+.live-canvas-element[data-element-kind="richText"] .canvink-rich-text-editor__surface {
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+}
+
+/* Pen gallery shown while the pen or highlighter is active (OneNote Draw tab). */
+.live-canvas-toolbar__ink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-inline-start: 4px;
+  padding-inline-start: 8px;
+  border-inline-start: 1px solid rgb(54 69 62 / 18%);
+}
+
+.live-canvas-toolbar__swatches,
+.live-canvas-toolbar__widths {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.live-canvas-toolbar__swatch {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  cursor: pointer;
+  border: 2px solid rgb(255 255 255 / 90%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgb(54 69 62 / 22%);
+}
+
+.live-canvas-toolbar__swatch[aria-checked="true"] {
+  box-shadow: 0 0 0 2px #24463a;
+}
+
+.live-canvas-toolbar__width {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+}
+
+.live-canvas-toolbar__width > span {
+  border-radius: 50%;
+}
+
+.live-canvas-toolbar__width[aria-checked="true"] {
+  background: rgb(61 107 88 / 14%);
+  border-color: rgb(61 107 88 / 30%);
+}
+
+.live-canvas-toolbar__swatch:focus-visible,
+.live-canvas-toolbar__width:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Grip of a text container, shown on hover and while editing (OneNote). */
+.live-canvas-element__grip {
+  position: absolute;
+  top: -12px;
+  left: -1px;
+  right: -1px;
+  height: 11px;
+  cursor: move;
+  opacity: 0;
+  border-radius: 3px 3px 0 0;
+  background:
+    radial-gradient(circle, rgb(54 69 62 / 55%) 1px, transparent 1.5px) center / 6px 6px repeat-x,
+    rgb(236 239 237 / 95%);
+  transition: opacity 120ms ease;
+}
+
+.live-canvas-element:hover > .live-canvas-element__grip,
+.live-canvas-element.is-selected > .live-canvas-element__grip {
+  opacity: 1;
+}
+
+/* Finished ink: canvas tiles grouped into z-ordered layers (see InkLayers.tsx). */
+.live-canvas-ink-layer,
+.live-canvas-ink-drag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Highlighter ink multiplies with the paper, printouts and ink below it. */
+.live-canvas-ink-layer[data-ink-blend="multiply"] {
+  mix-blend-mode: multiply;
+}
+
+.live-canvas-ink-tile {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+}
+
+.live-canvas-ink-drag {
+  z-index: 2147483600;
+  will-change: transform;
+}
+
+/* The stroke under the pen, drawn outside React on every pointer move. It
+   covers the whole page area and is shown only while something is on it
+   (liveInkOverlay.ts), so a canvas a driver presents as black cannot cover
+   the page when idle. */
+.live-canvas-ink-overlay {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.live-canvas-ink-overlay[data-blend="multiply"] {
+  mix-blend-mode: multiply;
+}
+
+/* A selected stroke has no DOM node of its own; this frame shows and grabs it. */
+.live-canvas-ink-selection {
+  z-index: 2147483640;
+  cursor: move;
+  background: rgb(37 99 235 / 4%);
+}
+
+/* A page background ("Als Hintergrund festlegen") ignores the pointer: ink,
+   text, lasso and eraser work on top of it. Keyboard focus still reaches it
+   so Shift+F10 can release it. */
+.live-canvas-element.is-background {
+  pointer-events: none;
+}
+
+.live-canvas-element.is-background:focus-visible {
+  outline: 2px dashed #2563eb;
+  outline-offset: 2px;
+}
+
+/* The dot or ring under a hovering pen; moved by the editor, never in React state. */
+.live-canvas-pen-cursor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  box-sizing: border-box;
+  border: 1.5px solid #1e293b;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 45%);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 70%);
+  pointer-events: none;
+}
+
+.live-canvas-pen-cursor[data-kind="eraser"] {
+  border-style: dashed;
+  background: transparent;
+}
+
+.live-canvas-pen-cursor[data-kind="lasso"] {
+  border-color: #2563eb;
+  background: rgb(37 99 235 / 10%);
+}
+
+/* The phone's reading view (the `reading` prop): the page sits at the view's
+   edge (its margins come from readingViewport.ts) on a calm desk. */
+.live-canvas-editor[data-reading] .live-canvas-viewport {
+  min-height: 0;
+  background: var(--reading-desk, #e7e5df);
+}
+
+.live-canvas-editor[data-reading] .live-canvas-viewport .live-canvas-surface {
+  margin: 0;
+}

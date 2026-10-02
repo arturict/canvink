@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "baseCurrencyId": "EUR",
+  "asOf": "2026-08-03",
+  "source": "European Central Bank euro reference rates",
+  "rates": [
+    { "currencyId": "USD", "unitsPerBase": 1.1535 },
+    { "currencyId": "JPY", "unitsPerBase": 180.73 },
+    { "currencyId": "GBP", "unitsPerBase": 0.85633 },
+    { "currencyId": "CHF", "unitsPerBase": 0.9320 },
+    { "currencyId": "CAD", "unitsPerBase": 1.6181 },
+    { "currencyId": "AUD", "unitsPerBase": 1.6463 }
+  ]
+}

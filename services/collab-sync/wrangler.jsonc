@@ -1,0 +1,93 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "canvink-collab-sync",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "NOTEBOOK_ROOM",
+        "class_name": "NotebookRoom"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["NotebookRoom"]
+    }
+  ],
+  // B3: per-IP rate limit on POST /rooms (unauthenticated room creation).
+  // `src/rateLimit.ts` prefers the Cloudflare Rate Limiting binding
+  // (`ROOM_CREATE_RATE_LIMITER`) when present and otherwise falls back to a
+  // best-effort per-isolate in-memory limiter — and that fallback is what
+  // this checked-in config actually ships with. The binding is intentionally
+  // NOT declared below by default:
+  //
+  //   `wrangler deploy --dry-run` accepts the `unsafe.bindings` ratelimit
+  //   entry (verified), but actually invoking `.limit()` against it in a
+  //   *local* runtime — both plain `wrangler dev` and, at higher volume,
+  //   this package's own `vitest`/`@cloudflare/vitest-plugin` suite — either
+  //   crashes the local Workers runtime outright (`wrangler dev`: confirmed
+  //   by reproduction, "crash #1" after the first request) or silently
+  //   shares one rate-limit bucket across every unrelated test in the file
+  //   (no per-request IP in that harness), which is a correctness trap for
+  //   a checked-in default, not a niche edge case. Uncomment the block below
+  //   only in a deployed environment with real Cloudflare API access, where
+  //   the binding is expected to behave normally:
+  //
+  // "unsafe": {
+  //   "bindings": [
+  //     {
+  //       "name": "ROOM_CREATE_RATE_LIMITER",
+  //       "type": "ratelimit",
+  //       "namespace_id": "1001",
+  //       "simple": { "limit": 10, "period": 60 }
+  //     }
+  //   ]
+  // },
+  // TEST_AUTH_SECRET is deliberately NOT declared here. It must never exist in
+  // deployed vars/secrets — set it only in `.dev.vars` for local dev, or as a
+  // Vitest `miniflare.bindings` test binding. See .dev.vars.example and README.md.
+  //
+  // D5: CLERK_ISSUER is intentionally NOT declared here either. An empty
+  // string is falsy-but-present and used to silently disable issuer
+  // validation (see src/auth/clerk.ts) — leaving it entirely unset is the
+  // correct "not configured yet" state. Set it via `wrangler secret put
+  // CLERK_ISSUER` (or the dashboard) once a real Clerk instance exists:
+  //   "CLERK_ISSUER": "https://your-app.clerk.accounts.dev"
+  //
+  // PERSONAL_SPACE_SALT (PERSONAL-SYNC.md §2.1, §8.1) is also intentionally
+  // NOT declared here: it is a secret, set via `wrangler secret put
+  // PERSONAL_SPACE_SALT` (32 random bytes, base64). Every `/me/space*` and `/me/assets/*` route fails
+  // closed with 503 while it is unset. Rotating it orphans every existing
+  // personal space — write-once.
+  //
+  // R2 (PERSONAL-SYNC.md §4.2, §8.1): enable it on the deployment account
+  // and create the configured bucket before deploying asset sync.
+  // The bucket `canvink-personal-assets` holds every synced image and PDF
+  // under `spaces/<spaceId>/<sha256 hex>`. Without the binding every
+  // `/me/assets/*` route fails closed with `503 {"error":"assets-not-configured"}`
+  // (src/assets.ts, src/room.ts), so keep it declared.
+  "r2_buckets": [
+    { "binding": "ASSETS", "bucket_name": "canvink-personal-assets" }
+  ],
+  // DEVICE_TOKEN_SECRET (PERSONAL-SYNC.md §3.7) is a secret too: the HMAC
+  // key for desktop device access tokens (32 random bytes, base64), set via
+  // `wrangler secret put DEVICE_TOKEN_SECRET`. The desktop sign-in routes
+  // (`/api/v1/device/*`, `/api/v1/me/devices*`) answer 503 while it is unset.
+  // Rotating it invalidates every access token; devices recover on their next
+  // refresh, because refresh tokens are stored in the Durable Objects.
+  //
+  // ALLOWED_ORIGINS: the web app plus the Tauri desktop app's WebView origins
+  // (`http://tauri.localhost` on Windows, `tauri://localhost` on macOS and
+  // Linux). It only drives CORS response headers for browser fetches; every
+  // route still requires its own credential.
+  "vars": {
+    "ALLOWED_ORIGINS": "https://canvink.example.com,http://tauri.localhost,tauri://localhost"
+  }
+}

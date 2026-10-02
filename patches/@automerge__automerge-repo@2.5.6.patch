@@ -1,0 +1,83 @@
+diff --git a/dist/DocHandle.js b/dist/DocHandle.js
+index 75a48de8782224381b1642e7139a7919adba4c4a..0919655232d15e3681266caa94c2c1d2bcbcacb3 100644
+--- a/dist/DocHandle.js
++++ b/dist/DocHandle.js
+@@ -204,15 +204,36 @@ export class DocHandle extends EventEmitter {
+         const docChanged = !headsAreSame(encodeHeads(afterHeads), encodeHeads(beforeHeads));
+         if (docChanged) {
+             this.emit("heads-changed", { handle: this, doc: after });
+-            const patches = A.diff(after, beforeHeads, afterHeads);
+-            if (patches.length > 0) {
+-                this.emit("change", {
++            // Canvink: when a document arrives from nothing (loaded from
++            // storage), its patches describe the whole document and diffing
++            // it against the empty document took as long as loading it. Such
++            // an event computes them only when a listener reads `patches`
++            // (synchronously, while `after` is current); the Repo's own
++            // listeners never do.
++            if (beforeHeads.length === 0) {
++                let patches;
++                const event = {
+                     handle: this,
+                     doc: after,
+-                    patches,
+-                    // TODO: pass along the source (load/change/network)
+                     patchInfo: { before, after, source: "change" },
++                };
++                Object.defineProperty(event, "patches", {
++                    enumerable: true,
++                    get: () => (patches ??= A.diff(after, beforeHeads, afterHeads)),
+                 });
++                this.emit("change", event);
++            }
++            else {
++                const patches = A.diff(after, beforeHeads, afterHeads);
++                if (patches.length > 0) {
++                    this.emit("change", {
++                        handle: this,
++                        doc: after,
++                        patches,
++                        // TODO: pass along the source (load/change/network)
++                        patchInfo: { before, after, source: "change" },
++                    });
++                }
+             }
+             // If we didn't have the document yet, signal that we now do
+             if (!this.isReady())
+diff --git a/dist/helpers/throttle.js b/dist/helpers/throttle.js
+index 98d1f8105b93db04e9132d727190895898c4cac4..3fd76da8e92f2f62cb5f2b6a6116fbd60e091ade 100644
+--- a/dist/helpers/throttle.js
++++ b/dist/helpers/throttle.js
+@@ -96,7 +96,7 @@ export const asyncThrottle = (fn, delay) => {
+         if (timeout) {
+             clearTimeout(timeout);
+         }
+-        const wait = lastCall + delay - Date.now(); //if negative, executes immediately
++        const wait = Math.max(0, lastCall + delay - Date.now());
+         return new Promise((resolve, reject) => {
+             timeout = setTimeout(async () => {
+                 try {
+diff --git a/dist/storage/StorageSubsystem.js b/dist/storage/StorageSubsystem.js
+index f78489da37d4ee47d37c69ed0572b29683a24bf3..0c34022e51ef4e478de6688e9b04db6dca680aec 100644
+--- a/dist/storage/StorageSubsystem.js
++++ b/dist/storage/StorageSubsystem.js
+@@ -132,7 +132,18 @@ export class StorageSubsystem extends EventEmitter {
+             return null;
+         // Load into an Automerge document
+         const start = performance.now();
+-        const newDoc = A.loadIncremental(A.init(), binary);
++        // Canvink: `load` materialises the document in one pass. Loading
++        // incrementally into an empty document computed a patch for every
++        // value and applied them one by one, several times slower for large
++        // documents. A binary `load` rejects (a truncated trailing chunk)
++        // still loads the old way, which skips what it cannot read.
++        let newDoc;
++        try {
++            newDoc = A.load(binary);
++        }
++        catch {
++            newDoc = A.loadIncremental(A.init(), binary);
++        }
+         const end = performance.now();
+         this.emit("document-loaded", {
+             documentId,

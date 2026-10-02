@@ -1,0 +1,47 @@
+{
+  "recognition-corpus.json": {
+    "schemaVersion": 1,
+    "kind": "math-recognition-corpus",
+    "contentFree": true,
+    "repositoryCommit": "CURRENT_LOWERCASE_40_HEX_COMMIT",
+    "packageVersion": "0.2.0-beta.1",
+    "recordedAt": "CURRENT_UTC_TIMESTAMP",
+    "status": "passed",
+    "producer": "canvink-math-recognition-benchmark-v1",
+    "results": {
+      "corpusSha256": "LOWERCASE_SHA256",
+      "licenseManifestSha256": "LOWERCASE_SHA256",
+      "sampleCount": 300,
+      "writerCount": 5,
+      "basicCorrect": 90,
+      "basicTotal": 100,
+      "totalCorrect": 240,
+      "totalCount": 300,
+      "basicAccuracyPercent": 90.0,
+      "overallAccuracyPercent": 80.0,
+      "provenanceReviewed": true,
+      "selfCreatedOrExplicitlyLicensed": true,
+      "restrictedResearchDatasetUsed": false
+    }
+  },
+  "gpu-latency.json": {
+    "schemaVersion": 1,
+    "kind": "math-gpu-latency",
+    "contentFree": true,
+    "repositoryCommit": "CURRENT_LOWERCASE_40_HEX_COMMIT",
+    "packageVersion": "0.2.0-beta.1",
+    "recordedAt": "CURRENT_UTC_TIMESTAMP",
+    "status": "passed",
+    "producer": "canvink-math-gpu-benchmark-v1",
+    "results": {
+      "modelArtifactSha256": "LOWERCASE_SHA256",
+      "apiVersion": "v1",
+      "measurements": [
+        { "gpuClass": "RTX-2070", "sampleCount": 300, "medianMs": 0, "p95Ms": 0 },
+        { "gpuClass": "RTX-5060", "sampleCount": 300, "medianMs": 0, "p95Ms": 0 }
+      ],
+      "privateServiceOnly": true,
+      "rawContentIncluded": false
+    }
+  }
+}

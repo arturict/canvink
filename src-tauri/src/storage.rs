@@ -16,7 +16,7 @@ use crate::model::{
     Notebook, Page, PageElement, PageMode, Section, WorkspaceState, WORKSPACE_SCHEMA_VERSION,
 };
 
-const DATABASE_SCHEMA_VERSION: i64 = 1;
+const DATABASE_SCHEMA_VERSION: i64 = 5;
 const MAX_ID_BYTES: usize = 256;
 const MAX_TITLE_BYTES: usize = 16 * 1024;
 const MAX_TIMESTAMP_BYTES: usize = 256;
@@ -45,6 +45,16 @@ pub enum StorageError {
     UnsupportedDatabaseSchema { found: i64, supported: i64 },
     #[error("stored workspace is corrupt: {0}")]
     CorruptData(String),
+    #[error("invalid schema-v2 record: {0}")]
+    InvalidV2(String),
+    #[error("schema-v2 integrity check failed: {0}")]
+    Integrity(String),
+    #[error("schema-v2 payload exceeds a storage limit: {0}")]
+    LimitExceeded(String),
+    #[error("schema-v2 storage conflict: {0}")]
+    Conflict(String),
+    #[error("schema-v2 record was not found: {0}")]
+    NotFound(String),
     #[error("SQLite could not enable WAL mode (reported `{0}`)")]
     WalUnavailable(String),
     #[error("the in-process database write lock is unavailable")]
@@ -57,6 +67,11 @@ impl StorageError {
             Self::InvalidState(_) => "invalidWorkspace",
             Self::UnsupportedDatabaseSchema { .. } => "unsupportedDatabaseSchema",
             Self::CorruptData(_) => "corruptWorkspace",
+            Self::InvalidV2(_) => "invalidV2Record",
+            Self::Integrity(_) => "integrityCheckFailed",
+            Self::LimitExceeded(_) => "payloadTooLarge",
+            Self::Conflict(_) => "storageConflict",
+            Self::NotFound(_) => "notFound",
             Self::WalUnavailable(_) => "durabilityUnavailable",
             Self::AppDataPath(_)
             | Self::Io(_)
@@ -69,8 +84,8 @@ impl StorageError {
 
 #[derive(Clone, Debug)]
 pub struct Database {
-    path: PathBuf,
-    write_lock: Arc<Mutex<()>>,
+    pub(crate) path: PathBuf,
+    pub(crate) write_lock: Arc<Mutex<()>>,
 }
 
 impl Database {
@@ -103,7 +118,7 @@ impl Database {
         load_workspace_from(&connection)
     }
 
-    fn connect(&self) -> Result<Connection, StorageError> {
+    pub(crate) fn connect(&self) -> Result<Connection, StorageError> {
         prepare_database_path(&self.path)?;
         let mut connection = Connection::open_with_flags(
             &self.path,
@@ -217,6 +232,10 @@ fn migrate(connection: &mut Connection) -> Result<(), StorageError> {
         let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
         match next {
             1 => migrate_to_v1(&transaction)?,
+            2 => migrate_to_v2(&transaction)?,
+            3 => migrate_to_v3(&transaction)?,
+            4 => migrate_to_v4(&transaction)?,
+            5 => migrate_to_v5(&transaction)?,
             _ => unreachable!("every database migration must be registered"),
         }
         transaction.pragma_update(None, "user_version", next)?;
@@ -311,6 +330,280 @@ fn migrate_to_v1(transaction: &Transaction<'_>) -> Result<(), StorageError> {
 
         INSERT INTO meta(key, value)
         VALUES ('workspace.schemaVersion', '1');
+        "#,
+    )?;
+    Ok(())
+}
+
+fn migrate_to_v2(transaction: &Transaction<'_>) -> Result<(), StorageError> {
+    transaction.execute_batch(
+        r#"
+        -- Schema v2 is additive while the current UI still reads schema-v1
+        -- workspace rows. The migration/import workflow can populate these
+        -- tables and switch its own marker only after validation succeeds.
+        CREATE TABLE crdt_documents (
+            id            TEXT PRIMARY KEY NOT NULL CHECK (length(trim(id)) > 0),
+            notebook_id   TEXT NOT NULL CHECK (length(trim(notebook_id)) > 0),
+            document_kind TEXT NOT NULL CHECK (document_kind IN ('notebook', 'page')),
+            document_format TEXT NOT NULL CHECK (document_format IN ('canvink-json-v2', 'automerge')),
+            encoding      TEXT NOT NULL CHECK (encoding IN ('utf8-json', 'binary')),
+            content_hash  TEXT NOT NULL CHECK (length(content_hash) = 64 AND content_hash NOT GLOB '*[^0-9a-f]*'),
+            byte_size     INTEGER NOT NULL CHECK (byte_size > 0),
+            chunk_count   INTEGER NOT NULL CHECK (chunk_count > 0),
+            heads_json    TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(heads_json)),
+            updated_at    TEXT NOT NULL
+        ) STRICT;
+
+        CREATE INDEX crdt_documents_by_notebook
+            ON crdt_documents(notebook_id, document_kind, id);
+
+        CREATE TABLE crdt_document_chunks (
+            document_id TEXT NOT NULL REFERENCES crdt_documents(id) ON DELETE CASCADE,
+            chunk_index INTEGER NOT NULL CHECK (chunk_index >= 0),
+            chunk_hash  TEXT NOT NULL CHECK (length(chunk_hash) = 64 AND chunk_hash NOT GLOB '*[^0-9a-f]*'),
+            byte_size   INTEGER NOT NULL CHECK (byte_size > 0),
+            payload     BLOB NOT NULL CHECK (length(payload) = byte_size),
+            PRIMARY KEY (document_id, chunk_index)
+        ) STRICT;
+
+        -- Automerge Repo's StorageAdapter uses hierarchical string-array keys.
+        -- key_encoded is a canonical hex-per-component representation ending
+        -- every component in '/', so prefix scans cannot confuse boundaries.
+        CREATE TABLE repo_storage (
+            key_encoded TEXT PRIMARY KEY NOT NULL,
+            key_json    TEXT NOT NULL CHECK (json_valid(key_json)),
+            value_hash  TEXT NOT NULL CHECK (length(value_hash) = 64 AND value_hash NOT GLOB '*[^0-9a-f]*'),
+            byte_size   INTEGER NOT NULL CHECK (byte_size >= 0),
+            payload     BLOB NOT NULL CHECK (length(payload) = byte_size)
+        ) STRICT;
+
+        CREATE TABLE assets (
+            hash          TEXT PRIMARY KEY NOT NULL
+                              CHECK (length(hash) = 64 AND hash NOT GLOB '*[^0-9a-f]*'),
+            mime_type     TEXT NOT NULL CHECK (length(trim(mime_type)) > 0),
+            byte_size     INTEGER NOT NULL CHECK (byte_size > 0),
+            payload       BLOB NOT NULL CHECK (length(payload) = byte_size),
+            created_at    TEXT NOT NULL
+        ) STRICT;
+
+        CREATE TABLE sync_outbox (
+            id            TEXT PRIMARY KEY NOT NULL CHECK (length(trim(id)) > 0),
+            notebook_id   TEXT NOT NULL CHECK (length(trim(notebook_id)) > 0),
+            document_id   TEXT NOT NULL CHECK (length(trim(document_id)) > 0),
+            local_order   INTEGER NOT NULL CHECK (local_order >= 0),
+            envelope      BLOB NOT NULL,
+            created_at    TEXT NOT NULL,
+            UNIQUE (notebook_id, local_order)
+        ) STRICT;
+
+        CREATE INDEX sync_outbox_pending
+            ON sync_outbox(notebook_id, local_order);
+
+        CREATE TABLE sync_cursors (
+            notebook_id   TEXT PRIMARY KEY NOT NULL CHECK (length(trim(notebook_id)) > 0),
+            sequence      INTEGER NOT NULL CHECK (sequence >= 0),
+            updated_at    TEXT NOT NULL
+        ) STRICT;
+
+        CREATE TABLE migration_runs (
+            id            TEXT PRIMARY KEY NOT NULL CHECK (length(trim(id)) > 0),
+            source_schema INTEGER NOT NULL CHECK (source_schema >= 0),
+            target_schema INTEGER NOT NULL CHECK (target_schema > source_schema),
+            status        TEXT NOT NULL CHECK (status IN ('prepared', 'committed', 'rolled_back')),
+            source_fingerprint TEXT NOT NULL CHECK (length(source_fingerprint) = 64 AND source_fingerprint NOT GLOB '*[^0-9a-f]*'),
+            artifact_fingerprint TEXT NOT NULL CHECK (length(artifact_fingerprint) = 64 AND artifact_fingerprint NOT GLOB '*[^0-9a-f]*'),
+            manifest_hash TEXT NOT NULL CHECK (length(manifest_hash) = 64 AND manifest_hash NOT GLOB '*[^0-9a-f]*'),
+            manifest      BLOB NOT NULL CHECK (length(manifest) > 0),
+            started_at    TEXT NOT NULL,
+            completed_at  TEXT,
+            error         TEXT
+        ) STRICT;
+
+        CREATE TABLE migration_stage_documents (
+            migration_id   TEXT NOT NULL REFERENCES migration_runs(id) ON DELETE CASCADE,
+            id             TEXT NOT NULL,
+            notebook_id    TEXT NOT NULL,
+            document_kind  TEXT NOT NULL CHECK (document_kind IN ('notebook', 'page')),
+            document_format TEXT NOT NULL CHECK (document_format IN ('canvink-json-v2', 'automerge')),
+            encoding       TEXT NOT NULL CHECK (encoding IN ('utf8-json', 'binary')),
+            content_hash   TEXT NOT NULL CHECK (length(content_hash) = 64 AND content_hash NOT GLOB '*[^0-9a-f]*'),
+            byte_size      INTEGER NOT NULL CHECK (byte_size > 0),
+            chunk_count    INTEGER NOT NULL CHECK (chunk_count > 0),
+            heads_json     TEXT NOT NULL CHECK (json_valid(heads_json)),
+            updated_at     TEXT NOT NULL,
+            PRIMARY KEY (migration_id, id)
+        ) STRICT;
+
+        CREATE TABLE migration_stage_document_chunks (
+            migration_id TEXT NOT NULL,
+            document_id  TEXT NOT NULL,
+            chunk_index  INTEGER NOT NULL CHECK (chunk_index >= 0),
+            chunk_hash   TEXT NOT NULL CHECK (length(chunk_hash) = 64 AND chunk_hash NOT GLOB '*[^0-9a-f]*'),
+            byte_size    INTEGER NOT NULL CHECK (byte_size > 0),
+            payload      BLOB NOT NULL CHECK (length(payload) = byte_size),
+            PRIMARY KEY (migration_id, document_id, chunk_index),
+            FOREIGN KEY (migration_id, document_id)
+                REFERENCES migration_stage_documents(migration_id, id) ON DELETE CASCADE
+        ) STRICT;
+
+        CREATE TABLE migration_stage_assets (
+            migration_id TEXT NOT NULL REFERENCES migration_runs(id) ON DELETE CASCADE,
+            hash         TEXT NOT NULL CHECK (length(hash) = 64 AND hash NOT GLOB '*[^0-9a-f]*'),
+            mime_type    TEXT NOT NULL CHECK (length(trim(mime_type)) > 0),
+            byte_size    INTEGER NOT NULL CHECK (byte_size > 0),
+            payload      BLOB NOT NULL CHECK (length(payload) = byte_size),
+            created_at   TEXT NOT NULL,
+            PRIMARY KEY (migration_id, hash)
+        ) STRICT;
+
+        CREATE TABLE migration_stage_repo_storage (
+            migration_id TEXT NOT NULL REFERENCES migration_runs(id) ON DELETE CASCADE,
+            key_encoded TEXT NOT NULL,
+            key_json    TEXT NOT NULL CHECK (json_valid(key_json)),
+            value_hash  TEXT NOT NULL CHECK (length(value_hash) = 64 AND value_hash NOT GLOB '*[^0-9a-f]*'),
+            byte_size   INTEGER NOT NULL CHECK (byte_size >= 0),
+            payload     BLOB NOT NULL CHECK (length(payload) = byte_size),
+            PRIMARY KEY (migration_id, key_encoded)
+        ) STRICT;
+
+        CREATE TABLE document_snapshots (
+            id            TEXT PRIMARY KEY NOT NULL CHECK (length(trim(id)) > 0),
+            document_id   TEXT NOT NULL REFERENCES crdt_documents(id) ON DELETE CASCADE,
+            name          TEXT,
+            heads_json    TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(heads_json)),
+            content_hash  TEXT NOT NULL CHECK (length(content_hash) = 64 AND content_hash NOT GLOB '*[^0-9a-f]*'),
+            byte_size     INTEGER NOT NULL CHECK (byte_size > 0),
+            payload       BLOB NOT NULL CHECK (length(payload) = byte_size),
+            created_at    TEXT NOT NULL
+        ) STRICT;
+
+        CREATE INDEX document_snapshots_by_document
+            ON document_snapshots(document_id, created_at, id);
+
+        CREATE VIRTUAL TABLE search_v2 USING fts5(
+            document_id UNINDEXED,
+            page_id UNINDEXED,
+            title,
+            body,
+            tags,
+            tokenize = 'unicode61 remove_diacritics 2'
+        );
+
+        INSERT INTO meta(key, value)
+        VALUES ('documents.schemaVersion', '2')
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value;
+        INSERT INTO meta(key, value)
+        VALUES ('documents.activeVersion', '1')
+        ON CONFLICT(key) DO NOTHING;
+        "#,
+    )?;
+    Ok(())
+}
+
+fn migrate_to_v3(transaction: &Transaction<'_>) -> Result<(), StorageError> {
+    transaction.execute_batch(
+        r#"
+        -- The v2 tables originally exposed a migration marker, but that marker
+        -- was not sufficient to select v2 at startup. Authority and the checked
+        -- v1 rollback backup are staged separately and published together with
+        -- Repo chunks/assets by the existing migration commit transaction.
+        CREATE TABLE migration_stage_workspace_authority (
+            migration_id   TEXT PRIMARY KEY NOT NULL
+                               REFERENCES migration_runs(id) ON DELETE CASCADE,
+            activation_hash TEXT NOT NULL
+                                CHECK (length(activation_hash) = 64 AND activation_hash NOT GLOB '*[^0-9a-f]*'),
+            activation      BLOB NOT NULL CHECK (length(activation) > 0),
+            backup_hash     TEXT NOT NULL
+                                CHECK (length(backup_hash) = 64 AND backup_hash NOT GLOB '*[^0-9a-f]*'),
+            backup          BLOB NOT NULL CHECK (length(backup) > 0)
+        ) STRICT;
+
+        CREATE TABLE workspace_v2_authority (
+            selector        TEXT PRIMARY KEY NOT NULL CHECK (selector = 'activation:v2'),
+            migration_id    TEXT UNIQUE NOT NULL
+                                REFERENCES migration_runs(id) ON DELETE RESTRICT,
+            activation_hash TEXT NOT NULL
+                                CHECK (length(activation_hash) = 64 AND activation_hash NOT GLOB '*[^0-9a-f]*'),
+            activation      BLOB NOT NULL CHECK (length(activation) > 0),
+            backup_hash     TEXT NOT NULL
+                                CHECK (length(backup_hash) = 64 AND backup_hash NOT GLOB '*[^0-9a-f]*'),
+            backup          BLOB NOT NULL CHECK (length(backup) > 0),
+            activated_at    TEXT NOT NULL
+        ) STRICT;
+        "#,
+    )?;
+    Ok(())
+}
+
+fn migrate_to_v4(transaction: &Transaction<'_>) -> Result<(), StorageError> {
+    transaction.execute_batch(
+        r#"
+        CREATE TABLE workspace_v2_imports (
+            id                 TEXT PRIMARY KEY NOT NULL CHECK (length(trim(id)) > 0),
+            artifact_fingerprint TEXT NOT NULL
+                                   CHECK (length(artifact_fingerprint) = 64 AND artifact_fingerprint NOT GLOB '*[^0-9a-f]*'),
+            status             TEXT NOT NULL CHECK (status IN ('committed', 'rolled-back')),
+            receipt_hash       TEXT NOT NULL
+                                   CHECK (length(receipt_hash) = 64 AND receipt_hash NOT GLOB '*[^0-9a-f]*'),
+            receipt            BLOB NOT NULL CHECK (length(receipt) > 0),
+            prior_activation_hash TEXT NOT NULL
+                                   CHECK (length(prior_activation_hash) = 64 AND prior_activation_hash NOT GLOB '*[^0-9a-f]*'),
+            prior_activation   BLOB NOT NULL CHECK (length(prior_activation) > 0),
+            committed_activation_hash TEXT NOT NULL
+                                   CHECK (length(committed_activation_hash) = 64 AND committed_activation_hash NOT GLOB '*[^0-9a-f]*'),
+            committed_activation BLOB NOT NULL CHECK (length(committed_activation) > 0),
+            prepared_at        TEXT NOT NULL,
+            completed_at       TEXT NOT NULL
+        ) STRICT;
+
+        CREATE TABLE workspace_v2_import_backup_repo (
+            import_id   TEXT NOT NULL REFERENCES workspace_v2_imports(id) ON DELETE RESTRICT,
+            key_encoded TEXT NOT NULL,
+            key_json    TEXT NOT NULL CHECK (json_valid(key_json)),
+            value_hash  TEXT NOT NULL
+                           CHECK (length(value_hash) = 64 AND value_hash NOT GLOB '*[^0-9a-f]*'),
+            byte_size   INTEGER NOT NULL CHECK (byte_size >= 0),
+            payload     BLOB NOT NULL CHECK (length(payload) = byte_size),
+            PRIMARY KEY (import_id, key_encoded)
+        ) STRICT;
+        "#,
+    )?;
+    Ok(())
+}
+
+fn migrate_to_v5(transaction: &Transaction<'_>) -> Result<(), StorageError> {
+    transaction.execute_batch(
+        r#"
+        -- Active schema-v2 graph revisions are represented by the checked
+        -- activation plus complete Automerge Repo image. A newly imported or
+        -- copied page therefore need not have a legacy crdt_documents row.
+        -- History snapshots remain document-addressed but cannot use that
+        -- legacy table as a foreign-key authority.
+        DROP INDEX document_snapshots_by_document;
+        ALTER TABLE document_snapshots RENAME TO document_snapshots_v4;
+
+        CREATE TABLE document_snapshots (
+            id            TEXT PRIMARY KEY NOT NULL CHECK (length(trim(id)) > 0),
+            document_id   TEXT NOT NULL CHECK (length(trim(document_id)) > 0),
+            name          TEXT,
+            heads_json    TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(heads_json)),
+            content_hash  TEXT NOT NULL CHECK (length(content_hash) = 64 AND content_hash NOT GLOB '*[^0-9a-f]*'),
+            byte_size     INTEGER NOT NULL CHECK (byte_size > 0),
+            payload       BLOB NOT NULL CHECK (length(payload) = byte_size),
+            created_at    TEXT NOT NULL
+        ) STRICT;
+
+        INSERT INTO document_snapshots(
+            id, document_id, name, heads_json, content_hash,
+            byte_size, payload, created_at
+        )
+        SELECT id, document_id, name, heads_json, content_hash,
+               byte_size, payload, created_at
+        FROM document_snapshots_v4;
+
+        DROP TABLE document_snapshots_v4;
+        CREATE INDEX document_snapshots_by_document
+            ON document_snapshots(document_id, created_at, id);
         "#,
     )?;
     Ok(())
@@ -1302,6 +1595,124 @@ mod tests {
         assert_eq!(search_hits, 1);
         assert_eq!(journal_mode.to_ascii_lowercase(), "wal");
         assert_eq!(synchronous, 2, "SQLite FULL synchronous is numeric value 2");
+    }
+
+    #[test]
+    fn additive_schema_keeps_v1_authoritative_until_activation_commit() {
+        let test_database = TestDatabase::new();
+        let expected = sample_workspace();
+        test_database
+            .database
+            .save_workspace(&expected)
+            .expect("v1 workspace saves after database migration");
+
+        let connection = test_database.database.connect().expect("database opens");
+        let schema_version: i64 = connection
+            .pragma_query_value(None, "user_version", |row| row.get(0))
+            .expect("database schema version can be read");
+        let active_documents_version: String = connection
+            .query_row(
+                "SELECT value FROM meta WHERE key = 'documents.activeVersion'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("document activation marker exists");
+        let v2_tables: i64 = connection
+            .query_row(
+                "SELECT count(*) FROM sqlite_master
+                 WHERE type = 'table'
+                   AND name IN ('crdt_documents', 'assets', 'sync_outbox',
+                                'sync_cursors', 'migration_runs',
+                                'document_snapshots', 'search_v2',
+                                'crdt_document_chunks', 'repo_storage',
+                                'migration_stage_documents',
+                                'migration_stage_document_chunks',
+                                'migration_stage_assets',
+                                'migration_stage_repo_storage',
+                                'migration_stage_workspace_authority',
+                                'workspace_v2_authority',
+                                'workspace_v2_imports',
+                                'workspace_v2_import_backup_repo')",
+                [],
+                |row| row.get(0),
+            )
+            .expect("v2 tables can be counted");
+
+        assert_eq!(schema_version, DATABASE_SCHEMA_VERSION);
+        assert_eq!(active_documents_version, "1");
+        assert_eq!(v2_tables, 17);
+        assert_eq!(
+            test_database
+                .database
+                .load_workspace()
+                .expect("v1 workspace remains authoritative"),
+            expected
+        );
+    }
+
+    #[test]
+    fn v2_asset_constraints_reject_hash_and_size_mismatches() {
+        let test_database = TestDatabase::new();
+        let connection = test_database.database.connect().expect("database opens");
+
+        let invalid_hash = connection.execute(
+            "INSERT INTO assets(hash, mime_type, byte_size, payload, created_at)
+             VALUES (?1, 'application/pdf', 3, x'010203', ?2)",
+            params!["not-a-sha256", "2026-08-03T12:00:00.000Z"],
+        );
+        assert!(invalid_hash.is_err());
+
+        let invalid_size = connection.execute(
+            "INSERT INTO assets(hash, mime_type, byte_size, payload, created_at)
+             VALUES (?1, 'application/pdf', 4, x'010203', ?2)",
+            params!["a".repeat(64), "2026-08-03T12:00:00.000Z"],
+        );
+        assert!(invalid_size.is_err());
+    }
+
+    #[test]
+    fn round_trip_preserves_checklists_and_page_task_metadata() {
+        let test_database = TestDatabase::new();
+        let mut expected = sample_workspace();
+        let page = &mut expected.notebooks[0].sections[0].pages[0];
+        page.extra
+            .insert("tags".to_owned(), json!(["todo", "important"]));
+        page.extra.insert("taskState".to_owned(), json!("open"));
+
+        let mut checklist_payload = BTreeMap::new();
+        checklist_payload.insert("color".to_owned(), json!("#1f2937"));
+        checklist_payload.insert("fontSize".to_owned(), json!(16));
+        checklist_payload.insert(
+            "items".to_owned(),
+            json!([
+                {"id": "check-1", "text": "Prepare notes", "checked": false},
+                {"id": "check-2", "text": "Share summary", "checked": true}
+            ]),
+        );
+        page.elements.push(PageElement {
+            id: "checklist-1".to_owned(),
+            kind: "checklist".to_owned(),
+            x: 30.0,
+            y: 240.0,
+            width: Some(360.0),
+            height: Some(120.0),
+            rotation: None,
+            z_index: Some(3),
+            created_at: Some("2026-07-29T10:04:00.000Z".to_owned()),
+            updated_at: Some("2026-07-29T10:04:00.000Z".to_owned()),
+            payload: checklist_payload,
+        });
+
+        let saved = test_database
+            .database
+            .save_workspace(&expected)
+            .expect("workspace with checklist saves");
+
+        assert_eq!(saved, expected);
+        assert_eq!(
+            saved.notebooks[0].sections[0].pages[0].elements[1].kind,
+            "checklist"
+        );
     }
 
     #[cfg(unix)]

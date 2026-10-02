@@ -1,0 +1,275 @@
+/* Touch mode. Every control is at least 44 px on both axes; the mouse layout
+   in styles.css stays compact. The root carries data-touch-mode="on" while
+   touch mode is active (see src/ui/touchMode.ts). Loaded after styles.css so
+   these rules win over its layered overrides. */
+:root[data-touch-mode="on"] {
+  .notebook-sidebar {
+    --nav-row-height: 48px;
+  }
+
+  /* Title bar */
+  .sidebar-toggle,
+  .topbar-action,
+  .topbar-action--icon {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .notebook-switcher__button {
+    min-height: 44px;
+  }
+
+  .search-panel__bar {
+    min-height: 44px;
+  }
+
+  .search-panel__bar button {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .search-panel__bar input {
+    min-height: 44px;
+  }
+
+  .search-chip,
+  .search-scope__option,
+  .search-more__button,
+  .search-result,
+  .search-row,
+  .search-shortcut {
+    min-height: 44px;
+  }
+
+  .v2-icon-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Ribbon */
+  .ribbon__tab {
+    min-height: 44px;
+    padding-block: 10px;
+  }
+
+  .ribbon__card {
+    min-height: 56px;
+  }
+
+  .ribbon-button {
+    min-width: 44px;
+    height: 44px;
+  }
+
+  .ribbon-pen {
+    width: 44px;
+    height: 44px;
+  }
+
+  .ribbon-width {
+    width: 44px;
+    height: 44px;
+  }
+
+  .ribbon .canvink-rich-text-toolbar-dock .canvink-rich-text-toolbar__field select,
+  .ribbon .canvink-rich-text-toolbar-dock .canvink-rich-text-toolbar__button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Pen menu. The menu's own stylesheet loads later, so these repeat the
+     block name to outrank it. */
+  .ribbon-popover.pen-style-menu {
+    width: min(344px, calc(100vw - 16px));
+  }
+
+  .pen-style-menu__body .pen-style-menu__swatch,
+  .pen-style-menu__body .pen-style-menu__custom input {
+    width: 44px;
+    height: 44px;
+  }
+
+  .pen-style-menu__body .pen-style-menu__custom {
+    min-height: 44px;
+  }
+
+  .pen-style-menu__body .pen-style-menu__tools > button {
+    min-height: 44px;
+  }
+
+  .pen-style-menu__body .pen-style-menu__size input {
+    height: 44px;
+  }
+
+  /* Navigation */
+  .sidebar-add-row,
+  .trash-link,
+  .sidebar-create-menu > summary {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .recovery-card > .recovery-card__close,
+  .page-template-menu > summary {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .sidebar-create-menu__popover button {
+    min-height: 44px;
+  }
+
+  /* Menus and fields */
+  .page-settings-menu > summary {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .page-header__title > input {
+    min-height: 44px;
+  }
+}
+
+/* Touch mode, continued: ribbon spacing, larger menus, no hover-only
+   affordances and no heavy effects. */
+:root[data-touch-mode="on"] {
+  .ribbon__tab {
+    padding-inline: 20px;
+    font-size: 14px;
+  }
+
+  .ribbon-group {
+    gap: 6px;
+    padding: 0 12px;
+  }
+
+  .ribbon-button {
+    padding-inline: 10px;
+  }
+
+  .ribbon-button svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .context-menu {
+    min-width: 240px;
+  }
+
+  .context-menu__item {
+    min-height: 48px;
+    padding-inline: 14px;
+    font-size: 15px;
+  }
+
+  .context-menu__separator {
+    margin-block: 6px;
+  }
+
+  /* Rows show their fold control without a mouse to hover them. */
+  .page-row__toggle {
+    width: 44px;
+    height: 44px;
+    opacity: 1;
+  }
+
+  .nav-pane,
+  .page-pane,
+  .page-tree {
+    overscroll-behavior: contain;
+    scroll-behavior: auto;
+  }
+
+  /* Blur, big shadows and menu animations cost frames on a tablet GPU. */
+  .live-canvas-toolbar__popover,
+  .ribbon-popover,
+  .context-menu,
+  .canvas-context-menu {
+    backdrop-filter: none;
+    animation: none;
+    transition: none;
+  }
+
+  .context-menu,
+  .ribbon-popover,
+  .live-canvas-toolbar__popover {
+    box-shadow: 0 2px 8px rgb(22 35 29 / 22%);
+  }
+
+  .notebook-sidebar,
+  .ribbon {
+    transition: none;
+  }
+}
+
+/* The segmented Touch-Modus choice in the Ansicht tab. */
+.touch-mode-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #2f3834;
+  font-size: 13px;
+}
+
+.touch-mode-choice__option {
+  min-height: 30px;
+  padding: 0 10px;
+  color: inherit;
+  border: 1px solid #d8dfda;
+  border-radius: 7px;
+  background: transparent;
+}
+
+.touch-mode-choice__option[aria-checked="true"] {
+  color: white;
+  border-color: var(--app-green);
+  background: var(--app-green);
+}
+
+:root[data-touch-mode="on"] .touch-mode-choice__option {
+  min-width: 56px;
+  min-height: 44px;
+}
+
+/* No accidental browser behaviour. The browser must not pull to refresh,
+   bounce the page, zoom it with a pinch or double tap, or open its own
+   selection callout and context menu on the app's chrome. The canvas zooms
+   and pans by itself (touch-action: none in LiveCanvasEditor.css). */
+html,
+body {
+  overscroll-behavior: none;
+  touch-action: pan-x pan-y;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+.app-topbar,
+.ribbon,
+.notebook-sidebar,
+.context-menu,
+.confirm-dialog,
+.floating-ink-toolbar {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.app-topbar :is(input, textarea, select, [contenteditable]),
+.ribbon :is(input, textarea, select, [contenteditable]),
+.notebook-sidebar :is(input, textarea, select, [contenteditable]),
+.confirm-dialog :is(input, textarea) {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* The on-screen keyboard shrinks the shell (see src/ui/keyboardInset.ts), so
+   the ribbon and the page stay above it and the caret has room. */
+:root {
+  --keyboard-inset: env(keyboard-inset-height, 0px);
+}
+
+.notebook-app {
+  height: calc(100dvh - var(--keyboard-inset));
+}

@@ -1,8 +1,21 @@
 export const WORKSPACE_SCHEMA_VERSION = 1 as const;
 
 export type PageMode = 'free' | 'a4';
-export type EditorTool = 'select' | 'pen' | 'highlighter' | 'eraser' | 'text';
+export type PageBackground = 'blank' | 'lined' | 'grid' | 'millimeter';
+export type ShapeType = 'line' | 'arrow' | 'rectangle' | 'ellipse' | 'triangle' | 'axes';
+export type EditorTool =
+  | 'select'
+  | 'hand'
+  | 'pen'
+  | 'highlighter'
+  | 'eraser'
+  | 'text'
+  | 'checklist'
+  | 'shape';
 export type TrashKind = 'notebook' | 'section' | 'page' | 'element';
+export type PageTag = 'important' | 'todo' | 'question' | 'idea';
+export type PageTaskState = 'open' | 'done';
+export type TextListStyle = 'none' | 'bullet' | 'numbered';
 
 export interface InkPoint {
   x: number;
@@ -40,6 +53,25 @@ export interface TextElement extends ElementBase {
   fontSize: number;
   fontFamily: string;
   fontWeight: 400 | 500 | 600 | 700;
+  fontStyle?: 'normal' | 'italic';
+  textDecoration?: 'none' | 'underline' | 'line-through';
+  textAlign?: 'left' | 'center' | 'right';
+  listStyle?: TextListStyle;
+}
+
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  checked: boolean;
+}
+
+export interface ChecklistElement extends ElementBase {
+  kind: 'checklist';
+  width: number;
+  height: number;
+  color: string;
+  fontSize: number;
+  items: ChecklistItem[];
 }
 
 export interface ImageElement extends ElementBase {
@@ -60,13 +92,33 @@ export interface PdfElement extends ElementBase {
   height: number;
 }
 
-export type PageElement = StrokeElement | TextElement | ImageElement | PdfElement;
+export interface ShapeElement extends ElementBase {
+  kind: 'shape';
+  shapeType: ShapeType;
+  width: number;
+  height: number;
+  rotation: number;
+  color: string;
+  strokeWidth: number;
+}
+
+export type PageElement =
+  | StrokeElement
+  | TextElement
+  | ChecklistElement
+  | ImageElement
+  | PdfElement
+  | ShapeElement;
 
 export interface Page {
   id: string;
   parentPageId?: string;
   title: string;
+  tags?: PageTag[];
+  taskState?: PageTaskState;
   mode: PageMode;
+  /** Older workspaces omitted this field and used the original grid canvas. */
+  background?: PageBackground;
   createdAt: string;
   updatedAt: string;
   elements: PageElement[];
@@ -75,9 +127,20 @@ export interface Page {
 export interface Section {
   id: string;
   title: string;
+  /** Chosen section colour; absent means the derived default. */
+  color?: string;
+  /** The section group the section sits in; absent means the top level. */
+  groupId?: string;
   createdAt: string;
   updatedAt: string;
   pages: Page[];
+}
+
+/** A section group ("Abschnittsgruppe"); groups nest via `parentGroupId`. */
+export interface SectionGroup {
+  id: string;
+  title: string;
+  parentGroupId?: string;
 }
 
 export interface Notebook {
@@ -87,6 +150,16 @@ export interface Notebook {
   createdAt: string;
   updatedAt: string;
   sections: Section[];
+  /** Section groups in sibling order; absent when the notebook has none. */
+  sectionGroups?: SectionGroup[];
+  /** The notebook's own symbol (an emoji), shown instead of its colour dot. */
+  icon?: string;
+  /**
+   * How the navigation orders sections and pages when the notebook does not
+   * keep the user's own order. `sections` and `pages` are already sorted;
+   * manual moves have no visible effect while a key is set.
+   */
+  sort?: { sections: 'manual' | 'title' | 'created' | 'updated'; pages: 'manual' | 'title' | 'created' | 'updated' };
 }
 
 export interface TrashOrigin {
@@ -126,7 +199,7 @@ export interface ActiveContext {
 
 export interface WorkspaceSearchResult {
   id: string;
-  kind: 'notebook' | 'section' | 'page' | 'text';
+  kind: 'notebook' | 'section' | 'page' | 'text' | 'checklist';
   title: string;
   excerpt: string;
   notebookId: string;

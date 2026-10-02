@@ -1,0 +1,329 @@
+/* The "Seiteneinstellungen" popover: sections with small labels, rows with a
+   label and a compact control, on an 8 px rhythm. No nested cards. */
+.page-settings-menu__popover {
+  position: absolute;
+  z-index: 90;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(340px, calc(100vw - 24px));
+  max-height: calc(100dvh - 120px);
+  padding: 8px 16px 16px;
+  display: grid;
+  gap: 16px;
+  overflow-y: auto;
+  color: var(--app-ink);
+}
+
+.page-settings-menu__popover > header {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.page-settings-menu__popover > header strong {
+  font-size: 13px;
+}
+
+.page-settings-menu__scrim {
+  display: none;
+}
+
+.settings-section {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.settings-section > h3 {
+  margin: 0;
+  color: var(--app-soft);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.settings-row {
+  min-width: 0;
+  min-height: 32px;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.page-settings-menu__popover .settings-row__label {
+  color: var(--app-ink);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.settings-row--switch {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+/* Paper thumbnails, one per ruling, the current one outlined. */
+.paper-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.paper-tile {
+  min-width: 0;
+  padding: 4px 4px 8px;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  color: var(--app-ink);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 11px;
+}
+
+.paper-tile .paper-menu__sample {
+  width: 100%;
+  height: 48px;
+  border-radius: 6px;
+}
+
+.paper-tile > span:not(.paper-menu__sample) {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: inherit;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.paper-tile:hover:not(:disabled) {
+  background: var(--menu-hover, #eef1ef);
+}
+
+.paper-tile[aria-pressed='true'] {
+  color: var(--app-green);
+  font-weight: 650;
+  border-color: rgb(61 107 88 / 55%);
+  background: var(--menu-active, rgb(61 107 88 / 12%));
+}
+
+.paper-tile[aria-pressed='true'] .paper-menu__sample {
+  border-color: rgb(61 107 88 / 55%);
+}
+
+.settings-row .paper-menu__swatches {
+  padding: 0;
+  gap: 8px;
+}
+
+.settings-row .paper-menu__swatch {
+  width: 24px;
+  height: 24px;
+}
+
+.settings-row .paper-menu__segments > button {
+  min-width: 0;
+  padding: 0 4px;
+  font-size: 12px;
+}
+
+.page-settings-menu__popover .paper-menu__segments > button:disabled,
+.paper-tile:disabled {
+  opacity: 0.5;
+}
+
+/* Switch */
+.switch {
+  width: 40px;
+  height: 24px;
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: #c3cbc6;
+  transition: background 120ms ease-out;
+}
+
+.switch > span {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(30 41 37 / 30%);
+  transition: transform 120ms ease-out;
+}
+
+.switch[aria-checked='true'] {
+  background: var(--app-green);
+}
+
+.switch[aria-checked='true'] > span {
+  transform: translateX(16px);
+}
+
+.switch:disabled {
+  opacity: 0.5;
+}
+
+/* Chip input for tags */
+.chip-input {
+  min-height: 40px;
+  padding: 4px 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #d9dfdb;
+  border-radius: 10px;
+  background: #f8faf8;
+  cursor: text;
+}
+
+.chip-input:focus-within {
+  border-color: var(--app-green);
+  box-shadow: 0 0 0 2px rgb(61 107 88 / 18%);
+}
+
+.chip-input > ul {
+  display: contents;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip-input li {
+  min-height: 24px;
+  padding: 0 2px 0 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--app-green);
+  border-radius: 999px;
+  background: var(--app-green-soft);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.chip-input li button {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  color: inherit;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.chip-input li button:hover:not(:disabled) {
+  background: rgb(61 107 88 / 16%);
+}
+
+.chip-input > input {
+  min-width: 80px;
+  min-height: 28px;
+  flex: 1 1 80px;
+  padding: 0 4px;
+  color: var(--app-ink);
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 12px;
+}
+
+@media (max-width: 820px) {
+  .page-settings-menu__popover {
+    position: fixed;
+    top: 102px;
+    right: 8px;
+  }
+}
+
+/* Phones: a bottom sheet over a dimmed page. */
+@media (max-width: 640px) {
+  .page-settings-menu[open] > .page-settings-menu__scrim {
+    position: fixed;
+    z-index: 89;
+    inset: 0;
+    display: block;
+    border: 0;
+    background: rgb(20 30 26 / 40%);
+  }
+
+  .page-settings-menu__popover {
+    inset: auto 0 0 0;
+    top: auto;
+    right: 0;
+    width: auto;
+    max-height: 85dvh;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    border-radius: 16px 16px 0 0;
+  }
+
+  .paper-tile .paper-menu__sample {
+    height: 56px;
+  }
+}
+
+/* Touch mode: every target is 44 px. */
+:root[data-touch-mode='on'] {
+  .settings-row {
+    min-height: 44px;
+  }
+
+  .paper-tile {
+    min-height: 44px;
+  }
+
+  .settings-row .paper-menu__segments > button {
+    min-height: 44px;
+  }
+
+  .settings-row .paper-menu__swatch {
+    width: 44px;
+    height: 44px;
+    border-width: 8px;
+    background-clip: content-box;
+  }
+
+  .settings-row .paper-menu__swatches {
+    gap: 0;
+  }
+
+  .switch {
+    width: 52px;
+    height: 44px;
+    background-clip: content-box;
+  }
+
+  .chip-input {
+    min-height: 44px;
+  }
+
+  .chip-input li {
+    min-height: 32px;
+  }
+
+  .chip-input li button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .chip-input > input {
+    min-height: 44px;
+  }
+
+  .page-settings-menu__popover > header .v2-icon-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

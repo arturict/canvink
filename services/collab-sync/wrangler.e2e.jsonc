@@ -1,0 +1,46 @@
+{
+  // Personal-space e2e-only Wrangler config (tests/e2e/personal-space.playwright.config.ts).
+  // NEVER used for `wrangler deploy` — only for a local `wrangler dev -c
+  // wrangler.e2e.jsonc` process the e2e webServer starts and tears down.
+  //
+  // Why this file exists instead of passing `--r2` on the `wrangler dev`
+  // command line (as services/collab-sync/PERSONAL-SYNC.md §9 Wave 5 task 5
+  // describes): the installed wrangler (4.127.1) has no `--r2` CLI flag
+  // (verified: `wrangler dev --r2 ...` -> "Unknown argument: r2"). The only
+  // way to give a local `wrangler dev` process an R2 binding is to declare
+  // `r2_buckets` in a config file. `wrangler.jsonc` deliberately leaves that
+  // block commented out (R2 is not enabled on the real Cloudflare account
+  // yet, and a real `wrangler deploy` with an undeployable bucket name would
+  // fail outright) — this file is the local-only counterpart: `wrangler dev`
+  // without `--remote` never touches the real Cloudflare API for R2, it uses
+  // Miniflare's local R2 simulator, so no real bucket needs to exist for this
+  // to work.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "canvink-collab-sync",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "NOTEBOOK_ROOM",
+        "class_name": "NotebookRoom"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["NotebookRoom"]
+    }
+  ],
+  "r2_buckets": [
+    { "binding": "ASSETS", "bucket_name": "canvink-personal-assets-e2e" }
+  ],
+  "vars": {
+    "ALLOWED_ORIGINS": "*"
+  }
+}

@@ -57,14 +57,46 @@ function validateMarkers(contents) {
   }
 }
 
-function validateManifest(contents) {
+function manifestUrl(value, baseUrl, label) {
+  assert(typeof value === "string" && value.length > 0, `${label} is missing`);
+  const url = new URL(value, baseUrl);
+  assert(url.origin === baseUrl.origin, `${label} must be same-origin`);
+  assert(url.username === "" && url.password === "", `${label} cannot contain credentials`);
+  return url;
+}
+
+function validateManifest(contents, manifestLocation) {
   const manifest = JSON.parse(contents);
+  const baseUrl = new URL(manifestLocation);
   assert(manifest.name === "Canvink", "Web manifest has the wrong name");
-  assert(manifest.start_url === "/app", "Web manifest must start at /app");
+  const startUrl = manifestUrl(manifest.start_url, baseUrl, "Web manifest start_url");
+  assert(
+    startUrl.pathname === "/app" && startUrl.search === "" && startUrl.hash === "",
+    "Web manifest must start at same-origin /app",
+  );
+  if (manifest.id !== undefined) {
+    const id = manifestUrl(manifest.id, baseUrl, "Web manifest id");
+    assert(
+      id.pathname === "/app" && id.search === "" && id.hash === "",
+      "Web manifest id must resolve to same-origin /app",
+    );
+  }
+  const scope = manifestUrl(manifest.scope ?? "./", baseUrl, "Web manifest scope");
+  assert(
+    scope.pathname === "/" && scope.search === "" && scope.hash === "",
+    "Web manifest scope must resolve to the same-origin root",
+  );
   assert(
     Array.isArray(manifest.icons) && manifest.icons.length > 0,
     "Web manifest must contain an icon",
   );
+  for (const icon of manifest.icons) {
+    const iconUrl = manifestUrl(icon?.src, baseUrl, "Web manifest icon src");
+    assert(
+      iconUrl.pathname.startsWith(scope.pathname),
+      "Web manifest icon must remain inside its scope",
+    );
+  }
 }
 
 function resolveInside(directory, pathname) {
@@ -113,7 +145,10 @@ function smokeDirectory(directory) {
 
   const manifestPath = join(root, "manifest.webmanifest");
   assert(existsSync(manifestPath), "Built site is missing manifest.webmanifest");
-  validateManifest(readFileSync(manifestPath, "utf8"));
+  validateManifest(
+    readFileSync(manifestPath, "utf8"),
+    "https://local.invalid/manifest.webmanifest",
+  );
 
   const scripts = listFiles(root)
     .filter((path) => extname(path) === ".js")
@@ -260,7 +295,7 @@ async function smokeRemote(value) {
 
   const manifestResult = await safeFetch(new URL("/manifest.webmanifest", url));
   assert(manifestResult.response.status === 200, "Web manifest is unreachable");
-  validateManifest(await manifestResult.response.text());
+  validateManifest(await manifestResult.response.text(), manifestResult.url);
 
   const appResult = await safeFetch(new URL("/app", url));
   assert(appResult.response.status === 200, "/app route is unreachable");

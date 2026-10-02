@@ -1,0 +1,88 @@
+/* Other people on the page: live ink, work region, pointer and name. */
+.canvas-presence {
+  position: absolute;
+  inset: 0;
+  z-index: 2147483645;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.canvas-presence__ink-layer {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.canvas-presence__ink {
+  transition: opacity 400ms ease-out;
+}
+
+.canvas-presence__ink.is-done {
+  opacity: 0.55;
+}
+
+/* The region someone works in; stays for a while after they stop, then fades. */
+.canvas-presence__focus {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1.5px solid color-mix(in srgb, var(--presence-color) 55%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--presence-color) 7%, transparent);
+  animation: canvas-presence-focus-fade 14s linear forwards;
+}
+
+@keyframes canvas-presence-focus-fade {
+  0%, 55% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.canvas-presence__cursor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+  transition: transform 60ms linear;
+}
+
+.canvas-presence__cursor-body {
+  position: relative;
+  animation: canvas-presence-idle 20s linear forwards;
+}
+
+@keyframes canvas-presence-idle {
+  0%, 40% { opacity: 1; }
+  100% { opacity: 0.35; }
+}
+
+.canvas-presence__arrow {
+  display: block;
+  filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 30%));
+}
+
+.canvas-presence__arrow path {
+  fill: var(--presence-color);
+  stroke: #fff;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+
+.canvas-presence__label {
+  position: absolute;
+  top: 15px;
+  left: 12px;
+  max-width: 180px;
+  padding: 2px 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--presence-color);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 22%);
+  font: 600 11.5px/1.35 system-ui, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas-presence__cursor { transition: none; }
+}

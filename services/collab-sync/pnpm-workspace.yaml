@@ -1,0 +1,12 @@
+# Marks this directory as its own pnpm workspace root, independent of any
+# workspace file further up the tree (this service is a standalone package
+# with its own lockfile).
+allowBuilds:
+  esbuild: true
+  sharp: false
+  workerd: true
+minimumReleaseAgeExclude:
+  - '@cloudflare/workers-types@5.20260901.1'
+onlyBuiltDependencies:
+  - esbuild
+  - workerd

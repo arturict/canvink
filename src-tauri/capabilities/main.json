@@ -1,12 +1,17 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main",
-  "description": "Minimal core capability for the Canvink main window. No shell, filesystem, HTTP, or network plugin permissions are granted.",
+  "description": "Minimal core capability for the Canvink main window. No shell, filesystem, HTTP, or network plugin permissions are granted; the updater and the relaunch are the only plugin permissions.",
+  "platforms": ["linux", "windows", "macOS"],
   "windows": [
     "main"
   ],
   "permissions": [
     "core:default",
-    "core:window:allow-destroy"
+    "core:window:allow-destroy",
+    "core:window:allow-is-fullscreen",
+    "core:window:allow-set-fullscreen",
+    "updater:default",
+    "process:allow-restart"
   ]
 }

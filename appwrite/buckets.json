@@ -1,0 +1,14 @@
+[
+  {
+    "$id": "canvink-encrypted-assets",
+    "$permissions": [],
+    "fileSecurity": true,
+    "name": "Canvink encrypted assets",
+    "enabled": true,
+    "maximumFileSize": 67108864,
+    "allowedFileExtensions": [],
+    "compression": "none",
+    "encryption": true,
+    "antivirus": false
+  }
+]

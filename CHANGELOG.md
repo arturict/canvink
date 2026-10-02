@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Unreleased
 
+### Added
+
+- Math Canvas schema v3 with lossless v2 migration, typed and explicit handwritten Math blocks, local exact/decimal evaluation, page variables, bounded school-level equation solving, number scrubbing, and atomic correction/conversion history
+- Interactive numeric-only 2D graphs, including bounded implicit equations, persisted viewports, coordinate inspection, and reactive source references
+- Native offline Numbat unit conversion, bundled dated ECB reference-rate snapshots, notebook-scoped calculator history, and current-schema JSON/PDF/PNG/Markdown export support
+- Desktop BYOK recognition through Mathpix Strokes or a compatible private endpoint, Windows-DPAPI credentials, and a private TexTeller/UniMERNet benchmark service
+- Manual page tags and an open/done page task state in page settings, with suggestions, a bounded tag limit, and the same normalizer OneNote acquisition uses
+- `tag:`, `is:open`, `is:done`, and `is:task` search operators usable alone or with free text, matching task and tag filter controls, and a cross-page task review that lists every marked page
+
+### Changed
+
+- Development package version is `0.2.0-beta.1`; publication remains blocked until the commit-bound external Math acceptance artifacts pass
+
 ### Security
 
 - Restrict the Unix desktop database directory, database, and SQLite companion files to the owning user, including repair of permissive legacy modes

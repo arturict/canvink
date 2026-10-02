@@ -1,0 +1,119 @@
+/* `/desktop-login`: the browser half of the desktop sign-in. */
+.desktop-login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  color: var(--app-ink, #1e2925);
+  background: #f7f5ef;
+}
+
+.desktop-login__card {
+  width: min(420px, 100%);
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 32px 28px;
+  box-sizing: border-box;
+  border: 1px solid var(--app-line, #dde0da);
+  border-radius: 16px;
+  text-align: center;
+  background: var(--app-paper, #fffefa);
+  box-shadow: 0 12px 32px rgb(30 41 37 / 8%);
+}
+
+.desktop-login__card .brand-mark {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  color: white;
+  border-radius: 14px;
+  background: var(--app-green, #3f6859);
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+
+.desktop-login__card h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 650;
+}
+
+.desktop-login__message {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--app-muted, #65716b);
+  line-height: 1.45;
+}
+
+.desktop-login__message--done {
+  color: var(--app-green, #3f6859);
+  font-weight: 600;
+}
+
+.desktop-login__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.desktop-login__actions > button,
+.desktop-login__actions > a,
+.desktop-login__code button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--app-line, #dde0da);
+  border-radius: 8px;
+  color: var(--app-ink, #1e2925);
+  background: var(--app-panel, #f8f7f2);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.desktop-login__actions > .desktop-login__primary {
+  border-color: var(--app-green, #3f6859);
+  color: white;
+  background: var(--app-green, #3f6859);
+}
+
+.desktop-login__actions > :disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.desktop-login__actions > :focus-visible,
+.desktop-login__code :focus-visible {
+  outline: 2px solid var(--app-green, #3f6859);
+  outline-offset: 2px;
+}
+
+.desktop-login__code {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.desktop-login__code > div {
+  display: flex;
+  gap: 6px;
+}
+
+.desktop-login__code input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--app-line, #dde0da);
+  border-radius: 8px;
+  font: 0.8rem ui-monospace, SFMono-Regular, Consolas, monospace;
+}

@@ -2,10 +2,13 @@
   "name": "Canvink",
   "short_name": "Canvink",
   "description": "A local-first notebook for ink, text, images, and PDFs.",
+  "id": "/app",
   "start_url": "/app",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#f7f5ef",
   "theme_color": "#f7f5ef",
+  "categories": ["productivity", "utilities"],
   "icons": [
     {
       "src": "/canvink-mark.svg",

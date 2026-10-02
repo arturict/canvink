@@ -1,0 +1,271 @@
+/* The floating ink toolbar of the full page view. It is placed with fixed
+   left/top from JavaScript; at the side edges it becomes a vertical strip. */
+.floating-ink-toolbar {
+  position: fixed;
+  z-index: 400;
+  /* Its size must not depend on where it is placed, or a toolbar near the
+     right edge would wrap only because of its own position. */
+  width: max-content;
+  padding: 3px;
+  color: #2f3834;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 96%);
+  box-shadow: 0 4px 18px rgb(30 41 37 / 16%), 0 0 0 1px rgb(30 41 37 / 9%);
+  /* A finger on the toolbar moves the toolbar, never the page. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  transition: opacity 140ms ease, left 160ms ease, top 160ms ease;
+}
+
+.floating-ink-toolbar[data-dragging='true'] {
+  transition: none;
+  box-shadow: 0 10px 28px rgb(30 41 37 / 24%), 0 0 0 1px rgb(30 41 37 / 12%);
+  cursor: grabbing;
+}
+
+/* During a stroke the toolbar steps aside: faint and click-through. */
+.floating-ink-toolbar[data-drawing='true'] {
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.floating-ink-toolbar__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1px;
+  max-inline-size: calc(100vw - 22px);
+}
+
+.floating-ink-toolbar__body[hidden] {
+  display: none;
+}
+
+/* Vertical: a vertical writing mode turns the wrapping row into a column
+   that wraps into a second column when the window is too short (phones),
+   which a column flexbox cannot size correctly. */
+.floating-ink-toolbar[aria-orientation='vertical'] .floating-ink-toolbar__body {
+  writing-mode: vertical-lr;
+  max-inline-size: calc(100dvh - 22px);
+}
+
+/* Buttons keep upright icons; separators follow the strip. */
+.floating-ink-toolbar[aria-orientation='vertical'] button {
+  writing-mode: horizontal-tb;
+}
+
+.floating-ink-toolbar__tools,
+.floating-ink-pens {
+  display: contents;
+}
+
+.floating-ink-toolbar__separator {
+  inline-size: 1px;
+  block-size: 22px;
+  margin-inline: 3px;
+  background: #e3e6e3;
+}
+
+.floating-ink-toolbar__grip {
+  inline-size: 22px;
+  block-size: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #8a948f;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  cursor: grab;
+}
+
+.floating-ink-toolbar[aria-orientation='vertical'] .floating-ink-toolbar__grip {
+  writing-mode: vertical-lr;
+}
+
+.floating-ink-toolbar__grip svg {
+  width: 16px;
+  height: 16px;
+}
+
+.floating-ink-toolbar__grip:hover {
+  color: #2f3834;
+  background: #eef1ef;
+}
+
+.floating-ink-toolbar .ribbon-button {
+  min-width: 34px;
+  padding: 0 6px;
+}
+
+.floating-ink-toolbar .ribbon-pen {
+  width: 32px;
+}
+
+/* The pen menu shows its current colour as a dot on the palette icon. */
+.floating-ink-toolbar .pen-style-menu__button {
+  position: relative;
+}
+
+.floating-ink-toolbar .pen-style-menu__button .ribbon-popover-button__chevron {
+  display: none;
+}
+
+.floating-ink-toolbar .pen-style-menu__button .pen-style-menu__current {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  margin: 0;
+  width: 9px;
+  height: 9px;
+  box-shadow: 0 0 0 1.5px #fff, 0 0 0 2.5px rgb(30 41 37 / 25%);
+}
+
+/* The exit button reads as a command, not as a pressed state. */
+.floating-ink-toolbar .floating-ink-toolbar__exit[aria-pressed='true'] {
+  color: inherit;
+  background: transparent;
+}
+
+.floating-ink-toolbar .floating-ink-toolbar__exit:hover {
+  background: #eef1ef;
+}
+
+.floating-ink-toolbar__grip:focus-visible,
+.floating-ink-toolbar__expand:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+/* Collapsed: one round button in the colour of the current pen. */
+.floating-ink-toolbar[data-collapsed='true'] {
+  padding: 3px;
+  border-radius: 50%;
+}
+
+.floating-ink-toolbar__expand {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: #2f3834;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.floating-ink-toolbar__expand:hover {
+  background: #eef1ef;
+}
+
+.floating-ink-toolbar__current {
+  display: contents;
+}
+
+/* The pen shown is portalled from the canvas; the press belongs to the
+   button (React would route the click to the canvas's tree instead). */
+.floating-ink-toolbar__current,
+.floating-ink-toolbar__current * {
+  pointer-events: none;
+}
+
+.floating-ink-toolbar__current svg {
+  width: 20px;
+  height: 20px;
+}
+
+.floating-ink-toolbar__current-tip {
+  position: absolute;
+  left: 11px;
+  right: 11px;
+  bottom: 7px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.floating-ink-toolbar__fallback {
+  width: 20px;
+  height: 20px;
+}
+
+.floating-ink-toolbar__current:not(:empty) + .floating-ink-toolbar__fallback {
+  display: none;
+}
+
+.floating-ink-toolbar__options > [role='group'] {
+  display: grid;
+  gap: 2px;
+  min-width: 200px;
+}
+
+.floating-ink-toolbar__options button {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px 0 8px;
+  text-align: left;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+}
+
+.floating-ink-toolbar__options button:hover {
+  background: #eef1ef;
+}
+
+.floating-ink-toolbar__options button svg {
+  width: 15px;
+  height: 15px;
+  visibility: hidden;
+}
+
+.floating-ink-toolbar__options button[aria-pressed='true'] svg {
+  visibility: visible;
+}
+
+/* On a phone the strip wraps into two short columns instead of covering
+   the whole height of the page. */
+@media (max-width: 639px) {
+  .floating-ink-toolbar[aria-orientation='vertical'] .floating-ink-toolbar__body {
+    max-inline-size: min(calc(100dvh - 22px), 440px);
+  }
+}
+
+/* Fingers need larger targets than a mouse. */
+:root[data-touch-mode="on"] {
+  .floating-ink-toolbar .ribbon-button,
+  .floating-ink-toolbar .ribbon-pen {
+    min-width: 38px;
+    height: 38px;
+  }
+
+  .floating-ink-toolbar .ribbon-pen {
+    width: 38px;
+  }
+
+  .floating-ink-toolbar__grip {
+    block-size: 38px;
+  }
+
+  .floating-ink-toolbar .floating-ink-toolbar__navigation {
+    min-width: 44px;
+    height: 44px;
+  }
+
+  .floating-ink-toolbar__expand {
+    width: 46px;
+    height: 46px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-ink-toolbar {
+    transition: none;
+  }
+}

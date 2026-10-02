@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Canvink's mark (public/canvink-mark.svg) on the adaptive icon's 108 dp canvas, inside its 66 dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="1.45"
+        android:scaleY="1.45"
+        android:translateX="9.05"
+        android:translateY="6.875">
+        <path
+            android:fillColor="#F7F5EF"
+            android:pathData="M18,18h24a4,4 0,0 1,4 4v20a4,4 0,0 1,-4 4H18V18Z" />
+        <path
+            android:strokeColor="#D7653B"
+            android:strokeWidth="4"
+            android:strokeLineCap="round"
+            android:pathData="M18,18v28M27,25h11M27,32h11" />
+        <path
+            android:fillColor="#F1B654"
+            android:strokeColor="#1E2925"
+            android:strokeWidth="2"
+            android:strokeLineJoin="round"
+            android:pathData="M29,43l13,-13l4,4l-13,13l-6,2l2,-6Z" />
+    </group>
+</vector>

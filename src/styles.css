@@ -2,13 +2,18 @@
   color: #1e2925;
   background: #f4f2ec;
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
     sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   --app-ink: #1e2925;
   --app-muted: #65716b;
-  --app-soft: #8b948f;
+  --app-soft: #5f6964;
   --app-paper: #fffefa;
   --app-canvas: #e8e8e2;
   --app-panel: #f8f7f2;
@@ -19,6 +24,330 @@
   --app-green-soft: #e6eee8;
   --app-yellow: #f1b654;
   --shadow-soft: 0 10px 32px rgb(30 41 37 / 9%);
+  --menu-surface: rgb(255 255 252 / 98%);
+  --menu-border: #d8dfda;
+  --menu-hover: #edf4ef;
+  --menu-active: #dcebe2;
+  --menu-shadow:
+    0 1px 2px rgb(22 35 29 / 8%),
+    0 14px 36px rgb(22 35 29 / 14%);
+  /* One geometry for every menu: button menus, context menus, the notebook list. */
+  --menu-bg: #fffffd;
+  --menu-radius: 10px;
+  --menu-pad: 5px;
+  --menu-item-height: 32px;
+  --menu-item-radius: 6px;
+  --menu-font-size: 13px;
+  --menu-separator: #e5e9e6;
+  --menu-focus-ring: color-mix(in srgb, var(--app-green) 45%, transparent);
+}
+
+/* OneNote import is intentionally isolated from the editor canvas and navigation layout. */
+.onenote-import-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(15 23 42 / 58%);
+}
+
+.onenote-import-dialog {
+  width: min(760px, 100%);
+  max-height: min(880px, calc(100vh - 48px));
+  overflow: auto;
+  border: 1px solid var(--border, #d9ddd9);
+  border-radius: 20px;
+  padding: 24px;
+  color: var(--ink, #17201d);
+  background: var(--panel, #fff);
+  box-shadow: 0 28px 80px rgb(15 23 42 / 28%);
+}
+
+.onenote-import-dialog__header,
+.onenote-import-dialog__header-actions,
+.onenote-import-account,
+.onenote-import-actions,
+.onenote-import-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.onenote-import-dialog__header-actions {
+  justify-content: flex-end;
+}
+
+.onenote-import-dialog__header h2,
+.onenote-import-step h3 {
+  margin: 4px 0 0;
+}
+
+.onenote-import-dialog__header button,
+.onenote-import-account button,
+.onenote-import-actions button,
+.onenote-import-filters button,
+.onenote-import-progress button,
+.onenote-import-primary {
+  min-height: 38px;
+}
+
+.onenote-import-dialog__eyebrow {
+  color: var(--app-green);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.onenote-import-dialog__safety {
+  margin: 18px 0;
+  padding: 12px 14px;
+  border-left: 4px solid var(--app-green);
+  border-radius: 6px;
+  background: var(--app-green-soft);
+  line-height: 1.5;
+}
+
+.onenote-import-dialog__safety code,
+.onenote-import-fingerprint code,
+.onenote-import-success > code {
+  overflow-wrap: anywhere;
+}
+
+.onenote-import-step {
+  display: grid;
+  gap: 16px;
+}
+
+.onenote-import-step
+  label:not(.onenote-import-choice, .onenote-import-approval) {
+  display: grid;
+  gap: 6px;
+  font-weight: 650;
+}
+
+.onenote-import-step input[type="text"],
+.onenote-import-step input:not([type]) {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  color: var(--app-ink);
+  border: 1px solid var(--app-line);
+  border-radius: 9px;
+  background: var(--app-paper);
+  font: inherit;
+}
+
+.onenote-import-step input[type="text"]:focus-visible,
+.onenote-import-step input:not([type]):focus-visible {
+  border-color: var(--app-green);
+  outline: 2px solid color-mix(in srgb, var(--app-green) 30%, transparent);
+  outline-offset: 1px;
+}
+
+.onenote-import-help,
+.onenote-import-choice span,
+.onenote-import-reports small {
+  color: var(--muted, #62706b);
+  font-size: 0.83rem;
+}
+
+.onenote-import-primary {
+  border-color: var(--app-green) !important;
+  color: #fff !important;
+  background: var(--app-green) !important;
+}
+
+.onenote-import-primary:disabled {
+  opacity: 0.5;
+}
+
+.onenote-import-alert,
+.onenote-import-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #eab308;
+  border-radius: 10px;
+  background: #fefce8;
+}
+
+.onenote-import-progress {
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f3f5f4;
+}
+
+.onenote-import-progress progress {
+  width: 72px;
+}
+
+.onenote-import-account span {
+  display: block;
+  color: var(--muted, #62706b);
+}
+
+.onenote-import-step fieldset {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--border, #d9ddd9);
+  border-radius: 10px;
+}
+
+.onenote-import-choice,
+.onenote-import-approval {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.onenote-import-choice span {
+  margin-left: auto;
+}
+
+.onenote-import-fallback-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border, #d9ddd9);
+}
+
+.onenote-import-fallback-row > span {
+  display: grid;
+  min-width: 0;
+}
+
+.onenote-import-fallback-row small {
+  color: var(--muted, #62706b);
+}
+
+.onenote-import-file-button {
+  position: relative;
+  display: inline-flex !important;
+  align-items: center;
+  min-height: 38px;
+  padding: 7px 12px;
+  border: 1px solid var(--border, #d9ddd9);
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.onenote-import-file-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.onenote-import-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.onenote-import-summary div {
+  padding: 10px;
+  border-radius: 10px;
+  background: #f3f5f4;
+}
+
+.onenote-import-summary dt {
+  color: var(--muted, #62706b);
+  font-size: 0.75rem;
+}
+
+.onenote-import-summary dd {
+  margin: 4px 0 0;
+  font-weight: 700;
+}
+
+.onenote-import-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.onenote-import-filters button[aria-pressed="true"] {
+  border-color: var(--app-green);
+  color: var(--app-green);
+  background: var(--app-green-soft);
+}
+
+.onenote-import-reports {
+  display: grid;
+  gap: 8px;
+  max-height: 240px;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.onenote-import-reports li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border, #d9ddd9);
+  border-radius: 9px;
+}
+
+.onenote-import-reports small {
+  grid-column: 1 / -1;
+}
+
+.onenote-import-reports li[data-fidelity="unsupported"] {
+  border-color: #dc2626;
+}
+
+.onenote-import-fingerprint {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #111827;
+  color: #f9fafb;
+}
+
+.onenote-import-success {
+  justify-items: center;
+  padding: 20px 0 4px;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .onenote-import-backdrop {
+    align-items: end;
+    padding: 0;
+  }
+
+  .onenote-import-dialog {
+    max-height: 94vh;
+    border-radius: 18px 18px 0 0;
+    padding: 18px;
+  }
+
+  .onenote-import-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .onenote-import-actions,
+  .onenote-import-progress {
+    align-items: stretch;
+    flex-direction: column;
+  }
 }
 
 * {
@@ -29,12 +358,13 @@ html,
 body,
 #root {
   min-width: 320px;
+  height: 100%;
   min-height: 100%;
   margin: 0;
 }
 
 body {
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 button,
@@ -63,9 +393,10 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
-summary:focus-visible {
-  outline: 2px solid var(--app-accent);
-  outline-offset: 2px;
+summary:focus-visible,
+.canvas-page:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--app-green) 78%, white) !important;
+  outline-offset: 2px !important;
 }
 
 .sr-only {
@@ -77,6 +408,22 @@ summary:focus-visible {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 8px;
+  left: 8px;
+  padding: 10px 14px;
+  color: white;
+  border-radius: 8px;
+  background: var(--app-ink);
+  transform: translateY(-160%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
 }
 
 .app-loading,
@@ -101,6 +448,27 @@ summary:focus-visible {
   font-weight: 800;
 }
 
+/* Shown where a lazily loaded part of the app could not be fetched (offline).
+   The button reloads it; it must stay clickable above the page. */
+.chunk-failure[data-layout='floating'] {
+  position: fixed;
+  z-index: 60;
+  left: 50%;
+  bottom: 24px;
+  translate: -50% 0;
+}
+
+.chunk-failure button {
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: var(--app-ink);
+  font-size: 13px;
+  background: var(--menu-surface);
+  border: 1px solid var(--menu-border);
+  box-shadow: var(--menu-shadow);
+  cursor: pointer;
+}
+
 .fatal-state h1 {
   margin: 6px 0;
   color: var(--app-ink);
@@ -114,9 +482,108 @@ summary:focus-visible {
   color: white;
 }
 
+.fatal-state > p {
+  width: min(620px, calc(100vw - 40px));
+  margin: 0;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.fatal-state--recovery {
+  padding: 20px;
+}
+
+.recovery-card {
+  width: min(620px, 100%);
+  padding: clamp(22px, 5vw, 40px);
+  color: var(--app-muted);
+  border: 1px solid var(--app-line);
+  border-radius: 20px;
+  background: var(--app-paper);
+  box-shadow: var(--shadow-soft);
+}
+
+.recovery-card {
+  position: relative;
+  box-sizing: border-box;
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+}
+
+.recovery-card > .recovery-card__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.recovery-card > .recovery-card__close:hover {
+  background: var(--app-green-soft);
+}
+
+.recovery-card > svg {
+  color: var(--app-green);
+}
+
+.recovery-card__eyebrow {
+  margin: 20px 0 6px;
+  color: var(--app-green);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.recovery-card h1 {
+  margin: 0;
+}
+
+.recovery-card > p:not(.recovery-card__eyebrow) {
+  margin: 12px 0 0;
+  line-height: 1.6;
+}
+
+.recovery-card__actions {
+  margin-top: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.recovery-card__actions button {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 750;
+}
+
+.recovery-card__actions button:not(:first-child) {
+  color: var(--app-green);
+  border: 1px solid #bfd0c6;
+  background: white;
+}
+
+.recovery-card__feedback {
+  padding: 10px 12px;
+  color: #244b3d;
+  border-radius: 8px;
+  background: #edf6f0;
+}
+
+.recovery-card__feedback--error {
+  color: #742b22;
+  background: #fff0ec;
+}
+
 .notebook-app {
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   display: grid;
   grid-template-columns: 272px minmax(0, 1fr);
   overflow: hidden;
@@ -179,12 +646,6 @@ summary:focus-visible {
   font-size: 10px;
 }
 
-.notebook-picker {
-  padding: 16px 15px 13px;
-  border-bottom: 1px solid var(--app-line);
-}
-
-.notebook-picker > label,
 .sidebar-heading > span {
   color: var(--app-soft);
   font-size: 10px;
@@ -193,35 +654,12 @@ summary:focus-visible {
   text-transform: uppercase;
 }
 
-.notebook-picker > div {
-  height: 38px;
-  margin-top: 7px;
-  padding: 0 5px 0 10px;
-  display: grid;
-  grid-template-columns: 8px minmax(0, 1fr) 28px 28px;
-  align-items: center;
-  gap: 7px;
-  border: 1px solid var(--app-line);
-  border-radius: 9px;
-  background: var(--app-paper);
-}
-
 .notebook-color {
   width: 8px;
   height: 8px;
   border-radius: 50%;
 }
 
-.notebook-picker select {
-  min-width: 0;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  font-size: 13px;
-  font-weight: 650;
-}
-
-.notebook-picker button,
 .sidebar-heading button,
 .section-row > button,
 .row-actions button {
@@ -231,24 +669,7 @@ summary:focus-visible {
   background: transparent;
 }
 
-.notebook-picker .notebook-delete {
-  width: fit-content;
-  height: auto;
-  margin-top: 8px;
-  padding: 3px;
-  display: flex;
-  gap: 6px;
-  color: var(--app-soft);
-  font-size: 10px;
-}
-
-.notebook-picker .notebook-delete:hover:not(:disabled) {
-  color: #a33f32;
-}
-
-.notebook-delete:disabled,
-.row-actions button:disabled,
-.section-trash:disabled {
+.row-actions button:disabled {
   opacity: 0.28;
   cursor: not-allowed;
 }
@@ -269,7 +690,6 @@ summary:focus-visible {
 }
 
 .sidebar-heading button:hover,
-.notebook-picker > div > button:hover,
 .section-row > button:hover,
 .row-actions button:hover:not(:disabled) {
   color: var(--app-green);
@@ -285,7 +705,12 @@ summary:focus-visible {
 
 .section-block {
   margin-bottom: 5px;
+  border: 1px solid transparent;
   border-radius: 10px;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .section-block.is-current {
@@ -324,21 +749,6 @@ summary:focus-visible {
   font-size: 9px;
 }
 
-.section-row .section-rename,
-.section-row .section-trash {
-  width: 25px;
-  height: 25px;
-  border-radius: 6px;
-  opacity: 0;
-}
-
-.section-row:hover .section-rename,
-.section-row:hover .section-trash,
-.section-rename:focus-visible,
-.section-trash:focus-visible {
-  opacity: 1;
-}
-
 .page-tree {
   padding-bottom: 5px;
 }
@@ -367,9 +777,22 @@ summary:focus-visible {
   background: #f0f1ec;
 }
 
+.page-row[data-dragging="true"] {
+  opacity: 0.48;
+}
+
+.section-block[data-page-drop-target="true"] {
+  border-color: color-mix(in srgb, var(--app-green) 72%, white);
+  background: var(--app-green-soft);
+  box-shadow:
+    inset 3px 0 0 var(--app-green),
+    0 0 0 2px rgb(18 113 81 / 9%);
+}
+
 .page-row.is-active {
-  color: #8e3f25;
-  background: var(--app-accent-soft);
+  color: var(--app-ink);
+  background: #e4e7e5;
+  font-weight: 700;
 }
 
 .page-row__target {
@@ -419,35 +842,130 @@ summary:focus-visible {
   border-radius: 5px;
 }
 
-.add-page {
-  margin: 4px 8px 3px 19px;
-  padding: 6px 8px;
+.sidebar-footer {
+  position: relative;
+  min-height: 64px;
+  padding: 10px 12px 12px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: var(--app-soft);
-  border-radius: 6px;
-  background: transparent;
-  font-size: 11px;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 0 0 auto;
+  border-top: 1px solid var(--app-line);
+  background: color-mix(in srgb, var(--app-panel) 92%, white);
 }
 
-.add-page:hover {
+.sidebar-create-menu {
+  position: relative;
+}
+
+.sidebar-create-menu > summary {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  color: white;
+  border-radius: 12px;
+  background: var(--app-green);
+  box-shadow: 0 6px 18px rgb(18 113 81 / 22%);
+  list-style: none;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.sidebar-create-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sidebar-create-menu > summary:hover,
+.sidebar-create-menu[open] > summary {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgb(18 113 81 / 28%);
+}
+
+.sidebar-create-menu > summary:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--app-green) 30%, transparent);
+  outline-offset: 2px;
+}
+
+.sidebar-create-menu[open] > summary svg {
+  transform: rotate(45deg);
+}
+
+.sidebar-create-menu > summary svg {
+  transition: transform 140ms ease;
+}
+
+.sidebar-create-menu__popover {
+  position: absolute;
+  z-index: 45;
+  bottom: 50px;
+  left: 0;
+  width: 244px;
+  padding: 6px;
+  border: 1px solid var(--app-line);
+  border-radius: 12px;
+  background: var(--app-paper);
+  box-shadow: 0 16px 44px rgb(33 49 43 / 18%);
+}
+
+.sidebar-create-menu__popover button {
+  width: 100%;
+  min-height: 46px;
+  padding: 7px 9px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--app-ink);
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+}
+
+.sidebar-create-menu__popover button:hover:not(:disabled) {
   color: var(--app-green);
   background: var(--app-green-soft);
 }
 
-.trash-link {
-  height: 45px;
-  margin: 8px 12px 12px;
-  padding: 0 12px;
-  display: flex;
-  align-items: center;
-  gap: 9px;
+.sidebar-create-menu__popover button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sidebar-create-menu__popover button > svg {
   flex: 0 0 auto;
-  color: var(--app-muted);
-  border-radius: 9px;
-  background: transparent;
+}
+
+.sidebar-create-menu__popover button > span,
+.sidebar-create-menu__popover strong,
+.sidebar-create-menu__popover small {
+  min-width: 0;
+  display: block;
+}
+
+.sidebar-create-menu__popover strong {
   font-size: 12px;
+  font-weight: 700;
+}
+
+.sidebar-create-menu__popover small {
+  margin-top: 2px;
+  color: var(--app-soft);
+  font-size: 9px;
+  line-height: 1.25;
+}
+
+.trash-link {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  color: var(--app-muted);
+  border-radius: 10px;
+  background: transparent;
 }
 
 .trash-link:hover {
@@ -456,13 +974,19 @@ summary:focus-visible {
 }
 
 .trash-link span {
-  min-width: 21px;
-  margin-left: auto;
-  padding: 2px 6px;
-  color: var(--app-soft);
+  position: absolute;
+  top: -2px;
+  right: -3px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  color: white;
   border-radius: 999px;
-  background: #e9e9e3;
-  font-size: 9px;
+  background: #a44737;
+  font-size: 8px;
+  font-weight: 750;
   text-align: center;
 }
 
@@ -471,20 +995,20 @@ summary:focus-visible {
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-rows: 52px 58px 44px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 52px auto 58px 44px minmax(0, 1fr);
   overflow: hidden;
 }
 
 .app-topbar {
   position: relative;
-  z-index: 16;
+  z-index: 24;
   padding: 0 14px;
   display: flex;
   align-items: center;
   gap: 12px;
   border-bottom: 1px solid var(--app-line);
   background: rgb(255 254 250 / 94%);
-  backdrop-filter: blur(10px);
 }
 
 .sidebar-toggle {
@@ -500,6 +1024,101 @@ summary:focus-visible {
 .sidebar-toggle:hover {
   color: var(--app-green);
   background: var(--app-green-soft);
+}
+
+.topbar-action,
+.topbar-actions {
+  display: flex;
+  align-items: center;
+}
+
+.topbar-actions {
+  gap: 3px;
+}
+
+.topbar-action {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 9px;
+  justify-content: center;
+  gap: 6px;
+  color: var(--app-muted);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.topbar-action--icon {
+  width: 34px;
+  padding: 0;
+}
+
+.topbar-action:hover,
+.topbar-action[aria-pressed="true"] {
+  color: var(--app-green);
+  background: var(--app-green-soft);
+}
+
+.topbar-action--primary {
+  color: white;
+  background: var(--app-green);
+}
+
+.topbar-action--primary:hover {
+  color: white;
+  background: #315448;
+}
+
+.performance-diagnostics {
+  position: relative;
+}
+
+.performance-diagnostics__panel {
+  position: fixed;
+  z-index: 1250;
+  top: 56px;
+  right: 12px;
+  width: min(390px, calc(100vw - 24px));
+  padding: 14px;
+  color: var(--app-ink);
+  background: var(--app-panel);
+  border: 1px solid var(--app-line);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgb(27 40 35 / 16%);
+}
+
+.performance-diagnostics__panel header,
+.performance-diagnostics__panel header div,
+.performance-diagnostics__panel li {
+  display: flex;
+}
+
+.performance-diagnostics__panel header {
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.performance-diagnostics__panel header div,
+.performance-diagnostics__panel li {
+  flex-direction: column;
+  gap: 3px;
+}
+
+.performance-diagnostics__panel ul {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.performance-diagnostics__panel li {
+  padding: 9px;
+  background: var(--app-paper);
+  border-radius: 8px;
 }
 
 .breadcrumbs {
@@ -525,6 +1144,7 @@ summary:focus-visible {
 
 .search-box {
   position: relative;
+  min-width: 0;
   width: min(380px, 38vw);
   height: 34px;
   margin: 0 auto;
@@ -566,6 +1186,7 @@ summary:focus-visible {
 
 .search-results {
   position: absolute;
+  z-index: 3;
   top: calc(100% + 8px);
   right: 0;
   left: 0;
@@ -618,8 +1239,39 @@ summary:focus-visible {
   text-align: center;
 }
 
+.search-empty-state {
+  padding: 14px 10px 10px;
+  color: var(--app-muted);
+  text-align: center;
+}
+
+.search-empty-state strong {
+  color: var(--app-ink);
+  font-size: 13px;
+}
+
+.search-empty-state p {
+  margin: 6px 0 10px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.search-empty-state > div {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.search-empty-state > div button {
+  width: auto;
+  padding: 7px 10px;
+  color: var(--app-green);
+  background: var(--app-green-soft);
+  text-align: center;
+}
+
 .save-indicator {
-  min-width: 128px;
+  min-width: 112px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -627,6 +1279,84 @@ summary:focus-visible {
   color: var(--app-green);
   font-size: 10px;
   white-space: nowrap;
+}
+
+.status-stack {
+  position: relative;
+  z-index: 15;
+  min-width: 0;
+  display: grid;
+}
+
+.status-banner {
+  min-width: 0;
+  min-height: 42px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #244b3d;
+  border-bottom: 1px solid #bfd4c7;
+  background: #edf6f0;
+  font-size: 12px;
+}
+
+.status-banner > svg {
+  flex: 0 0 auto;
+}
+
+.status-banner p,
+.status-banner strong {
+  margin: 0;
+}
+
+.status-banner--error {
+  color: #742b22;
+  border-color: #e1b5aa;
+  background: #fff0ec;
+}
+
+.status-banner--warning {
+  color: #62440c;
+  border-color: #e4ce91;
+  background: #fff8df;
+}
+
+.status-banner--warning .status-banner__actions button {
+  color: #62440c;
+  border-color: #d8bf79;
+}
+
+.status-banner--error > div:not(.status-banner__actions) {
+  min-width: 0;
+}
+
+.status-banner--error p {
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-banner__actions {
+  margin-left: auto;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.status-banner__actions button {
+  min-height: 32px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #742b22;
+  border: 1px solid #d9a99e;
+  border-radius: 7px;
+  background: #fffefa;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .save-indicator--error {
@@ -661,10 +1391,30 @@ summary:focus-visible {
   box-shadow: 0 3px 11px rgb(30 41 37 / 3%);
 }
 
+.editor-toolbar__scroll,
+.editor-toolbar__menus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editor-toolbar__scroll {
+  min-width: 0;
+  flex: 1;
+}
+
+.editor-toolbar__menus {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+}
+
 .tool-group,
 .brush-controls,
 .asset-actions,
-.mode-switch {
+.mode-switch,
+.shape-controls,
+.zoom-controls {
   display: flex;
   align-items: center;
 }
@@ -723,6 +1473,41 @@ summary:focus-visible {
 
 .brush-controls {
   gap: 9px;
+}
+
+.shape-controls {
+  gap: 4px;
+}
+
+.shape-controls select,
+.paper-control select {
+  height: 31px;
+  padding: 0 24px 0 8px;
+  color: var(--app-muted);
+  border: 1px solid var(--app-line);
+  border-radius: 8px;
+  background: white;
+  font-size: 9px;
+}
+
+.snap-toggle {
+  min-height: 31px;
+  padding: 0 7px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--app-soft);
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.snap-toggle.is-active {
+  color: var(--app-green);
+  border-color: #bfd0c6;
+  background: var(--app-green-soft);
 }
 
 .color-control {
@@ -801,6 +1586,29 @@ summary:focus-visible {
   box-shadow: 0 1px 4px rgb(30 41 37 / 10%);
 }
 
+.zoom-controls {
+  height: 31px;
+  border: 1px solid var(--app-line);
+  border-radius: 8px;
+  background: white;
+}
+
+.zoom-controls button {
+  min-width: 27px;
+  height: 29px;
+  display: grid;
+  place-items: center;
+  color: var(--app-muted);
+  border-radius: 7px;
+  background: transparent;
+  font-size: 9px;
+}
+
+.zoom-controls .zoom-value {
+  min-width: 40px;
+  font-variant-numeric: tabular-nums;
+}
+
 .asset-actions {
   gap: 2px;
 }
@@ -866,6 +1674,11 @@ summary:focus-visible {
   left: auto;
 }
 
+.editor-toolbar__menus .action-menu__popover {
+  right: 0;
+  left: auto;
+}
+
 .action-menu__popover button {
   width: 100%;
   height: 34px;
@@ -885,7 +1698,8 @@ summary:focus-visible {
 
 .page-header {
   position: relative;
-  z-index: 10;
+  z-index: 100;
+  min-height: 44px;
   padding: 0 20px;
   display: flex;
   align-items: center;
@@ -918,6 +1732,193 @@ summary:focus-visible {
   text-transform: uppercase;
 }
 
+.page-header .asset-workspace-controls {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  flex: 0 0 auto;
+  background: transparent;
+}
+
+.page-header .asset-workspace-controls output {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 44px;
+  max-width: min(320px, calc(100vw - 32px));
+  padding: 6px 9px;
+  border: 1px solid var(--app-line);
+  border-radius: 8px;
+  background: var(--app-paper);
+  box-shadow: var(--shadow-soft);
+}
+
+.page-settings-menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.page-settings-menu > summary {
+  min-height: 31px;
+  padding: 5px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--app-muted);
+  border-radius: 7px;
+  list-style: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.page-settings-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.page-settings-menu > summary span {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  text-transform: none;
+}
+
+.page-settings-menu > summary:hover,
+.page-settings-menu > summary:focus-visible,
+.page-settings-menu[open] > summary {
+  color: var(--app-green);
+  background: var(--app-green-soft);
+  outline: none;
+}
+
+.page-meta-actions {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.page-tag,
+.page-task-state,
+.page-tag-menu summary {
+  min-height: 26px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--app-line);
+  border-radius: 999px;
+  background: var(--app-paper);
+  font-size: 9px;
+  font-weight: 750;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.page-tag--important {
+  color: #8b3529;
+  border-color: #e1b9b1;
+  background: #fff1ee;
+}
+
+.page-tag--todo,
+.page-task-state--open {
+  color: #7a5712;
+  border-color: #dfc989;
+  background: #fff8dc;
+}
+
+.page-tag--question {
+  color: #295b82;
+  border-color: #b5cee0;
+  background: #eef7fd;
+}
+
+.page-tag--idea {
+  color: #5d4b91;
+  border-color: #cec2ea;
+  background: #f5f1ff;
+}
+
+.page-task-state--done {
+  color: #315448;
+  border-color: #b8cec4;
+  background: var(--app-green-soft);
+}
+
+.page-tag-menu {
+  position: relative;
+}
+
+.page-tag-menu summary {
+  color: var(--app-muted);
+  list-style: none;
+  cursor: pointer;
+}
+
+.page-tag-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.page-tag-menu[open] summary {
+  color: var(--app-green);
+  border-color: #adc0b6;
+}
+
+.page-tag-menu__popover {
+  position: absolute;
+  z-index: 32;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 150px;
+  padding: 5px;
+  border: 1px solid var(--app-line);
+  border-radius: 9px;
+  background: var(--app-paper);
+  box-shadow: var(--shadow-soft);
+}
+
+.page-tag-menu__popover button {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 10px;
+  text-align: left;
+}
+
+.page-tag-menu__popover button:hover,
+.page-tag-menu__popover button[aria-pressed="true"] {
+  background: var(--app-green-soft);
+}
+
+.page-tag-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #87978f;
+}
+
+.page-tag-dot--important {
+  background: #b54e3e;
+}
+
+.page-tag-dot--todo {
+  background: #be8a1d;
+}
+
+.page-tag-dot--question {
+  background: #4a86b2;
+}
+
+.page-tag-dot--idea {
+  background: #7862b5;
+}
+
 .object-picker {
   min-width: 0;
 }
@@ -943,19 +1944,268 @@ summary:focus-visible {
   overflow: auto;
   overscroll-behavior: contain;
   background:
-    radial-gradient(circle at 30% 0%, rgb(255 255 255 / 32%), transparent 32rem),
+    radial-gradient(
+      circle at 30% 0%,
+      rgb(255 255 255 / 32%),
+      transparent 32rem
+    ),
     var(--app-canvas);
+}
+
+.canvas-viewport.is-panning {
+  cursor: grab;
+  user-select: none;
+}
+
+.canvas-viewport.is-panning:active {
+  cursor: grabbing;
+}
+
+.canvas-empty-state {
+  position: absolute;
+  z-index: 8;
+  top: 68px;
+  left: 50%;
+  width: min(520px, calc(100% - 48px));
+  padding: 24px;
+  color: var(--app-muted);
+  border: 1px solid #cfd6d0;
+  border-radius: 14px;
+  background: rgb(255 254 250 / 97%);
+  box-shadow: var(--shadow-soft);
+  transform: translateX(-50%);
+}
+
+.app-eyebrow {
+  color: var(--app-green);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.canvas-empty-state h2 {
+  margin: 7px 0 6px;
+  color: var(--app-ink);
+  font-size: 21px;
+  letter-spacing: -0.02em;
+}
+
+.canvas-empty-state p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.canvas-empty-state > div {
+  margin-top: 17px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.canvas-empty-state button {
+  min-height: 38px;
+  padding: 0 13px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--app-green);
+  border: 1px solid #bfd0c6;
+  border-radius: 8px;
+  background: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.canvas-empty-state button.canvas-empty-state__primary {
+  color: white;
+  border-color: var(--app-green);
+  background: var(--app-green);
+}
+
+.canvas-zoom-surface {
+  position: relative;
+  margin: 0 auto;
+  flex: 0 0 auto;
 }
 
 .canvas-page {
   position: relative;
-  margin: 0 auto;
+  margin: 0;
   overflow: hidden;
   flex: 0 0 auto;
   background: var(--app-paper);
+  transform-origin: top left;
   box-shadow:
     0 1px 2px rgb(30 41 37 / 12%),
     0 16px 42px rgb(30 41 37 / 10%);
+}
+
+.getting-started {
+  position: fixed;
+  z-index: 45;
+  top: 64px;
+  right: 18px;
+  width: min(390px, calc(100vw - 36px));
+  max-height: calc(100dvh - 82px);
+  padding: 18px;
+  overflow: auto;
+  color: var(--app-muted);
+  border: 1px solid #cdd4ce;
+  border-radius: 16px;
+  background: rgb(255 254 250 / 98%);
+  box-shadow: 0 24px 70px rgb(30 41 37 / 20%);
+}
+
+.getting-started header,
+.getting-started header > div,
+.getting-started__actions button,
+.getting-started__actions button > span,
+.getting-started__checklist ul,
+.getting-started__checklist li,
+.getting-started footer {
+  display: flex;
+}
+
+.getting-started header {
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.getting-started header > div,
+.getting-started__actions button > span {
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.getting-started h2 {
+  margin: 5px 0 0;
+  color: var(--app-ink);
+  font-size: 21px;
+}
+
+.getting-started header > button {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--app-muted);
+  border-radius: 8px;
+  background: transparent;
+}
+
+.getting-started__intro {
+  margin: 10px 0 15px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.getting-started__actions {
+  display: grid;
+  gap: 7px;
+}
+
+.getting-started__actions button {
+  min-height: 58px;
+  padding: 9px 11px;
+  align-items: center;
+  gap: 10px;
+  color: var(--app-green);
+  border: 1px solid var(--app-line);
+  border-radius: 10px;
+  background: white;
+  text-align: left;
+}
+
+.getting-started__actions button > span {
+  min-width: 0;
+  gap: 2px;
+  color: var(--app-ink);
+}
+
+.getting-started__actions small {
+  color: var(--app-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.getting-started__actions button.getting-started__primary {
+  color: white;
+  border-color: var(--app-green);
+  background: var(--app-green);
+}
+
+.getting-started__actions button.getting-started__primary > span,
+.getting-started__actions button.getting-started__primary small {
+  color: white;
+}
+
+.getting-started__checklist {
+  margin: 16px 0;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--app-green-soft);
+}
+
+.getting-started__checklist ul {
+  margin: 8px 0 0;
+  padding: 0;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  list-style: none;
+}
+
+.getting-started__checklist li {
+  align-items: center;
+  gap: 4px;
+  color: #315448;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.getting-started__text-size {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px;
+  align-items: center;
+  gap: 12px;
+  color: var(--app-ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.getting-started__text-size select {
+  height: 36px;
+  padding: 0 9px;
+  border: 1px solid var(--app-line);
+  border-radius: 8px;
+  background: white;
+}
+
+.getting-started footer {
+  margin-top: 17px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.getting-started footer small {
+  max-width: 205px;
+  font-size: 10px;
+  line-height: 1.4;
+  text-align: right;
+}
+
+.getting-started__skip {
+  min-height: 36px;
+  padding: 0 12px;
+  color: var(--app-green);
+  border-radius: 8px;
+  background: var(--app-green-soft);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .canvas-page--a4 {
@@ -969,12 +2219,15 @@ summary:focus-visible {
 .canvas-page .konvajs-content {
   position: relative;
   z-index: 1;
-  touch-action: none;
+  touch-action: pan-x pan-y;
 }
 
 .canvas-page[data-editor-tool="pen"] .konvajs-content,
-.canvas-page[data-editor-tool="highlighter"] .konvajs-content {
-  touch-action: pan-x pan-y;
+.canvas-page[data-editor-tool="highlighter"] .konvajs-content,
+.canvas-page[data-editor-tool="eraser"] .konvajs-content,
+.canvas-page[data-editor-tool="shape"] .konvajs-content,
+.canvas-page[data-editor-tool="hand"] .konvajs-content {
+  touch-action: none;
 }
 
 .ink-preview-layer {
@@ -984,6 +2237,33 @@ summary:focus-visible {
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+
+.canvas-inline-text-editor {
+  position: absolute;
+  z-index: 6;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  color: var(--app-ink);
+  border: 0;
+  border-radius: 2px;
+  background: rgb(255 254 250 / 94%);
+  box-shadow:
+    0 0 0 3px rgb(215 101 59 / 12%),
+    0 8px 22px rgb(30 41 37 / 8%);
+  line-height: 1.35;
+  resize: none;
+}
+
+.canvas-inline-text-editor::placeholder {
+  color: var(--app-soft);
+}
+
+.canvas-inline-text-editor:focus-visible {
+  box-shadow:
+    0 0 0 4px rgb(63 104 89 / 16%),
+    0 10px 28px rgb(30 41 37 / 10%);
 }
 
 .inspector {
@@ -999,7 +2279,6 @@ summary:focus-visible {
   border-radius: 13px;
   background: rgb(255 254 250 / 96%);
   box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(12px);
 }
 
 .inspector-heading,
@@ -1045,6 +2324,38 @@ summary:focus-visible {
   background: var(--app-green-soft);
   font-size: 11px;
   text-transform: capitalize;
+}
+
+.inline-edit-callout {
+  padding: 11px;
+  border: 1px solid #cbd8d1;
+  border-radius: 9px;
+  background: #f4f8f5;
+}
+
+.inline-edit-callout p {
+  margin: 0 0 9px;
+  color: var(--app-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.inline-edit-callout button {
+  width: 100%;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: white;
+  border-radius: 7px;
+  background: var(--app-green);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.inline-edit-callout button:hover {
+  background: #315447;
 }
 
 .field {
@@ -1101,6 +2412,72 @@ summary:focus-visible {
   gap: 8px;
 }
 
+.checklist-properties {
+  display: grid;
+  gap: 11px;
+}
+
+.checklist-properties__items {
+  display: grid;
+  gap: 6px;
+}
+
+.checklist-properties__item {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 5px;
+}
+
+.checklist-properties__item > input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--app-green);
+}
+
+.checklist-properties__item > input[type="text"] {
+  min-width: 0;
+  height: 32px;
+  padding: 0 7px;
+  border: 1px solid var(--app-line);
+  border-radius: 6px;
+  background: white;
+  font-size: 11px;
+}
+
+.checklist-properties__item > button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: var(--app-muted);
+  border-radius: 6px;
+  background: transparent;
+}
+
+.checklist-properties__item > button:hover:not(:disabled) {
+  color: #9d3d31;
+  background: #fff0ed;
+}
+
+.checklist-properties__item > button:disabled {
+  opacity: 0.3;
+}
+
+.checklist-properties__add {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--app-green);
+  border: 1px solid #bfd0c6;
+  border-radius: 7px;
+  background: var(--app-green-soft);
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .inspector-note,
 .pdf-properties p {
   color: var(--app-soft);
@@ -1151,7 +2528,6 @@ summary:focus-visible {
   display: grid;
   place-items: center;
   background: rgb(30 41 37 / 30%);
-  backdrop-filter: blur(3px);
 }
 
 .trash-panel {
@@ -1272,6 +2648,28 @@ summary:focus-visible {
   justify-items: center;
   gap: 8px;
   color: var(--app-soft);
+  text-align: center;
+}
+
+.empty-trash strong {
+  color: var(--app-ink);
+  font-size: 14px;
+}
+
+.empty-trash p {
+  max-width: 310px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.empty-trash button {
+  min-height: 36px;
+  padding: 0 12px;
+  color: var(--app-green);
+  border-radius: 8px;
+  background: var(--app-green-soft);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .trash-panel footer {
@@ -1304,6 +2702,11 @@ summary:focus-visible {
   font-size: 11px;
 }
 
+.toast--error {
+  border-color: rgb(255 214 203 / 48%);
+  background: rgb(112 42 26 / 96%);
+}
+
 .toast button {
   width: 26px;
   height: 26px;
@@ -1312,6 +2715,91 @@ summary:focus-visible {
   color: white;
   border-radius: 6px;
   background: rgb(255 255 255 / 9%);
+}
+
+.ui-text-large .sidebar-brand small,
+.ui-text-large .sidebar-heading > span,
+.ui-text-large .page-row__target small,
+.ui-text-large .tool-button kbd,
+.ui-text-large .size-control,
+.ui-text-large .mode-switch button,
+.ui-text-large .page-header span,
+.ui-text-large .object-picker select,
+.ui-text-large .field > span {
+  font-size: 11px;
+}
+
+.ui-text-large .page-row__target span,
+.ui-text-large .sidebar-create-menu__popover strong,
+.ui-text-large .trash-link,
+.ui-text-large .breadcrumbs,
+.ui-text-large .search-box input,
+.ui-text-large .save-indicator,
+.ui-text-large .action-menu__popover button,
+.ui-text-large .field textarea,
+.ui-text-large .field input[type="text"],
+.ui-text-large .field input[type="number"],
+.ui-text-large .field select,
+.ui-text-large .toast {
+  font-size: 14px;
+}
+
+.ui-text-large .tool-button,
+.ui-text-large .action-menu summary,
+.ui-text-large .status-banner,
+.ui-text-large .getting-started,
+.ui-text-large .canvas-empty-state {
+  font-size: 13px;
+}
+
+.ui-text-large .page-header input {
+  font-size: 18px;
+}
+
+.ui-text-large .getting-started__intro,
+.ui-text-large .canvas-empty-state p {
+  font-size: 15px;
+}
+
+@media (max-width: 1000px) {
+  .breadcrumbs {
+    display: none;
+  }
+
+  .topbar-action span,
+  .save-indicator span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .topbar-action {
+    width: 34px;
+    padding: 0;
+  }
+
+  .search-box {
+    width: auto;
+    flex: 1;
+  }
+
+  .save-indicator {
+    min-width: 32px;
+  }
+
+  .editor-toolbar__scroll {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  .editor-toolbar__scroll > * {
+    flex: 0 0 auto;
+  }
 }
 
 @media (max-width: 1180px) {
@@ -1335,12 +2823,13 @@ summary:focus-visible {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
   }
-
 }
 
 @media (max-width: 820px) {
   .notebook-app {
     position: relative;
+    width: 100%;
+    height: 100dvh;
     display: block;
   }
 
@@ -1348,7 +2837,8 @@ summary:focus-visible {
     position: fixed;
     z-index: 40;
     inset: 0 auto 0 0;
-    width: 272px;
+    width: min(320px, 88vw);
+    height: 100dvh;
     box-shadow: 18px 0 50px rgb(30 41 37 / 20%);
   }
 
@@ -1363,8 +2853,8 @@ summary:focus-visible {
   }
 
   .sidebar-close {
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
     margin-left: auto;
     display: grid;
     place-items: center;
@@ -1380,25 +2870,78 @@ summary:focus-visible {
   .workspace-shell {
     width: 100%;
     height: 100%;
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .breadcrumbs,
-  .save-indicator span {
+  .breadcrumbs {
     display: none;
   }
 
+  .app-topbar {
+    min-width: 0;
+    padding: 0 7px;
+    gap: 4px;
+  }
+
+  .sidebar-toggle,
+  .topbar-action {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+  }
+
+  .topbar-actions {
+    flex: 0 0 auto;
+  }
+
   .search-box {
+    min-width: 0;
     width: auto;
     flex: 1;
   }
 
+  .search-box > button {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+  }
+
+  .save-indicator {
+    min-width: 30px;
+    flex: 0 0 auto;
+  }
+
+  .save-indicator > svg:last-child {
+    display: none;
+  }
+
+  .status-banner {
+    padding: 9px 10px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    font-size: 12px;
+  }
+
+  .status-banner__actions {
+    width: 100%;
+    margin-left: 27px;
+    flex-wrap: wrap;
+  }
+
+  .status-banner__actions button {
+    min-height: 40px;
+  }
+
   .editor-toolbar {
     min-height: 56px;
+  }
+
+  .editor-toolbar__scroll {
     overflow-x: auto;
     overscroll-behavior-inline: contain;
   }
 
-  .editor-toolbar > * {
+  .editor-toolbar__scroll > * {
     flex: 0 0 auto;
   }
 
@@ -1407,11 +2950,57 @@ summary:focus-visible {
   }
 
   .canvas-viewport {
-    padding: 24px;
+    min-width: 0;
+    padding: 20px;
+  }
+
+  .canvas-empty-state {
+    position: absolute;
+    top: 52px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    padding: 18px;
+    transform: none;
+  }
+
+  .canvas-empty-state h2 {
+    font-size: 18px;
+  }
+
+  .canvas-empty-state button {
+    min-height: 44px;
+  }
+
+  .page-header {
+    min-width: 0;
+    padding: 0 8px;
+    gap: 5px;
+  }
+
+  .page-meta-actions .page-tag {
+    display: none;
+  }
+
+  .page-task-state,
+  .page-tag-menu summary {
+    min-width: 38px;
+    min-height: 38px;
+    justify-content: center;
+  }
+
+  .page-tag-menu summary span,
+  .page-task-state {
+    font-size: 0;
   }
 
   .object-picker select {
-    width: min(150px, 38vw);
+    width: min(132px, 34vw);
+    height: 38px;
+  }
+
+  .page-header > span {
+    display: none;
   }
 
   .inspector {
@@ -1420,10 +3009,3862 @@ summary:focus-visible {
     top: auto;
     max-height: 48vh;
   }
+
+  .inline-edit-callout button {
+    min-height: 44px;
+  }
+
+  .workspace-shell:has(.canvas-inline-text-editor) .inspector {
+    display: none;
+  }
+
+  .page-row,
+.page-row__target,
+.sidebar-create-menu > summary,
+.trash-link,
+.row-actions button,
+.section-row > button {
+    min-height: 44px;
+  }
+
+  .row-actions {
+    display: flex;
+  }
+
+  .getting-started {
+    top: auto;
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    width: auto;
+    max-height: calc(100dvh - 16px);
+    padding: 16px;
+  }
+
+  .getting-started__actions button {
+    min-height: 62px;
+  }
+
+  .getting-started__text-size {
+    grid-template-columns: minmax(0, 1fr) 112px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .spin {
-    animation-duration: 1.8s;
+    animation: none;
+  }
+}
+
+.live-canvas-editor {
+  display: grid;
+  grid-template-rows: auto minmax(420px, 1fr);
+  min-width: 0;
+  min-height: 0;
+  background: var(--surface, #fff);
+}
+
+.live-canvas-editor[data-math-sidebar-open="true"] {
+  grid-template-rows: auto auto minmax(420px, 1fr);
+}
+
+.live-canvas-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-bottom: 1px solid var(--border, #d7dbe3);
+  background: var(--surface-raised, #f8fafc);
+}
+
+.live-canvas-toolbar button[aria-pressed="true"] {
+  color: #fff;
+  background: #1d4ed8;
+}
+
+.live-canvas-toolbar label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.live-canvas-surface {
+  position: relative;
+  min-width: 800px;
+  min-height: 900px;
+  overflow: auto;
+  touch-action: none;
+  background-color: #fff;
+  outline: none;
+  isolation: isolate;
+}
+
+/* Keyboard focus only: a mouse, touch or pen press never draws it. The ring sits on
+   the viewport because the surface itself can be larger than the screen. */
+.live-canvas-viewport:has(> .live-canvas-surface:focus-visible) {
+  outline: 2px solid var(--app-green);
+  outline-offset: -2px;
+}
+
+.live-canvas-surface--grid {
+  background-image:
+    linear-gradient(#dbeafe 1px, transparent 1px),
+    linear-gradient(90deg, #dbeafe 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.live-canvas-surface--millimeter {
+  background-image:
+    linear-gradient(#e5e7eb 1px, transparent 1px),
+    linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
+  background-size: 10px 10px;
+}
+
+.live-canvas-surface--lined {
+  background-image: linear-gradient(#dbeafe 1px, transparent 1px);
+  background-size: 100% 32px;
+}
+
+.live-canvas-element {
+  position: absolute;
+  box-sizing: border-box;
+  transform-origin: center;
+  border: 1px solid transparent;
+}
+
+.live-canvas-element.is-selected {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgb(37 99 235 / 18%);
+}
+
+.live-canvas-element > svg,
+.live-canvas-element .canvink-rich-text-editor {
+  width: 100%;
+  height: 100%;
+}
+
+.live-canvas-shape {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 2px solid currentColor;
+}
+
+.live-canvas-preview {
+  position: absolute;
+  inset: 0;
+  z-index: 2147483647;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.live-canvas-preview polyline {
+  fill: none;
+  stroke: #2563eb;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.v2-workspace-shell {
+  display: flex;
+  flex-direction: column;
+}
+
+.v2-workspace-shell > .app-topbar {
+  z-index: 200;
+  min-width: 0;
+  min-height: 52px;
+  flex: 0 0 auto;
+}
+
+.v2-workspace-shell > .app-topbar .search-panel {
+  min-width: 0;
+  flex: 1 1 360px;
+}
+
+.v2-workspace-shell > .app-topbar .topbar-actions {
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.v2-search {
+  min-width: 180px;
+  max-width: 440px;
+  height: 34px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  border: 1px solid var(--app-line);
+  border-radius: 9px;
+  background: var(--app-paper);
+}
+
+.v2-search input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  flex: 1;
+  background: transparent;
+}
+
+.v2-search button,
+.v2-icon-button {
+  display: grid;
+  place-items: center;
+  color: var(--app-muted);
+  background: transparent;
+}
+
+.v2-search-results {
+  position: absolute;
+  z-index: 45;
+  top: 48px;
+  left: 62px;
+  width: min(520px, calc(100% - 84px));
+  max-height: 320px;
+  padding: 7px;
+  overflow: auto;
+  border: 1px solid var(--app-line);
+  border-radius: 10px;
+  background: var(--app-paper);
+  box-shadow: var(--shadow-soft);
+}
+
+.v2-search-results button {
+  width: 100%;
+  padding: 9px 10px;
+  display: grid;
+  gap: 3px;
+  border-radius: 7px;
+  background: transparent;
+  text-align: left;
+}
+
+.v2-search-results button:hover,
+.v2-search-results button:focus-visible {
+  background: var(--app-green-soft);
+}
+
+.v2-search-results span {
+  overflow: hidden;
+  color: var(--app-muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.v2-page-shortcuts {
+  min-height: 38px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--app-line);
+  background: #f8f7f2;
+  color: var(--app-soft);
+  font-size: 10px;
+  flex: 0 0 auto;
+}
+
+.v2-page-shortcuts button {
+  padding: 4px 8px;
+  color: var(--app-muted);
+  border-radius: 999px;
+  background: var(--app-paper);
+  white-space: nowrap;
+}
+
+.v2-page-shortcuts button:hover {
+  color: var(--app-green);
+  background: var(--app-green-soft);
+}
+
+.v2-icon-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+}
+
+.v2-icon-button[aria-pressed="true"] {
+  color: #9a6b00;
+  background: #fff3c4;
+}
+
+/* A transient toast over the page (it disappears by itself), never a line
+   of text pushed above the page. */
+.v2-notice {
+  position: absolute;
+  z-index: 300;
+  left: 50%;
+  bottom: 18px;
+  max-width: min(560px, calc(100% - 32px));
+  margin: 0;
+  padding: 8px 8px 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-size: 12.5px;
+  line-height: 1.35;
+  border-radius: 9px;
+  background: rgb(33 41 38 / 92%);
+  box-shadow: 0 8px 24px rgb(20 28 25 / 24%);
+  transform: translateX(-50%);
+  animation: v2-notice-in 160ms ease-out;
+}
+
+.v2-notice__close {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.v2-notice__close:hover,
+.v2-notice__close:focus-visible {
+  background: rgb(255 255 255 / 16%);
+}
+
+@keyframes v2-notice-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-notice {
+    animation: none;
+  }
+}
+
+/* A page that is not in memory yet loads its document in one step that
+   holds the main thread (about two seconds for 7,000 strokes). Its title is
+   shown at once; if loading takes longer than a moment, the previous page
+   fades and a status appears. Both run as compositor animations, which keep
+   going while the main thread is busy, and a page that loads quickly never
+   shows them. */
+.v2-page-loading {
+  position: absolute;
+  z-index: 40;
+  left: 50%;
+  top: 45%;
+  translate: -50% -50%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: var(--app-ink);
+  font-size: 13px;
+  background: var(--menu-surface);
+  border: 1px solid var(--menu-border);
+  box-shadow: var(--menu-shadow);
+  pointer-events: none;
+  opacity: 0;
+  animation: v2-page-loading-in 120ms ease-out 150ms forwards;
+}
+
+@keyframes v2-page-loading-in {
+  to {
+    opacity: 1;
+  }
+}
+
+.v2-workspace-shell[data-page-loading] > .live-canvas-editor {
+  opacity: 0.25;
+  transition: opacity 120ms ease-out 150ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-page-loading {
+    animation-duration: 1ms;
+  }
+
+  .v2-workspace-shell[data-page-loading] > .live-canvas-editor {
+    transition-duration: 1ms;
+  }
+}
+
+.v2-workspace-shell > .live-canvas-editor {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: auto;
+  flex: 1;
+  background: var(--app-canvas);
+}
+
+.v2-workspace-shell > .live-canvas-editor[data-math-sidebar-open="true"] {
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.v2-workspace-shell .live-canvas-toolbar {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  background: rgb(255 254 250 / 96%);
+}
+
+.v2-workspace-shell .live-canvas-surface {
+  margin: 24px auto;
+  box-shadow: 0 8px 30px rgb(36 43 40 / 12%);
+}
+
+.v2-recovery {
+  padding: 28px;
+  text-align: center;
+}
+
+.v2-recovery > p {
+  max-width: 680px;
+}
+
+.v2-recovery__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.v2-recovery__actions button:last-child {
+  color: var(--app-green);
+  border: 1px solid var(--app-line);
+  background: var(--app-paper);
+}
+
+.v2-trash-dialog ul {
+  max-height: 280px;
+  margin: 12px 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+  text-align: left;
+  border-top: 1px solid var(--app-line);
+}
+
+.v2-trash-dialog li {
+  padding: 9px 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--app-line);
+}
+
+.v2-trash-dialog__item {
+  min-width: 0;
+  display: grid;
+  flex: 1;
+}
+
+.v2-trash-dialog__item strong {
+  overflow: hidden;
+  color: var(--app-ink);
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.v2-trash-dialog__item small {
+  color: var(--app-muted);
+  font-size: 11px;
+}
+
+.v2-trash-dialog li > button,
+.v2-trash-dialog__secondary {
+  min-height: 30px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--app-line);
+  border-radius: 7px;
+  background: var(--app-paper);
+}
+
+.v2-trash-dialog li > button:hover {
+  color: var(--app-green);
+  border-color: rgb(63 104 89 / 40%);
+}
+
+.v2-trash-dialog li > .v2-trash-dialog__danger:hover {
+  color: #a33f32;
+  border-color: rgb(163 63 50 / 40%);
+}
+
+.v2-trash-dialog__empty {
+  margin: 14px 0;
+  color: var(--app-muted);
+}
+
+.recovery-overlay {
+  position: fixed;
+  z-index: 400;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(20 31 27 / 42%);
+}
+
+@media (max-width: 1180px) {
+  .v2-workspace-shell > .app-topbar {
+    padding-block: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .v2-workspace-shell > .app-topbar .search-panel {
+    flex-basis: auto;
+  }
+}
+
+@media (max-width: 820px) {
+  .v2-notebook-app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .v2-notebook-app .notebook-sidebar {
+    position: fixed;
+    z-index: 210;
+    inset: 0 auto 0 0;
+    width: min(86vw, 320px);
+    box-shadow: 8px 0 28px rgb(30 41 37 / 20%);
+  }
+
+  .v2-notebook-app .sidebar-scrim {
+    z-index: 150;
+  }
+
+  .v2-workspace-shell {
+    display: flex;
+  }
+
+  .v2-workspace-shell .app-topbar {
+    min-height: 52px;
+    padding-inline: 8px;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .v2-workspace-shell > .app-topbar .search-panel {
+    flex: 1 1 auto;
+  }
+
+  .v2-workspace-shell > .app-topbar .topbar-actions {
+    flex: 0 0 auto;
+  }
+
+  .v2-workspace-shell .page-header {
+    overflow: visible;
+  }
+
+  .v2-workspace-shell .page-header > * {
+    flex: 0 0 auto;
+  }
+
+  .v2-workspace-shell .page-header > input {
+    width: 180px;
+  }
+
+  .page-settings-menu > summary span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+}
+.asset-workspace-controls {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 3px;
+  min-height: 40px;
+  padding: 4px 14px;
+  border-bottom: 1px solid var(--app-line);
+  background: color-mix(in srgb, var(--app-paper) 97%, var(--app-green-soft));
+}
+
+.asset-workspace-controls output {
+  max-width: min(320px, 35vw);
+  margin-left: auto;
+  overflow: hidden;
+  color: var(--app-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.asset-preview-frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  /* A light sheet of the page's final size stands in until a picture is decoded. */
+  background: #fbfaf7;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 7%);
+}
+
+.asset-preview-frame[data-page]::after {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgb(0 0 0 / 11%);
+  content: attr(data-page);
+  font-size: 56px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.asset-preview-frame:not([data-preview-state="placeholder"])::after {
+  content: none;
+}
+
+.asset-preview-image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  user-select: none;
+}
+
+.asset-preview-error {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  padding: 12px;
+  background: #f6f4ed;
+  color: var(--app-muted);
+  text-align: center;
+}
+
+.asset-preview-error {
+  color: var(--app-danger);
+  background: #fff1f0;
+}
+
+.asset-attachment {
+  display: grid;
+  height: 100%;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-content: center;
+  gap: 3px 10px;
+  padding: 12px;
+  border: 1px solid var(--app-line);
+  border-radius: 8px;
+  background: var(--app-paper);
+}
+
+.asset-attachment > svg {
+  grid-row: 1 / span 3;
+  align-self: center;
+  color: var(--app-green);
+}
+
+.asset-attachment strong,
+.asset-attachment small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.asset-attachment > span {
+  display: flex;
+  gap: 6px;
+}
+
+.asset-attachment button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border: 1px solid var(--app-line);
+  border-radius: 5px;
+  background: var(--app-paper-raised, #fff);
+}
+
+/* Unified v2 menu language: calm surfaces, compact rows, and clear grouping. */
+.page-settings-menu__popover,
+.sidebar-create-menu__popover,
+.action-menu__popover,
+.page-tag-menu__popover {
+  border-color: var(--menu-border);
+  border-radius: 15px;
+  background: var(--menu-surface);
+  box-shadow: var(--menu-shadow);
+  transform-origin: top right;
+  animation: app-menu-in 120ms ease-out;
+  scrollbar-width: thin;
+  scrollbar-color: #aab8b0 transparent;
+}
+
+.language-switcher__label {
+  color: var(--app-muted, #66716b);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.sidebar-create-menu__popover {
+  width: 264px;
+  padding: 8px;
+  transform-origin: bottom left;
+}
+
+.sidebar-create-menu__popover button {
+  min-height: 52px;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.sidebar-create-menu__popover button:hover:not(:disabled) {
+  background: var(--menu-hover);
+}
+
+.sidebar-create-menu__popover button > svg {
+  color: var(--app-green);
+  stroke-width: 1.8;
+}
+
+/* Section labels in menus stay readable. */
+.page-template-menu__label {
+  font-size: 11px;
+}
+
+/* In the single-column tree the footer sits at the foot of the column. */
+.notebook-sidebar:not(.notebook-sidebar--panes) > .nav-pane {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.notebook-sidebar:not(.notebook-sidebar--panes) .section-list {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* The docked navigation column is 250 px wide and clips what sticks out. */
+@media (min-width: 821px) {
+  .notebook-sidebar:not(.notebook-sidebar--panes) .sidebar-footer {
+    background: transparent;
+  }
+
+  .sidebar-create-menu__popover {
+    width: 226px;
+  }
+
+  .sidebar-create-menu__popover button {
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* The file menu at the end of the tab row and page settings open as sheets
+     under the ribbon instead of hanging from a small anchor. */
+  /* A signed-in title bar is crowded: the field yields before its options button leaves the bar. */
+  .search-panel__bar input {
+    min-width: 0;
+  }
+
+  /* The results list uses the full width of the title bar. */
+  .v2-notebook-app > .app-topbar .search-panel {
+    position: static;
+  }
+}
+
+@keyframes app-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.collab-share-dialog__notebook {
+  margin: 4px 0 0;
+  color: var(--app-green);
+  font-weight: 700;
+}
+
+.collab-share-dialog__body {
+  margin-top: 10px;
+  color: var(--app-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.collab-share-dialog__plaintext-notice {
+  margin-top: 6px;
+}
+
+.collab-share-dialog__actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 8px;
+}
+
+.collab-share-dialog__actions button {
+  min-height: 42px;
+  padding: 0 16px;
+  color: white;
+  border-radius: 10px;
+  background: var(--app-green);
+  font-weight: 700;
+}
+
+.collab-share-dialog__actions button:disabled {
+  opacity: 0.6;
+}
+
+.collab-share-dialog__link {
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--app-line);
+  border-radius: 12px;
+  background: var(--app-canvas);
+}
+
+.collab-share-dialog__link label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--app-muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.collab-share-dialog__link-row {
+  display: flex;
+  gap: 8px;
+}
+
+.collab-share-dialog__link-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 10px;
+  min-height: 40px;
+  border: 1px solid var(--app-line);
+  border-radius: 8px;
+  background: var(--app-paper);
+  font-size: 12px;
+}
+
+.collab-share-dialog__link-row button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.collab-share-dialog__hint {
+  margin: 10px 0 0;
+  color: var(--app-muted);
+  font-size: 12px;
+}
+
+.collab-share-dialog__error {
+  margin-top: 12px;
+  padding: 10px 12px;
+  color: #742b22;
+  border-radius: 8px;
+  background: #fff0ec;
+}
+
+.collab-join-dialog {
+  text-align: left;
+}
+
+.collab-join-dialog__progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--app-muted);
+}
+
+.collab-join-dialog__spinner {
+  animation: spin 900ms linear infinite;
+}
+
+/* Notebook management (reorder, duplicate, trash) lives behind "…" so the
+   picker shows one notebook once, like OneNote's notebook dropdown. */
+
+.section-row > button .section-color {
+  width: 4px;
+  height: 14px;
+  flex: 0 0 4px;
+  border-radius: 2px;
+}
+
+.sidebar-add-row {
+  width: 100%;
+  min-height: 28px;
+  padding: 0 10px 0 30px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--app-soft);
+  font-size: 12px;
+  border-radius: 7px;
+  background: transparent;
+}
+
+.sidebar-add-row--section {
+  margin-top: 4px;
+  padding-left: 12px;
+  color: var(--app-green);
+  font-weight: 600;
+}
+
+.sidebar-add-row:hover {
+  color: var(--app-green);
+  background: var(--app-green-soft);
+}
+
+/* OneNote-style page title: large light title on a hairline, the creation
+   date and location underneath, page actions on the right. The drawing
+   toolbar is portalled above it (see LiveCanvasEditor toolbarHost). */
+.v2-workspace-shell > .live-canvas-editor[data-toolbar-external="true"] {
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.v2-workspace-shell > .live-canvas-editor[data-toolbar-external="true"][data-math-sidebar-open="true"] {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.v2-canvas-toolbar-host {
+  position: relative;
+  z-index: 110;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.v2-workspace-shell .page-header {
+  min-height: 0;
+  padding: 14px 24px 10px 28px;
+  align-items: flex-start;
+  border-bottom: 1px solid rgb(54 69 62 / 12%);
+  background: var(--app-paper);
+}
+
+.page-header__title {
+  min-width: 0;
+  flex: 1 1 auto;
+  max-width: 620px;
+}
+
+.v2-workspace-shell .page-header__title > input {
+  width: 100%;
+  padding: 2px 4px 4px;
+  color: #33413b;
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  border: 0;
+  border-bottom: 1px solid rgb(54 69 62 / 22%);
+  border-radius: 0;
+  background: transparent;
+}
+
+.v2-workspace-shell .page-header__title > input:focus {
+  border: 0;
+  border-bottom: 1px solid var(--app-green);
+  border-radius: 0;
+  background: transparent;
+}
+
+.page-header__meta {
+  margin: 5px 0 0;
+  padding-inline-start: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  color: #8b948f;
+  font-size: 12px;
+}
+
+.v2-workspace-shell .page-header__meta span {
+  color: inherit;
+  font-size: inherit;
+  text-transform: none;
+}
+
+.v2-workspace-shell .page-header > :not(.page-header__title) {
+  margin-top: 6px;
+}
+
+.v2-workspace-shell .page-header__title + * {
+  margin-left: auto;
+}
+
+.live-canvas-element > svg.live-canvas-stroke {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: auto;
+  height: auto;
+  overflow: visible;
+}
+
+/* Actions keep their size; the search field is what gives way on tablets. */
+.v2-workspace-shell > .app-topbar .topbar-actions {
+  flex: 0 0 auto;
+}
+
+/* A text container being edited gets a quiet frame, like a OneNote note
+   container, instead of the strong blue selection used for drawings. */
+.live-canvas-element[data-element-kind="richText"].is-selected {
+  border-color: rgb(54 69 62 / 32%);
+  box-shadow: 0 1px 6px rgb(24 32 28 / 8%);
+}
+
+.v2-trash-dialog {
+  position: relative;
+}
+
+.recovery-card h2 {
+  margin: 12px 0 0;
+  color: var(--app-ink);
+  font-size: 20px;
+}
+
+/* "Add page" with an optional section template and a template picker. */
+.sidebar-add-row-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-add-row-group > .sidebar-add-row {
+  min-width: 0;
+  flex: 1;
+}
+
+.sidebar-add-row__template {
+  overflow: hidden;
+  margin-left: 2px;
+  color: var(--app-muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-add-row__template::before {
+  content: '· ';
+}
+
+.page-template-menu > summary {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  list-style: none;
+  cursor: pointer;
+  color: var(--app-soft);
+  border-radius: 7px;
+}
+
+.page-template-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.page-template-menu > summary:hover,
+.page-template-menu[open] > summary {
+  color: var(--app-green);
+  background: var(--app-green-soft);
+}
+
+.page-template-menu__popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 8px;
+  right: 0;
+  z-index: 60;
+  padding: 6px;
+  border: 1px solid var(--app-line);
+  border-radius: 10px;
+  background: var(--app-paper);
+  box-shadow: 0 14px 34px rgb(24 32 28 / 16%);
+}
+
+.page-template-menu__popover > button {
+  width: 100%;
+  padding: 6px 8px;
+  display: grid;
+  gap: 1px;
+  text-align: left;
+  border-radius: 7px;
+  background: transparent;
+}
+
+.page-template-menu__popover > button:hover {
+  background: var(--app-green-soft);
+}
+
+.page-template-menu__popover strong {
+  color: var(--app-ink);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.page-template-menu__popover small {
+  color: var(--app-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.page-template-menu__label {
+  margin: 8px 8px 2px;
+  color: var(--app-soft);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.page-template-menu__hint {
+  margin: 2px 8px 6px;
+  color: var(--app-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.sidebar-add-row {
+  width: 100%;
+  min-height: 28px;
+  padding: 0 10px 0 30px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--app-soft);
+  font-size: 12px;
+  border-radius: 7px;
+  background: transparent;
+}
+
+.sidebar-add-row--section {
+  margin-top: 4px;
+  padding-left: 12px;
+  color: var(--app-green);
+  font-weight: 600;
+}
+
+.sidebar-add-row:hover {
+  color: var(--app-green);
+  background: var(--app-green-soft);
+}
+
+/* OneNote-style page title: large light title on a hairline, the creation
+   date and location underneath, page actions on the right. The drawing
+   toolbar is portalled above it (see LiveCanvasEditor toolbarHost). */
+.v2-workspace-shell > .live-canvas-editor[data-toolbar-external="true"] {
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.v2-workspace-shell > .live-canvas-editor[data-toolbar-external="true"][data-math-sidebar-open="true"] {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.v2-canvas-toolbar-host {
+  position: relative;
+  z-index: 110;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.v2-workspace-shell .page-header {
+  min-height: 0;
+  padding: 14px 24px 10px 28px;
+  align-items: flex-start;
+  border-bottom: 1px solid rgb(54 69 62 / 12%);
+  background: var(--app-paper);
+}
+
+.page-header__title {
+  min-width: 0;
+  flex: 1 1 auto;
+  max-width: 620px;
+}
+
+.v2-workspace-shell .page-header__title > input {
+  width: 100%;
+  padding: 2px 4px 4px;
+  color: #33413b;
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  border: 0;
+  border-bottom: 1px solid rgb(54 69 62 / 22%);
+  border-radius: 0;
+  background: transparent;
+}
+
+.v2-workspace-shell .page-header__title > input:focus {
+  border: 0;
+  border-bottom: 1px solid var(--app-green);
+  border-radius: 0;
+  background: transparent;
+}
+
+.page-header__meta {
+  margin: 5px 0 0;
+  padding-inline-start: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  color: #8b948f;
+  font-size: 12px;
+}
+
+.v2-workspace-shell .page-header__meta span {
+  color: inherit;
+  font-size: inherit;
+  text-transform: none;
+}
+
+.v2-workspace-shell .page-header > :not(.page-header__title) {
+  margin-top: 6px;
+}
+
+.v2-workspace-shell .page-header__title + * {
+  margin-left: auto;
+}
+
+.live-canvas-element > svg.live-canvas-stroke {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: auto;
+  height: auto;
+  overflow: visible;
+}
+
+/* Actions keep their size; the search field is what gives way on tablets. */
+.v2-workspace-shell > .app-topbar .topbar-actions {
+  flex: 0 0 auto;
+}
+
+/* A text container being edited gets a quiet frame, like a OneNote note
+   container, instead of the strong blue selection used for drawings. */
+.live-canvas-element[data-element-kind="richText"].is-selected {
+  border-color: rgb(54 69 62 / 32%);
+  box-shadow: 0 1px 6px rgb(24 32 28 / 8%);
+}
+
+.v2-trash-dialog {
+  position: relative;
+}
+
+.recovery-card h2 {
+  margin: 12px 0 0;
+  color: var(--app-ink);
+  font-size: 20px;
+}
+
+/* "Add page" with an optional section template and a template picker. */
+.sidebar-add-row-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-add-row-group > .sidebar-add-row {
+  min-width: 0;
+  flex: 1;
+}
+
+.sidebar-add-row__template {
+  overflow: hidden;
+  margin-left: 2px;
+  color: var(--app-muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-add-row__template::before {
+  content: '· ';
+}
+
+.page-template-menu > summary {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  list-style: none;
+  cursor: pointer;
+  color: var(--app-soft);
+  border-radius: 7px;
+}
+
+.page-template-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.page-template-menu > summary:hover,
+.page-template-menu[open] > summary {
+  color: var(--app-green);
+  background: var(--app-green-soft);
+}
+
+.page-template-menu__popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 8px;
+  right: 0;
+  z-index: 60;
+  padding: 6px;
+  border: 1px solid var(--app-line);
+  border-radius: 10px;
+  background: var(--app-paper);
+  box-shadow: 0 14px 34px rgb(24 32 28 / 16%);
+}
+
+.page-template-menu__popover > button {
+  width: 100%;
+  padding: 6px 8px;
+  display: grid;
+  gap: 1px;
+  text-align: left;
+  border-radius: 7px;
+  background: transparent;
+}
+
+.page-template-menu__popover > button:hover {
+  background: var(--app-green-soft);
+}
+
+.page-template-menu__popover strong {
+  color: var(--app-ink);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.page-template-menu__popover small {
+  color: var(--app-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.page-template-menu__label {
+  margin: 8px 8px 2px;
+  color: var(--app-soft);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.page-template-menu__hint {
+  margin: 2px 8px 6px;
+  color: var(--app-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.page-settings-menu__template {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--app-line);
+  border-radius: 9px;
+}
+
+.page-settings-menu__template > span {
+  display: grid;
+  gap: 2px;
+}
+
+.page-settings-menu__template strong {
+  font-size: 12.5px;
+}
+
+/* Outranks `.page-settings-menu__popover label`, which stacks fields. */
+.page-settings-menu__popover label.page-settings-menu__template {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-settings-menu__popover label.page-settings-menu__template > span {
+  color: var(--app-ink);
+  font-size: 12.5px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.page-settings-menu__template small {
+  color: var(--app-muted);
+  font-size: 11px;
+  line-height: 1.35;
+  text-transform: none;
+}
+
+.sidebar-add-row {
+  white-space: nowrap;
+}
+
+.sidebar-add-row__template {
+  min-width: 0;
+  flex: 1 1 auto;
+  text-align: left;
+}
+
+.page-row__target .page-row__template {
+  margin-left: auto;
+  padding: 1px 5px;
+  color: var(--app-green);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: 4px;
+  background: var(--app-green-soft);
+}
+
+/* ==========================================================================
+   OneNote-style shell: title bar, ribbon (tabs + one row of commands on a
+   white card), navigation column, page list column and the page as a white
+   card, all on a light grey window background.
+   ========================================================================== */
+.notebook-app.v2-notebook-app {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
+  background: #f3f3f1;
+}
+
+.v2-notebook-app > .app-topbar {
+  min-height: 48px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 0;
+  background: transparent;
+}
+
+.app-topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 0 1 260px;
+  color: var(--app-ink);
+  font-size: 14px;
+}
+
+/* The app's own brand tile. Until 2026-10-01 the landing page's global CSS
+   supplied this rule; the landing CSS is scoped now, so the app owns it. */
+.brand-mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: white;
+  border-radius: 10px;
+  background: var(--app-green);
+}
+
+.app-topbar__brand .brand-mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+}
+
+.v2-notebook-app > .app-topbar .search-panel {
+  flex: 0 1 560px;
+  margin-inline: auto;
+}
+
+.v2-notebook-app > .app-topbar .topbar-actions {
+  flex: 0 0 auto;
+}
+
+/* Ribbon */
+.ribbon {
+  padding: 0 10px 8px;
+  min-width: 0;
+}
+
+.ribbon__tabs {
+  min-height: 36px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.ribbon__tablist {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.ribbon__tab {
+  position: relative;
+  padding: 7px 12px 8px;
+  color: #4a524e;
+  font-size: 13.5px;
+  border: 0;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.ribbon__tab:hover {
+  color: var(--app-ink);
+  background: rgb(0 0 0 / 4%);
+}
+
+.ribbon__tab[aria-selected='true'] {
+  color: var(--app-ink);
+  font-weight: 650;
+}
+
+.ribbon__tab[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 2px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--app-green);
+}
+
+.ribbon__end {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* "Datei" sits in front of the tabs like OneNote's File; its status line
+   (export progress) goes to the right end of the tab row. */
+.ribbon__tabs > .asset-workspace-controls {
+  display: contents;
+}
+
+.ribbon__tabs > .asset-workspace-controls output {
+  order: 1;
+  align-self: center;
+  margin-left: auto;
+  padding-bottom: 4px;
+}
+
+.ribbon__end {
+  order: 2;
+}
+
+.asset-workspace-controls__file {
+  height: 30px;
+  margin: 0 6px 3px 0;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 6px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--app-green);
+  background: var(--app-green-soft);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.asset-workspace-controls__file:hover,
+.asset-workspace-controls__file[aria-expanded="true"] {
+  background: var(--menu-active);
+}
+
+.asset-workspace-controls__file:focus-visible {
+  outline: 2px solid var(--menu-focus-ring);
+  outline-offset: 1px;
+}
+
+.asset-workspace-controls__file-chevron {
+  margin-right: -2px;
+  opacity: 0.7;
+}
+
+.topbar-action[aria-haspopup="menu"][aria-expanded="true"] {
+  color: var(--app-green);
+  background: var(--app-green-soft);
+}
+
+@media (max-width: 640px), (pointer: coarse) {
+  .asset-workspace-controls__file {
+    min-width: 44px;
+    height: 44px;
+    margin-bottom: 0;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .asset-workspace-controls__file-label,
+  .asset-workspace-controls__file-chevron {
+    display: none;
+  }
+}
+
+.ribbon__card {
+  min-height: 48px;
+  padding: 4px 6px;
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: visible;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgb(24 32 28 / 10%), 0 0 0 1px rgb(24 32 28 / 4%);
+  scrollbar-width: thin;
+  /* Scroll shadows: the white covers move with the content ("local") and
+     hide the shadows at either end, so a shadow shows only where more
+     commands are hidden. */
+  background:
+    linear-gradient(90deg, #fff 40%, rgb(255 255 255 / 0)) left / 28px 100% no-repeat local,
+    linear-gradient(270deg, #fff 40%, rgb(255 255 255 / 0)) right / 28px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgb(24 32 28 / 24%), transparent) left / 14px 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgb(24 32 28 / 24%), transparent) right / 14px 100% no-repeat scroll,
+    #fff;
+}
+
+.ribbon__panel {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.ribbon__panel[hidden] {
+  display: none;
+}
+
+.ribbon__slot {
+  display: flex;
+  align-items: center;
+}
+
+.ribbon__slot:empty {
+  display: none;
+}
+
+.ribbon-groups {
+  display: flex;
+  align-items: center;
+}
+
+.ribbon-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 8px;
+  border-right: 1px solid #e6e8e6;
+}
+
+.ribbon-groups:last-child > .ribbon-group:last-of-type {
+  border-right: 0;
+}
+
+.ribbon-button {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #2f3834;
+  font-size: 13px;
+  white-space: nowrap;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.ribbon-button svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.ribbon-button:hover:not(:disabled) {
+  background: #eef1ef;
+}
+
+.ribbon-button[aria-pressed='true'] {
+  color: #1f4d3d;
+  background: rgb(61 107 88 / 15%);
+}
+
+.ribbon-button:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.ribbon-button:focus-visible,
+.ribbon__tab:focus-visible,
+.ribbon-pen:focus-visible,
+.ribbon-width:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+.ribbon-zoom {
+  min-width: 44px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ribbon-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.ribbon-field input {
+  width: 64px;
+  height: 28px;
+}
+
+.ribbon-pens {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: 4px;
+  padding-left: 6px;
+  border-left: 1px solid #eef0ee;
+}
+
+.ribbon-pen {
+  position: relative;
+  width: 32px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.ribbon-pen svg {
+  width: 19px;
+  height: 19px;
+  margin-top: -5px;
+}
+
+.ribbon-pen__tip {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 5px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.ribbon-pen--highlighter .ribbon-pen__tip {
+  height: 6px;
+  opacity: 0.75;
+}
+
+.ribbon-pen:hover:not(:disabled) {
+  background: #eef1ef;
+}
+
+.ribbon-pen[aria-checked='true'] {
+  background: rgb(61 107 88 / 13%);
+  box-shadow: inset 0 0 0 1px rgb(61 107 88 / 35%);
+}
+
+.ribbon-widths {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: 4px;
+  padding-left: 6px;
+  border-left: 1px solid #eef0ee;
+}
+
+.ribbon-width {
+  width: 28px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.ribbon-width > span {
+  border-radius: 50%;
+  background: #2f3834;
+}
+
+.ribbon-width[aria-checked='true'] {
+  background: rgb(61 107 88 / 15%);
+}
+
+/* Formatting: live controls of the focused text, else an idle preview. */
+.ribbon-format {
+  display: flex;
+  align-items: center;
+}
+
+.ribbon-format__slot:empty {
+  display: none;
+}
+
+.ribbon-format__slot:not(:empty) + .ribbon-format__idle {
+  display: none;
+}
+
+.ribbon-format__idle {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.ribbon .canvink-rich-text-toolbar-dock .canvink-rich-text-toolbar__field select,
+.ribbon .canvink-rich-text-toolbar-dock .canvink-rich-text-toolbar__button {
+  min-height: 32px;
+  font-size: 13px;
+}
+
+/* Body: navigation column(s) and the page card */
+.v2-body {
+  min-height: 0;
+  padding: 0 10px 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.v2-body > .workspace-shell.v2-workspace-shell {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(24 32 28 / 10%), 0 0 0 1px rgb(24 32 28 / 4%);
+}
+
+.notebook-sidebar.notebook-sidebar--panes {
+  width: auto;
+  height: auto;
+  min-height: 0;
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+}
+
+.notebook-sidebar--panes > .nav-pane {
+  width: 230px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.notebook-sidebar--panes .sidebar-brand {
+  display: none;
+}
+
+.notebook-sidebar--panes .sidebar-heading {
+  height: 28px;
+  padding: 0 10px;
+}
+
+.notebook-sidebar--panes .section-list {
+  flex: 1;
+  padding: 0 2px 8px;
+  overflow: visible;
+}
+
+.notebook-sidebar--panes .section-block {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.notebook-sidebar--panes .section-row > button {
+  height: 34px;
+  padding-left: 10px;
+  border-radius: 7px;
+}
+
+.notebook-sidebar--panes .section-row > button .section-color {
+  height: 16px;
+}
+
+.notebook-sidebar--panes .section-block.is-current .section-row > button {
+  color: var(--app-ink);
+  background: #e4e7e5;
+  font-weight: 650;
+}
+
+.notebook-sidebar--panes .sidebar-footer {
+  padding: 8px 4px 0;
+  border-top: 1px solid #e3e5e3;
+  background: transparent;
+}
+
+.notebook-sidebar--panes > .page-pane {
+  width: 240px;
+  min-height: 0;
+  padding: 10px 6px;
+  overflow-y: auto;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(24 32 28 / 10%), 0 0 0 1px rgb(24 32 28 / 4%);
+}
+
+.page-pane > .sidebar-add-row-group {
+  margin: 0 4px 8px;
+}
+
+.page-pane > .sidebar-add-row-group > .sidebar-add-row {
+  min-height: 34px;
+  padding: 0 10px;
+  color: var(--app-green);
+  font-size: 13px;
+  font-weight: 650;
+  border: 1px solid rgb(63 104 89 / 35%);
+  border-radius: 8px;
+}
+
+.page-pane > .page-tree {
+  padding: 0;
+}
+
+.page-pane .page-row__target {
+  min-height: 34px;
+  font-size: 13.5px;
+}
+
+.page-pane .page-row.is-active {
+  background: #e4e7e5;
+}
+
+.page-pane .page-row.is-active .page-row__target {
+  color: var(--app-ink);
+  font-weight: 650;
+}
+
+/* ==========================================================================
+   Shell navigation: context menus, notebook switcher, quick access, page
+   drag and drop, move/copy dialog, quiet save status.
+   ========================================================================== */
+.context-menu {
+  position: fixed;
+  z-index: 1300;
+  min-width: 220px;
+  max-width: min(320px, calc(100vw - 12px));
+  max-height: calc(100vh - 12px);
+  overflow-y: auto;
+  padding: var(--menu-pad);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border: 1px solid var(--menu-border);
+  border-radius: var(--menu-radius);
+  color: var(--app-ink);
+  background: var(--menu-bg);
+  box-shadow: var(--menu-shadow);
+  font-size: var(--menu-font-size);
+  outline: none;
+  animation: app-menu-in 90ms ease-out;
+}
+
+/* A menu that drops from a button (the title bar's More, the ribbon's File). */
+.context-menu--app {
+  min-width: 248px;
+  transform-origin: top right;
+  animation-duration: 120ms;
+}
+
+.context-menu__item {
+  width: 100%;
+  min-height: var(--menu-item-height);
+  padding: 0 10px 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: var(--menu-item-radius);
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: default;
+}
+
+.context-menu__item:hover:not([aria-disabled="true"]),
+.context-menu__item:focus,
+.context-menu__item[aria-expanded="true"] {
+  outline: none;
+  background: var(--menu-hover);
+}
+
+/* Keyboard focus is stronger than hover so the two never look alike. */
+.context-menu__item:focus-visible,
+.context-menu__segment:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1.5px var(--menu-focus-ring);
+}
+
+.context-menu__item[aria-disabled="true"] {
+  opacity: 0.42;
+}
+
+.context-menu__item--danger:not([aria-disabled="true"]):focus {
+  color: #9a2f22;
+  background: #fbebe7;
+}
+
+.context-menu__icon {
+  width: 20px;
+  display: grid;
+  flex: 0 0 20px;
+  place-items: center;
+  color: var(--app-muted);
+}
+
+.context-menu__icon svg {
+  stroke-width: 1.75;
+}
+
+.context-menu__item:not([aria-disabled="true"]):hover .context-menu__icon,
+.context-menu__item:not([aria-disabled="true"]):focus .context-menu__icon,
+.context-menu__item[aria-expanded="true"] .context-menu__icon {
+  color: var(--app-green);
+}
+
+.context-menu__swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 12%);
+}
+
+.context-menu__item[aria-checked="true"] .context-menu__swatch {
+  box-shadow: 0 0 0 2px var(--menu-surface), 0 0 0 3.5px var(--app-ink);
+}
+
+.context-menu__label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.context-menu__shortcut {
+  margin-left: 18px;
+  color: var(--app-soft);
+  font: inherit;
+  font-size: 11.5px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.context-menu__chevron {
+  color: var(--app-soft);
+}
+
+.context-menu__separator {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--menu-separator);
+}
+
+/* An either-or choice as a row: the label and a segmented control (DE | EN). */
+.context-menu__segmented-row {
+  min-height: var(--menu-item-height);
+  padding: 2px 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.context-menu__segmented {
+  display: inline-flex;
+  padding: 2px;
+  gap: 2px;
+  border-radius: 8px;
+  background: #eef1ed;
+}
+
+.context-menu__segment {
+  min-width: 34px;
+  height: 24px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--app-muted);
+  background: transparent;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  cursor: default;
+}
+
+.context-menu__segment:hover {
+  color: var(--app-ink);
+}
+
+.context-menu__segment[aria-checked="true"] {
+  color: var(--app-green);
+  background: #fffffd;
+  box-shadow: 0 0 0 1px var(--menu-border), 0 1px 2px rgb(22 35 29 / 10%);
+}
+
+.context-menu__segment[aria-checked="true"]:focus-visible {
+  box-shadow: 0 0 0 1px var(--menu-border), inset 0 0 0 1.5px var(--menu-focus-ring);
+}
+
+:root[data-touch-mode="on"] {
+  .context-menu__item {
+    min-height: 42px;
+    font-size: 14px;
+  }
+}
+
+/* Phones and tablets held in the hand: 44 px rows for fingers. */
+@media (max-width: 640px), (pointer: coarse) {
+  .context-menu__item {
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  .context-menu__segmented-row {
+    min-height: 48px;
+  }
+
+  .context-menu__segment {
+    min-width: 44px;
+    height: 34px;
+    font-size: 13px;
+  }
+
+  .context-menu--app {
+    min-width: min(280px, calc(100vw - 12px));
+  }
+}
+
+/* Notebook switcher in the title bar. */
+.v2-notebook-app > .app-topbar .app-topbar__brand {
+  flex: 0 0 auto;
+}
+
+.notebook-switcher {
+  position: relative;
+  min-width: 0;
+  flex: 0 1 240px;
+}
+
+.notebook-switcher__button {
+  max-width: 100%;
+  height: 34px;
+  padding: 0 8px 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--app-ink);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.notebook-switcher__button:hover,
+.notebook-switcher__button[aria-expanded="true"] {
+  border-color: var(--app-line);
+  background: #fff;
+}
+
+.notebook-switcher__button .notebook-color,
+.notebook-switcher__option .notebook-color {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 3px;
+}
+
+.notebook-switcher__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notebook-switcher__button > svg {
+  flex: 0 0 auto;
+  color: var(--app-muted);
+}
+
+.notebook-switcher__popover {
+  position: absolute;
+  z-index: 90;
+  top: calc(100% + 6px);
+  left: 0;
+  width: min(340px, calc(100vw - 16px));
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--menu-border);
+  border-radius: var(--menu-radius);
+  background: var(--menu-bg);
+  box-shadow: var(--menu-shadow);
+  animation: app-menu-in 110ms ease-out;
+  transform-origin: top left;
+}
+
+.notebook-switcher__filter,
+.move-copy-dialog__filter {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--app-line);
+  border-radius: 8px;
+  color: var(--app-ink);
+  background: #fff;
+  font-size: 13px;
+}
+
+.notebook-switcher__filter:focus-visible,
+.move-copy-dialog__filter:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--app-green) 55%, white);
+  outline-offset: 1px;
+}
+
+.notebook-switcher__list {
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+}
+
+.notebook-switcher__label {
+  margin: 6px 8px 3px;
+  color: var(--app-soft);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.notebook-switcher__option {
+  min-height: 34px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-radius: var(--menu-item-radius);
+  font-size: var(--menu-font-size);
+  cursor: pointer;
+}
+
+.notebook-switcher__option[aria-selected="true"] {
+  background: var(--menu-hover);
+}
+
+.notebook-switcher__option[aria-current="true"] {
+  font-weight: 650;
+}
+
+.notebook-switcher__option > svg {
+  flex: 0 0 auto;
+  color: var(--app-green);
+}
+
+.notebook-switcher__option small {
+  color: var(--app-soft);
+  font-size: 11px;
+}
+
+.notebook-switcher__shared {
+  flex: none;
+  color: var(--app-muted);
+}
+
+.notebook-switcher__option-title {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notebook-switcher__option--page .notebook-switcher__option-title {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.notebook-switcher__option--page .notebook-switcher__option-title small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notebook-switcher__section-dot {
+  width: 7px;
+  height: 7px;
+  margin-right: 5px;
+  display: inline-block;
+  border-radius: 50%;
+}
+
+.notebook-switcher__unpin {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted, #6b6b6b);
+  opacity: 0;
+  cursor: pointer;
+}
+
+.notebook-switcher__option--page:hover .notebook-switcher__unpin,
+.notebook-switcher__option--page[aria-selected='true'] .notebook-switcher__unpin,
+.notebook-switcher__unpin:focus-visible {
+  opacity: 1;
+}
+
+.notebook-switcher__unpin:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: inherit;
+}
+
+@media (pointer: coarse) {
+  .notebook-switcher__unpin {
+    width: 44px;
+    height: 44px;
+    opacity: 1;
+  }
+}
+
+.notebook-switcher__empty,
+.move-copy-dialog__empty {
+  margin: 10px 8px;
+  color: var(--app-muted);
+  font-size: 13px;
+}
+
+.notebook-switcher__footer {
+  padding: 6px 2px 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  border-top: 1px solid #e5e9e6;
+}
+
+.notebook-switcher__footer > button {
+  min-height: 32px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 7px;
+  color: var(--app-green);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.notebook-switcher__footer > button:hover {
+  background: var(--menu-hover);
+}
+
+.notebook-switcher__footer small {
+  color: var(--app-soft);
+  font-size: 11px;
+}
+
+/* Quick access (pinned pages) at the top of the navigation. */
+.quick-access {
+  margin-bottom: 6px;
+}
+
+.sidebar-heading.quick-access__heading {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.quick-access__heading > svg {
+  color: var(--app-soft);
+}
+
+.quick-access__list {
+  padding: 0 2px;
+}
+
+.quick-access__item {
+  width: 100%;
+  min-height: 36px;
+  padding: 3px 8px 3px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 7px;
+  color: var(--app-ink);
+  background: transparent;
+  text-align: left;
+}
+
+.quick-access__item:hover {
+  background: rgb(0 0 0 / 4%);
+}
+
+.quick-access__item.is-active {
+  background: #e4e7e5;
+}
+
+.quick-access__item .section-color {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+}
+
+.quick-access__text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.quick-access__text > span,
+.quick-access__text > small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-access__text > span {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.quick-access__text > small {
+  color: var(--app-soft);
+  font-size: 10.5px;
+}
+
+/* Page list: collapse toggles, pin marks, drop indicator. */
+.page-tree {
+  position: relative;
+}
+
+.page-pane {
+  display: flex;
+  flex-direction: column;
+}
+
+.page-pane > .page-tree {
+  flex: 1 0 auto;
+  min-height: 60px;
+}
+
+.page-row__toggle {
+  width: 24px;
+  height: 26px;
+  margin-right: 3px;
+  display: grid;
+  flex: 0 0 24px;
+  place-items: center;
+  border-radius: 5px;
+  color: var(--app-muted);
+  background: transparent;
+}
+
+.page-row__toggle[aria-expanded="true"] {
+  opacity: 0;
+}
+
+.page-row:hover .page-row__toggle,
+.page-row__toggle:focus-visible {
+  opacity: 1;
+}
+
+.page-row__toggle:hover {
+  color: var(--app-green);
+  background: var(--app-green-soft);
+}
+
+.page-row__pin {
+  flex: 0 0 auto;
+  color: var(--app-soft);
+}
+
+.page-drop-indicator {
+  position: absolute;
+  z-index: 3;
+  right: 6px;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 1px;
+  background: var(--app-green);
+  pointer-events: none;
+}
+
+.page-drop-indicator::before {
+  position: absolute;
+  top: -3px;
+  left: -4px;
+  width: 8px;
+  height: 8px;
+  content: "";
+  border-radius: 50%;
+  background: var(--app-green);
+}
+
+/* OneNote-like "Move or Copy" dialog. */
+.move-copy-dialog {
+  width: min(440px, calc(100vw - 24px));
+  max-height: min(620px, calc(100vh - 40px));
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-radius: 14px;
+  background: var(--menu-surface);
+  box-shadow: var(--menu-shadow);
+}
+
+.move-copy-dialog__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.move-copy-dialog__header > div {
+  flex: 1;
+}
+
+.move-copy-dialog__header h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.move-copy-dialog__header p {
+  margin: 4px 0 0;
+  color: var(--app-muted);
+  font-size: 12.5px;
+}
+
+.move-copy-dialog__header .v2-icon-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+}
+
+.move-copy-dialog__list {
+  min-height: 140px;
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px;
+  border: 1px solid var(--app-line);
+  border-radius: 9px;
+  background: #fff;
+}
+
+.move-copy-dialog__group {
+  margin: 6px 6px 2px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--app-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.move-copy-dialog__option {
+  min-height: 32px;
+  padding: 3px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.move-copy-dialog__option--depth-1 {
+  padding-left: 26px;
+}
+
+.move-copy-dialog__option:hover {
+  background: var(--menu-hover);
+}
+
+.move-copy-dialog__option[aria-selected="true"] {
+  color: #fff;
+  background: var(--app-green);
+}
+
+.move-copy-dialog__option[aria-selected="true"] small {
+  color: rgb(255 255 255 / 80%);
+}
+
+.move-copy-dialog__option small {
+  margin-left: auto;
+  color: var(--app-soft);
+  font-size: 11px;
+}
+
+.move-copy-dialog__swatch {
+  width: 4px;
+  height: 18px;
+  flex: 0 0 4px;
+  border-radius: 2px;
+}
+
+.move-copy-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.move-copy-dialog__actions > button {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--app-line);
+  border-radius: 8px;
+  color: var(--app-ink);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.move-copy-dialog__actions > .move-copy-dialog__primary {
+  border-color: var(--app-green);
+  color: #fff;
+  background: var(--app-green);
+}
+
+.move-copy-dialog__actions > button:disabled {
+  opacity: 0.45;
+}
+
+.sidebar-brand__text {
+  min-width: 0;
+  flex: 1;
+}
+
+.sidebar-brand .notebook-switcher__button {
+  height: 26px;
+  margin-left: -6px;
+  padding: 0 6px;
+  font-size: 12px;
+}
+
+@media (max-width: 640px) {
+  .notebook-switcher {
+    flex: 0 1 132px;
+  }
+
+  /* On a narrow bar the switcher shrinks to its colour and arrow; the
+     navigation header shows the notebook name. */
+  .v2-notebook-app > .app-topbar .notebook-switcher {
+    flex: 0 0 auto;
+  }
+
+  .v2-notebook-app > .app-topbar .app-topbar__brand {
+    display: none;
+  }
+
+  .v2-notebook-app > .app-topbar .notebook-switcher__title {
+    display: none;
+  }
+
+  .v2-notebook-app > .app-topbar .notebook-switcher__button {
+    gap: 4px;
+    padding: 0 4px 0 8px;
+  }
+
+  /* On phones the list uses the full width under the bar that opened it. */
+  .notebook-switcher__popover {
+    position: fixed;
+    top: 54px;
+    right: 8px;
+    left: 8px;
+    width: auto;
+  }
+
+  .notebook-switcher__button {
+    padding: 0 6px;
+  }
+
+  .notebook-switcher__footer small {
+    display: none;
+  }
+}
+
+/* The page itself: white paper up to the card edge on free pages. */
+.v2-workspace-shell .page-header {
+  border-bottom: 0;
+  padding: 18px 28px 6px 36px;
+}
+
+.v2-workspace-shell .live-canvas-viewport {
+  background: #eceeeb;
+}
+
+.v2-workspace-shell .live-canvas-surface.live-canvas-surface--free {
+  margin: 0;
+  box-shadow: none;
+}
+
+.v2-workspace-shell .live-canvas-surface.live-canvas-surface--a4 {
+  margin: 16px auto;
+}
+
+
+@media (max-width: 1099px) {
+  .v2-body {
+    padding: 0 6px 6px;
+  }
+
+  .ribbon {
+    padding: 0 6px 6px;
+  }
+}
+
+.notebook-sidebar.notebook-sidebar--panes {
+  flex-direction: row;
+  align-items: stretch;
+  overflow: visible;
+}
+
+.v2-workspace-shell .live-canvas-surface.live-canvas-surface--free {
+  border: 0;
+}
+
+@media (min-width: 821px) {
+  /* The title bar carries the brand; the docked navigation does not repeat it. */
+  .v2-body > .notebook-sidebar:not([aria-modal]) .sidebar-brand {
+    display: none;
+  }
+
+  .v2-body > .notebook-sidebar:not(.notebook-sidebar--panes):not([aria-modal]) {
+    width: 250px;
+    flex: 0 0 250px;
+    overflow-y: auto;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-topbar__brand strong {
+    display: none;
+  }
+
+  .app-topbar__brand {
+    flex: 0 0 auto;
+  }
+
+  .v2-notebook-app > .app-topbar {
+    gap: 6px;
+    padding: 6px 8px;
+  }
+
+  .v2-notebook-app > .app-topbar .search-panel {
+    flex: 1 1 auto;
+  }
+
+  /* Only the tab list scrolls: an overflow on the whole row would clip the
+     file menu that opens from its end. */
+  .ribbon__tablist {
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .ribbon__tab {
+    padding-inline: 9px;
+  }
+
+  .v2-workspace-shell .page-header {
+    padding: 12px 12px 4px 14px;
+    flex-wrap: wrap;
+  }
+
+  .v2-workspace-shell .page-header__title > input {
+    font-size: 22px;
+  }
+}
+
+/* Title bar menus overlay the ribbon; ribbon menus overlay the page. */
+.v2-notebook-app > .app-topbar {
+  position: relative;
+  z-index: 300;
+}
+
+.v2-notebook-app > .ribbon {
+  position: relative;
+  z-index: 250;
+}
+
+@media (max-width: 820px) {
+  /* The navigation drawer covers the title bar and ribbon on phones. */
+  .v2-notebook-app .sidebar-scrim {
+    z-index: 390;
+  }
+
+  .v2-notebook-app .notebook-sidebar {
+    z-index: 400;
+  }
+}
+
+/* OneNote's full page view: the page and a compact, collapsible row of
+   drawing tools; navigation, title bar and ribbon tabs are hidden. */
+.notebook-app.v2-notebook-app.is-full-page {
+  grid-template-rows: auto minmax(0, 1fr);
+  background: #fff;
+}
+
+.notebook-app.v2-notebook-app.is-full-page.is-full-page-collapsed {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.v2-notebook-app.is-full-page > .app-topbar,
+.v2-notebook-app.is-full-page .ribbon__tabs {
+  display: none;
+}
+
+.v2-notebook-app.is-full-page > .ribbon {
+  padding: 6px 144px 4px 8px;
+  border-bottom: 1px solid #e6e8e6;
+  background: #f7f7f5;
+}
+
+.v2-notebook-app.is-full-page > .ribbon .ribbon__card {
+  min-height: 44px;
+  box-shadow: none;
+}
+
+.v2-notebook-app.is-full-page-collapsed > .ribbon {
+  display: none;
+}
+
+/* With floating tools (the default) the page fills the window and the
+   floating ink toolbar (src/editor/FloatingInkToolbar.css) holds the tools. */
+.notebook-app.v2-notebook-app.is-full-page.is-full-page-floating {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.v2-notebook-app.is-full-page-floating > .ribbon {
+  display: none;
+}
+
+.v2-notebook-app.is-full-page > .v2-body {
+  padding: 0;
+}
+
+.v2-notebook-app.is-full-page > .v2-body > .workspace-shell.v2-workspace-shell {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.full-page-controls {
+  position: fixed;
+  z-index: 400;
+  top: 10px;
+  right: 12px;
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 2px 10px rgb(30 41 37 / 16%), 0 0 0 1px rgb(30 41 37 / 8%);
+}
+
+.full-page-controls__button {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #2f3834;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.full-page-controls__button:hover {
+  background: #eef1ef;
+}
+
+.full-page-controls__button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+@media (max-width: 640px) {
+  .v2-notebook-app.is-full-page > .ribbon {
+    padding-right: 128px;
+  }
+}
+
+/* Navigation: section groups and a cleaner section and page list.
+   OneNote's navigation is the model: one row height, titles only, subpages
+   indented by a clear step, groups as folding folders, the open page marked
+   with a grey fill and its section's colour. Placed last so it wins over the
+   earlier layered sidebar rules. */
+.notebook-sidebar {
+  --nav-row-height: 32px;
+  --nav-depth-step: 16px;
+  --nav-hover: rgb(0 0 0 / 4.5%);
+  --nav-selected: #e4e7e5;
+}
+
+.section-row > button:first-child,
+.section-group__button {
+  min-width: 0;
+  width: 100%;
+  height: var(--nav-row-height);
+  padding: 0 8px 0 calc(10px + var(--nav-depth, 0) * var(--nav-depth-step));
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  color: var(--app-ink);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.section-row > button:first-child:hover,
+.section-group__button:hover {
+  color: var(--app-ink);
+  background: var(--nav-hover);
+}
+
+.notebook-sidebar--panes .section-row > button {
+  height: var(--nav-row-height);
+  padding-left: calc(10px + var(--nav-depth, 0) * var(--nav-depth-step));
+}
+
+.notebook-sidebar--panes .section-block.is-current .section-row > button {
+  background: var(--nav-selected);
+  font-weight: 600;
+}
+
+.section-row,
+.section-group__row {
+  height: auto;
+  min-height: var(--nav-row-height);
+  display: flex;
+  align-items: center;
+}
+
+.section-row__title {
+  min-width: 0;
+  overflow: hidden;
+  flex: 1;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.section-row > button .section-color,
+.notebook-sidebar--panes .section-row > button .section-color {
+  width: 4px;
+  height: 16px;
+  flex: 0 0 4px;
+  border-radius: 2px;
+}
+
+/* A group's chevron sits where a section's colour bar would, so the folder
+   icon and the titles of its sections line up one step further in. */
+.section-group__button {
+  padding-left: calc(5px + var(--nav-depth, 0) * var(--nav-depth-step));
+  gap: 5px;
+}
+
+.section-group__button > svg {
+  flex: 0 0 auto;
+  color: var(--app-muted);
+}
+
+.section-group__button > svg + svg {
+  margin-right: 2px;
+}
+
+/* A folded group that holds the open section says so, like OneNote's
+   highlighted group tab. */
+.section-group.holds-current > .section-group__row > .section-group__button[aria-expanded="false"] {
+  background: var(--nav-selected);
+  font-weight: 600;
+}
+
+.section-list {
+  padding-bottom: 12px;
+}
+
+.notebook-sidebar--panes .section-block,
+.section-block {
+  margin: 0;
+}
+
+.section-block.is-current:not(.notebook-sidebar--panes *) {
+  background: transparent;
+}
+
+/* Drop feedback for sections and groups: a line before or after the row,
+   a tint when dropping into a group or onto the top level. */
+.section-block[data-drop="before"] > .section-row,
+.section-group[data-drop="before"] > .section-group__row {
+  box-shadow: inset 0 2px 0 var(--app-green);
+}
+
+.section-block[data-drop="after"] > .section-row,
+.section-group[data-drop="after"] > .section-group__row {
+  box-shadow: inset 0 -2px 0 var(--app-green);
+}
+
+.section-group[data-drop="inside"] > .section-group__row > .section-group__button,
+.section-list[data-drop="inside"] {
+  background: var(--app-green-soft);
+  outline: 1px solid color-mix(in srgb, var(--app-green) 45%, transparent);
+  outline-offset: -1px;
+}
+
+.sidebar-add-row--section {
+  height: var(--nav-row-height);
+  min-height: var(--nav-row-height);
+  margin-top: 2px;
+  padding-left: 10px;
+  font-size: 13px;
+}
+
+/* Page list */
+.page-tree {
+  /* In the phone tree pages start under their section's title. */
+  --page-base: calc(44px + var(--section-depth, 0) * var(--nav-depth-step));
+}
+
+.page-pane > .page-tree {
+  --page-base: 10px;
+}
+
+.page-row {
+  min-height: var(--nav-row-height);
+  padding-left: calc(var(--page-base) + var(--page-depth, 0) * 20px);
+  border-radius: 6px;
+}
+
+/* Indentation alone marks subpages, as in OneNote. */
+.page-row::before {
+  display: none;
+}
+
+.page-row:hover {
+  background: var(--nav-hover);
+}
+
+.page-row.is-active,
+.page-pane .page-row.is-active {
+  color: var(--app-ink);
+  background: var(--nav-selected);
+  font-weight: 600;
+}
+
+/* Colour belongs to notebooks and sections; the page list stays neutral. The
+   keyboard ring sits inside the row so the list's scroll clip cannot cut it. */
+.page-row__target:focus-visible {
+  outline: 2px solid var(--app-ink);
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+
+.page-row__target,
+.page-pane .page-row__target {
+  min-height: var(--nav-row-height);
+  height: auto;
+  padding: 0 6px 0 0;
+  gap: 6px;
+  color: inherit;
+}
+
+.page-row__target > .page-row__title,
+.page-pane .page-row__target > .page-row__title {
+  min-width: 0;
+  overflow: hidden;
+  flex: 1;
+  font-size: 13px;
+  font-weight: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-pane .page-row.is-active .page-row__target {
+  font-weight: 600;
+}
+
+.page-row__toggle {
+  width: 22px;
+  height: 24px;
+  margin-right: 4px;
+  flex: 0 0 22px;
+}
+
+.page-pane {
+  scroll-padding-block: 8px;
+}
+
+@media (min-width: 1280px) {
+  .notebook-sidebar--panes > .page-pane {
+    width: 264px;
+  }
+}
+
+/* "Seite hinzufügen" and its template menu. */
+.page-pane > .sidebar-add-row-group {
+  margin: 0 0 6px;
+  gap: 4px;
+}
+
+.page-pane > .sidebar-add-row-group > .sidebar-add-row {
+  height: var(--nav-row-height);
+  min-height: var(--nav-row-height);
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.page-pane > .sidebar-add-row-group > .page-template-menu > summary {
+  width: 30px;
+  height: var(--nav-row-height);
+  border: 1px solid rgb(63 104 89 / 35%);
+  border-radius: 8px;
+}
+
+.page-template-menu__popover {
+  left: 0;
+  right: auto;
+  width: max-content;
+  min-width: 190px;
+  max-width: 260px;
+  padding: 4px;
+}
+
+.page-template-menu__popover > button {
+  min-height: 30px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  color: var(--app-ink);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-template-menu__label {
+  margin: 6px 10px 2px;
+  padding-top: 6px;
+  border-top: 1px solid var(--app-line);
+}
+
+.sidebar-create-menu__popover button > span > strong {
+  font-weight: 500;
+}
+
+@media (max-width: 820px) {
+  .notebook-sidebar {
+    --nav-row-height: 44px;
+  }
+
+  .section-group__button,
+  .section-row > button:first-child {
+    font-size: 14px;
+  }
+
+  .page-row__target > .page-row__title {
+    font-size: 14px;
+  }
+
+  /* On touch the fold chevron of a page with subpages is always visible. */
+  .page-row__toggle[aria-expanded="true"] {
+    opacity: 1;
+  }
+}
+
+/* In the phone tree "Seite hinzufügen" lines up with the section's pages. */
+.page-tree > .sidebar-add-row-group > .sidebar-add-row {
+  padding-left: var(--page-base);
+}
+
+/* Touch screens keep no hover tint on the row that was just tapped. */
+:root[data-touch-mode="on"] {
+  .section-row > button:first-child:hover,
+  .section-group__button:hover,
+  .page-row:not(.is-active):hover {
+    background: transparent;
+  }
+}
+
+/* Inline rename: a name turned into a text field in place, like OneNote. */
+.inline-rename {
+  min-width: 0;
+  width: 100%;
+  height: 26px;
+  padding: 0 6px;
+  flex: 1;
+  color: var(--app-ink);
+  border: 1px solid var(--app-green);
+  border-radius: 5px;
+  outline: 2px solid color-mix(in srgb, var(--app-green) 25%, transparent);
+  background: var(--app-paper);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.section-row__editing,
+.section-group__editing,
+.page-row__target--editing {
+  min-width: 0;
+  width: 100%;
+  min-height: var(--nav-row-height, 32px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-row__editing {
+  padding: 0 8px 0 calc(10px + var(--nav-depth, 0) * var(--nav-depth-step, 16px));
+}
+
+.section-row__editing > svg,
+.section-group__editing > svg {
+  flex: 0 0 auto;
+  color: var(--app-muted);
+}
+
+.section-row__editing .section-color {
+  width: 4px;
+  height: 16px;
+  flex: 0 0 4px;
+  border-radius: 2px;
+}
+
+.section-group__editing {
+  gap: 5px;
+  padding: 0 8px 0 calc(5px + var(--nav-depth, 0) * var(--nav-depth-step, 16px));
+}
+
+.page-row__target--editing {
+  padding: 0 5px;
+}
+
+.notebook-switcher__option .inline-rename {
+  height: 24px;
+}
+
+/* App-wide confirmation dialog (replaces the browser's confirm box). */
+.confirm-overlay {
+  position: fixed;
+  z-index: 1400;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(20 31 27 / 42%);
+}
+
+.confirm-dialog {
+  box-sizing: border-box;
+  width: min(400px, 100%);
+  padding: 20px;
+  color: var(--app-ink);
+  border-radius: 14px;
+  background: var(--menu-surface);
+  box-shadow: var(--menu-shadow);
+}
+
+.confirm-dialog h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.confirm-dialog p {
+  margin: 8px 0 0;
+  color: var(--app-muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.confirm-dialog__actions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.confirm-dialog__actions button {
+  min-height: 34px;
+  padding: 0 14px;
+  color: var(--app-ink);
+  border: 1px solid var(--app-line);
+  border-radius: 8px;
+  background: var(--app-paper);
+  font-weight: 650;
+}
+
+.confirm-dialog__actions .confirm-dialog__confirm {
+  color: white;
+  border-color: var(--app-green);
+  background: var(--app-green);
+}
+
+.confirm-dialog__actions .confirm-dialog__confirm--danger {
+  border-color: #a33f32;
+  background: #b04a3c;
+}
+
+.confirm-dialog__actions button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--app-green) 55%, transparent);
+  outline-offset: 2px;
+}
+
+:root[data-touch-mode="on"] {
+  .inline-rename {
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .section-row__editing,
+  .section-group__editing,
+  .page-row__target--editing {
+    min-height: 44px;
+  }
+
+  .confirm-dialog__actions button {
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .confirm-dialog__actions {
+    flex-direction: column-reverse;
+  }
+
+  .confirm-dialog__actions button {
+    min-height: 44px;
+  }
+}
+
+/*
+ * Navigation columns: header, a list that scrolls inside its column, then a
+ * fixed footer row that never covers an entry. The section column's width and
+ * the page column's width come from --nav-section-width and --nav-page-width
+ * (set from the drag handles, kept per device).
+ */
+.nav-pane {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.section-list,
+.page-pane > .page-tree {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.sidebar-add-section {
+  width: auto;
+  margin: 0 8px;
+  flex: 0 0 auto;
+  border-top: 1px solid var(--app-line);
+  border-radius: 0;
+}
+
+.sidebar-footer {
+  flex: 0 0 auto;
+}
+
+.notebook-sidebar--panes .sidebar-add-section {
+  margin: 0 2px;
+  padding-inline: 8px;
+}
+
+.notebook-sidebar.notebook-sidebar--panes {
+  gap: 0;
+}
+
+.notebook-sidebar--panes > .nav-pane {
+  width: var(--nav-section-width, 230px);
+  flex: 0 0 auto;
+}
+
+.notebook-sidebar--panes .section-list {
+  padding: 0 2px 8px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.notebook-sidebar--panes > .page-pane {
+  width: var(--nav-page-width, 240px);
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+@media (min-width: 1280px) {
+  .notebook-sidebar--panes > .page-pane {
+    width: var(--nav-page-width, 264px);
+  }
+}
+
+.page-pane > .page-tree {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.page-pane > .sidebar-add-row-group {
+  flex: 0 0 auto;
+}
+
+.nav-resizer {
+  position: relative;
+  width: 8px;
+  flex: 0 0 8px;
+  cursor: col-resize;
+  touch-action: none;
+  outline: none;
+}
+
+.nav-resizer::after {
+  content: "";
+  position: absolute;
+  inset: 8px 3px;
+  border-radius: 2px;
+  background: transparent;
+}
+
+.nav-resizer:hover::after,
+.nav-resizer:focus-visible::after {
+  background: var(--app-green);
+}
+
+:root[data-touch-mode="on"] .nav-resizer {
+  width: 16px;
+  flex-basis: 16px;
+}
+
+:root[data-touch-mode="on"] .nav-resizer::after {
+  inset: 8px 6px;
+}
+
+/* Desktop update button: small, next to the account and sync icon. */
+.v2-update-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+  padding: 3px 9px;
+  border: 1px solid color-mix(in srgb, var(--app-accent) 35%, transparent);
+  border-radius: 13px;
+  color: var(--app-accent);
+  background: color-mix(in srgb, var(--app-accent) 8%, transparent);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+button.v2-update-chip {
+  cursor: pointer;
+}
+
+button.v2-update-chip:hover,
+button.v2-update-chip:focus-visible {
+  background: color-mix(in srgb, var(--app-accent) 16%, transparent);
+}
+
+.v2-update-chip--ready {
+  color: #fff;
+  background: var(--app-accent);
+}
+
+.v2-update-chip--ready:hover:not(:disabled),
+.v2-update-chip--ready:focus-visible {
+  background: color-mix(in srgb, var(--app-accent) 85%, black);
+}
+
+.v2-update-chip:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.v2-update-chip--error {
+  color: #8f3026;
+  border-color: #e9b3a8;
+  background: #fff0ec;
+}
+
+.v2-update-chip__spin {
+  animation: v2-update-spin 1s linear infinite;
+}
+
+@keyframes v2-update-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-update-chip__spin { animation: none; }
+}
+
+/* Read-only notebook: the small badge in the title bar. */
+.read-only-badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 9px;
+  color: #5a4a14;
+  border: 1px solid #e6d9a6;
+  border-radius: 999px;
+  background: #fbf3d4;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Invitations: "Mit dir geteilt" at the top of the notebook switcher. */
+.notebook-switcher__badge {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: inline-grid;
+  place-items: center;
+  color: white;
+  border-radius: 999px;
+  background: var(--app-accent);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.notebook-switcher__invites {
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e5e9e6;
+}
+
+.notebook-switcher__invite {
+  min-height: 40px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 7px;
+  font-size: 13px;
+}
+
+.notebook-switcher__invite > svg {
+  flex: none;
+  color: var(--app-accent);
+}
+
+.notebook-switcher__invite .notebook-switcher__option-title {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.notebook-switcher__invite small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--app-soft);
+  font-size: 11px;
+}
+
+.notebook-switcher__invite button {
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.notebook-switcher__invite-open {
+  color: white;
+  background: var(--app-green);
+}
+
+.notebook-switcher__invite-decline {
+  color: var(--app-muted);
+  background: transparent;
+}
+
+.notebook-switcher__invite button:disabled {
+  opacity: 0.6;
+}
+
+/* Share dialog: invite, people with access, general access. */
+.collab-share-dialog {
+  text-align: left;
+}
+
+.share-dialog__content {
+  margin-top: 14px;
+}
+
+.share-section__label {
+  display: block;
+  margin: 0 0 6px;
+  color: var(--app-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.share-section__heading {
+  margin-top: 18px;
+}
+
+.share-invite__row {
+  display: flex;
+  gap: 8px;
+}
+
+.share-invite input[type="email"] {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--app-line);
+  border-radius: 8px;
+  background: var(--app-paper);
+  font-size: 13px;
+}
+
+.share-invite select,
+.share-person select,
+.share-general select {
+  min-height: 40px;
+  padding: 0 8px;
+  color: var(--app-ink);
+  border: 1px solid var(--app-line);
+  border-radius: 8px;
+  background: var(--app-paper);
+  font-size: 13px;
+}
+
+.share-invite button[type="submit"] {
+  min-height: 40px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: white;
+  border-radius: 8px;
+  background: var(--app-green);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.share-invite button[type="submit"]:disabled {
+  opacity: 0.55;
+}
+
+.share-message {
+  margin: 8px 0 0;
+}
+
+.share-people {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+}
+
+.share-person {
+  min-height: 48px;
+  padding: 4px 2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.share-person__text {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.share-person__text strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--app-ink);
+  font-size: 13px;
+}
+
+.share-person__text small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--app-muted);
+  font-size: 12px;
+}
+
+.share-person select {
+  width: 132px;
+  flex: none;
+}
+
+.share-person__fixed {
+  width: 132px;
+  flex: none;
+  padding: 0 8px;
+  color: var(--app-muted);
+  font-size: 13px;
+}
+
+.share-person__mail {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--app-accent);
+  border-radius: 50%;
+  background: var(--app-accent-soft);
+}
+
+.share-person__copy {
+  min-height: 32px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--app-green);
+  border: 1px solid var(--app-line);
+  border-radius: 8px;
+  background: var(--app-paper);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.share-general {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.share-general__icon {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--app-green);
+  border-radius: 50%;
+  background: var(--app-green-soft);
+}
+
+.share-general__text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.share-general__text small {
+  color: var(--app-muted);
+  font-size: 12px;
+}
+
+.share-dialog__end {
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px solid var(--app-line);
+}
+
+.collab-share-dialog__actions button.share-dialog__end-button {
+  color: #742b22;
+  border: 1px solid #e3b7ae;
+  background: #fff0ec;
+}
+
+@media (max-width: 520px) {
+  .share-invite__row {
+    flex-wrap: wrap;
+  }
+
+  .share-invite input[type="email"] {
+    flex-basis: 100%;
+  }
+
+  .share-person {
+    flex-wrap: wrap;
+  }
+
+  .collab-share-dialog__link-row {
+    flex-wrap: wrap;
+  }
+
+  .collab-share-dialog__link-row input {
+    flex-basis: 100%;
   }
 }

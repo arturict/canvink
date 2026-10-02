@@ -1,0 +1,4 @@
+# Intentionally empty: the HTTP service, rasterizer, benchmark harness, and tests
+# use only the Python 3.12 standard library. TexTeller and model dependencies are
+# operator-managed outside this service and are never installed or downloaded by it.
+

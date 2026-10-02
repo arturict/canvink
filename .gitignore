@@ -1,9 +1,11 @@
 # Dependencies and build output
 node_modules/
 dist/
+dist-viewer/
 coverage/
 src-tauri/target/
-src-tauri/gen/
+src-tauri/gen/*
+!src-tauri/gen/android/
 
 # Test and tool output
 playwright-report/
@@ -15,6 +17,9 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+!.env.desktop
+.dev.vars
+**/.dev.vars
 .vercel/
 
 # Local databases and notebook data
@@ -30,6 +35,8 @@ pnpm-debug.log*
 *.pem
 *.p12
 *.pfx
+*.jks
+*.keystore
 
 # Editors and operating systems
 .idea/
@@ -37,3 +44,10 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 Desktop.ini
+.wrangler/
+
+# Desktop installers are built on Windows and copied in before a web deploy; never committed.
+/public/download/*.exe
+/public/download/latest.json
+/public/download/*.apk
+/public/download/android.json

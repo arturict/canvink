@@ -619,6 +619,7 @@ function tableBlock(context: PageContext, table: XmlElement, base: InlineTextSty
     const visit = (children: XmlElement | undefined, depth: number) => {
       for (const oe of children ? childElements(children, 'OE') : []) {
         const spans = readText(context, oe, paragraphBaseStyle(context, oe, base));
+        const todo = todoTag(context, oe);
         // A table cell holds plain paragraphs, so list markers are kept as text ("a)", "1.", "•").
         const list = firstChild(oe, 'List');
         const marker = list
@@ -626,7 +627,21 @@ function tableBlock(context: PageContext, table: XmlElement, base: InlineTextSty
           : undefined;
         // Empty paragraphs are kept as blank lines; OneNote users leave room for handwriting with them.
         if (spans.length > 0 || childElements(oe, 'T').length > 0) {
-          paragraphs.push([...(marker ? [{ text: `${marker} `, marks: [] }] : []), ...plainSpans(spans)]);
+          paragraphs.push([
+            ...(todo ? [{ text: todo.checked ? '☑ ' : '☐ ', marks: [] }] : []),
+            ...(marker ? [{ text: `${marker} `, marks: [] }] : []),
+            ...plainSpans(spans),
+          ]);
+        }
+        if (todo) {
+          // The live table model only supports text cells. Preserve the visible
+          // state and page task metadata without claiming an editable checkbox.
+          issue(context, {
+            code: 'unsupported-element',
+            severity: 'simplified',
+            message: 'A checklist inside a table was kept as checkbox text; its page task state was preserved.',
+            sourceElement: 'table-Tag',
+          });
         }
         for (const child of childElements(oe)) {
           const name = localName(child);

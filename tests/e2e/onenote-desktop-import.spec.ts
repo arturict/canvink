@@ -1,14 +1,14 @@
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { expect, gotoApp, test } from './support';
+import { expect, gotoApp, openPageSettings, test, waitForSaved } from './support';
 import { syntheticDesktopExport } from '../../src/import/onenoteDesktop/fixtures';
 
 test('imports a OneNote desktop export folder with printouts, ink and text as a new notebook', async ({ page }) => {
   const root = await mkdtemp(join(tmpdir(), 'canvink-onenote-export-'));
   const folder = join(root, 'schulheft-export');
   try {
-    for (const [path, bytes] of await syntheticDesktopExport()) {
+    for (const [path, bytes] of await syntheticDesktopExport({ studyWorksheet: true })) {
       await mkdir(dirname(join(folder, path)), { recursive: true });
       await writeFile(join(folder, path), bytes);
     }
@@ -38,6 +38,24 @@ test('imports a OneNote desktop export folder with printouts, ink and text as a 
 
     await expect(page.getByLabel('Seitentitel')).toHaveValue('Arbeitsblatt Brüche');
     await expect(page.locator('[data-element-kind="pdf"]')).toHaveCount(2);
+    const studyTable = page.locator('[data-element-kind="richText"] table');
+    await expect(studyTable).toContainText('☐ Brüche wiederholen');
+    await expect(studyTable).toContainText('☑ Beispiel gelöst');
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await waitForSaved(page);
+    await expect(studyTable).toContainText('☐ Brüche wiederholen');
+    await expect(page.locator('[data-element-kind="pdf"]')).toHaveCount(2);
+    await openPageSettings(page);
+    await expect(page.getByRole('group', { name: 'Aufgabenstatus' }).getByRole('button', { name: 'Offen' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('button', { name: 'Schlagwort wichtig entfernen' })).toBeVisible();
+    await page.getByRole('button', { name: 'Seiteneinstellungen schliessen' }).click();
+    const search = page.getByRole('combobox', { name: 'Arbeitsbereich lokal durchsuchen' });
+    await search.fill('is:open tag:wichtig');
+    const results = page.getByRole('listbox', { name: 'Suchergebnisse' });
+    await expect(results.getByRole('option', { name: /Arbeitsblatt Brüche/ })).toBeVisible();
+    await expect(results.getByRole('option', { name: /Zusammenfassung/ })).toHaveCount(0);
+    await search.fill('');
+    await search.press('Escape');
     await page.getByRole('button', { name: /Zusammenfassung & Übungen/ }).first().click();
     await expect(page.getByLabel('Seitentitel')).toHaveValue('Zusammenfassung & Übungen');
     await expect(page.locator('[data-element-kind="richText"]').first()).toContainText('Bruch hat Zähler und Nenner.');

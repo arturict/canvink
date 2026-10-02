@@ -11,7 +11,7 @@ import {
   type DesktopExportFiles,
 } from './convert';
 import type { OneNoteDesktopExportManifest } from './exportFormat';
-import { NOTES_INK, WORKSHEET_INK, notesPageXml, syntheticDesktopExport, worksheetPageXml } from './fixtures';
+import { NOTES_INK, WORKSHEET_INK, notesPageXml, studyWorksheetPageXml, syntheticDesktopExport, worksheetPageXml } from './fixtures';
 import { parseOneNoteInlineHtml } from './inlineHtml';
 import { POINTS_TO_PX, convertDesktopPageXml, inkStrokesAt, simplifyInkPoints } from './pageXml';
 import { parseXml } from './xml';
@@ -132,6 +132,34 @@ describe('OneNote inline HTML', () => {
 });
 
 describe('OneNote desktop page conversion', () => {
+  it('keeps study tasks and tags from table cells alongside printouts and editable ink', () => {
+    const page = convertDesktopPageXml(parseXml(studyWorksheetPageXml('assets/p.png', 'files/w.pdf')), { ...ASSETS, ink: WORKSHEET_INK });
+    expect(page.tags).toContain('wichtig');
+    expect(page.taskState).toBe('open');
+    const frame = page.blocks.find((block) => block.type === 'textFrame');
+    expect(frame).toMatchObject({ blocks: [{ type: 'table', rows: [[{ blocks: [{ content: [
+      { text: '☐ ' }, { text: 'Brüche wiederholen' }, { text: '\n' }, { text: '☑ ' }, { text: 'Beispiel gelöst' },
+    ] }] }]] }] });
+    expect(page.issues).toContainEqual(expect.objectContaining({ code: 'unsupported-element', severity: 'simplified', sourceElement: 'table-Tag' }));
+    expect(page.blocks.filter((block) => block.type === 'pdfPage')).toHaveLength(2);
+    expect(page.counts.inkStrokes).toBe(3);
+
+    const done = studyWorksheetPageXml('assets/p.png', 'files/w.pdf').replace('completed="false"', 'completed="true"');
+    expect(convertDesktopPageXml(parseXml(done), { ...ASSETS, ink: WORKSHEET_INK }).taskState).toBe('done');
+
+    const imageFallback = convertDesktopPageXml(parseXml(studyWorksheetPageXml('assets/p.png', 'files/w.pdf')), {
+      asset: (path) => path === 'files/w.pdf' ? undefined : ASSETS.asset(path),
+      ink: WORKSHEET_INK,
+    });
+    expect(imageFallback.blocks.slice(0, 2)).toEqual([
+      expect.objectContaining({ type: 'image', background: true }),
+      expect.objectContaining({ type: 'image', background: true }),
+    ]);
+    expect(imageFallback.taskState).toBe('open');
+    expect(imageFallback.tags).toContain('wichtig');
+    expect(imageFallback.counts.inkStrokes).toBe(3);
+  });
+
   it('puts printout pages behind the handwriting as locked PDF pages linked to the original file', () => {
     const page = convertDesktopPageXml(parseXml(worksheetPageXml('assets/p.png', 'files/w.pdf')), { ...ASSETS, ink: WORKSHEET_INK });
     expect(page.title).toBe('Arbeitsblatt Brüche');

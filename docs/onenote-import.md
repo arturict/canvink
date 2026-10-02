@@ -125,6 +125,14 @@ Preparation requires exactly one reviewed source notebook, reads only the struct
 
 A bm-size synthetic export (398 pages, 204,500 strokes, 2.1 million ink points, 1,046 printout pages) imports completely; see `scripts/onenote-import-bench.mjs` and `scripts/onenote-synthetic-export.mjs`.
 
+Desktop-export tables retain their paragraph tags and contribute to the page's
+open/done task state. Checkboxes inside table cells are visible `☐`/`☑` text,
+because Canvink's table cells currently hold text only. The fidelity report marks
+this simplification; the markers do not become interactive checklist controls.
+Synthetic browser acceptance covers a study table beside PDF printouts and ink,
+reload, and finding the imported page with `is:open tag:wichtig`. This does not
+establish fidelity for a private notebook or a real Microsoft account.
+
 ### Default acquisition bounds
 
 | Boundary | Default |

@@ -61,6 +61,23 @@ export const WORKSHEET_INK: OneNoteDesktopInkFile = {
   },
 };
 
+/** An invented study plan in a table, beside the worksheet's printouts and ink. */
+export function studyWorksheetPageXml(printoutAsset: string, pdfFile: string): string {
+  return worksheetPageXml(printoutAsset, pdfFile).replace('</one:Page>', `
+  <one:TagDef index="0" type="0" symbol="3" name="Aufgabe"/>
+  <one:TagDef index="1" type="1" symbol="13" name="Wichtig"/>
+  <one:Outline>
+    <one:Position x="36.0" y="110.0" z="5"/><one:Size width="400.0" height="50.0"/>
+    <one:OEChildren><one:OE><one:Table>
+      <one:Row><one:Cell><one:OEChildren>
+        <one:OE><one:Tag index="0" completed="false"/><one:Tag index="1"/><one:T><![CDATA[Brüche wiederholen]]></one:T></one:OE>
+        <one:OE><one:Tag index="0" completed="true"/><one:T><![CDATA[Beispiel gelöst]]></one:T></one:OE>
+      </one:OEChildren></one:Cell></one:Row>
+    </one:Table></one:OE></one:OEChildren>
+  </one:Outline>
+</one:Page>`);
+}
+
 /** A text-heavy page: heading, formatted text, lists, a to-do, a table, a flow picture, ink words and a subpage. */
 export function notesPageXml(pictureAsset: string): string {
   return `<?xml version="1.0"?>
@@ -110,7 +127,7 @@ export function subpageXml(): string {
 }
 
 /** A complete synthetic export as path → bytes, laid out as the PowerShell exporter writes it. */
-export async function syntheticDesktopExport(): Promise<Map<string, Uint8Array>> {
+export async function syntheticDesktopExport(options: { studyWorksheet?: boolean } = {}): Promise<Map<string, Uint8Array>> {
   const encoder = new TextEncoder();
   const pngHash = await sha256Hex(FIXTURE_PNG);
   const pdfHash = await sha256Hex(FIXTURE_PDF);
@@ -146,7 +163,7 @@ export async function syntheticDesktopExport(): Promise<Map<string, Uint8Array>>
   };
   return new Map<string, Uint8Array>([
     ['manifest.json', encoder.encode(JSON.stringify(manifest))],
-    ['pages/0001.xml', encoder.encode(worksheetPageXml(png, pdf))],
+    ['pages/0001.xml', encoder.encode((options.studyWorksheet ? studyWorksheetPageXml : worksheetPageXml)(png, pdf))],
     ['ink/0001.json', encoder.encode(JSON.stringify(WORKSHEET_INK))],
     ['pages/0002.xml', encoder.encode(notesPageXml(png))],
     ['ink/0002.json', encoder.encode(JSON.stringify(NOTES_INK))],

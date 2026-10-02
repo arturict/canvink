@@ -10,3 +10,7 @@ minimumReleaseAgeExclude:
 onlyBuiltDependencies:
   - esbuild
   - workerd
+overrides:
+  # Miniflare pins these exact versions; keep its API while applying security patches.
+  'miniflare>sharp': 0.35.4
+  'miniflare>undici': 7.29.1

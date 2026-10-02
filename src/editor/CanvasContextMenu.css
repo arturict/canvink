@@ -1,0 +1,143 @@
+/* The canvas context menu (OneNote's right-click menu on the page). */
+.canvas-context-menu {
+  /* Same surface as the shared app menu (src/ui/ContextMenu, .context-menu). */
+  position: fixed;
+  z-index: 1300;
+  min-width: 220px;
+  max-width: min(320px, calc(100vw - 12px));
+  max-height: calc(100vh - 12px);
+  overflow-y: auto;
+  padding: var(--menu-pad, 5px);
+  color: var(--app-ink, #26302c);
+  font-size: var(--menu-font-size, 13px);
+  border: 1px solid var(--menu-border, #d8dfda);
+  border-radius: var(--menu-radius, 10px);
+  background: var(--menu-bg, #fffffd);
+  box-shadow: var(--menu-shadow, 0 12px 30px rgb(30 41 37 / 20%));
+  outline: none;
+  animation: app-menu-in 90ms ease-out;
+}
+
+.canvas-context-menu__item {
+  width: 100%;
+  min-height: var(--menu-item-height, 32px);
+  padding: 0 10px 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  border: 0;
+  border-radius: var(--menu-item-radius, 6px);
+  background: transparent;
+  cursor: default;
+}
+
+.canvas-context-menu__item:hover,
+.canvas-context-menu__item:focus-visible,
+.canvas-context-menu__item:focus {
+  background: var(--menu-hover, #edf4ef);
+  outline: none;
+}
+
+.canvas-context-menu__item[aria-disabled='true'] {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.canvas-context-menu__icon {
+  width: 20px;
+  flex: 0 0 20px;
+  display: grid;
+  place-items: center;
+  color: var(--app-muted, #65716b);
+}
+
+.canvas-context-menu__icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.canvas-context-menu__label {
+  flex: 1;
+}
+
+.canvas-context-menu__shortcut {
+  color: #7a857f;
+  font-size: 11.5px;
+}
+
+.canvas-context-menu__separator {
+  height: 1px;
+  margin: 4px 6px;
+  background: #e5e9e6;
+}
+
+.canvas-context-menu__heading {
+  padding: 6px 8px 3px 34px;
+  color: #6b766f;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.canvas-context-menu__swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 2px 6px 4px 34px;
+}
+
+.canvas-context-menu__swatch {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.canvas-context-menu__swatch:hover,
+.canvas-context-menu__swatch:focus {
+  background: var(--menu-hover, #edf4ef);
+  outline: none;
+}
+
+.canvas-context-menu__swatch:focus-visible {
+  outline: 2px solid #2563eb;
+}
+
+.canvas-context-menu__swatch[aria-checked='true'] {
+  border-color: #1f4d3d;
+  background: rgb(61 107 88 / 12%);
+}
+
+:root[data-touch-mode="on"] {
+  .canvas-context-menu__item {
+    min-height: 42px;
+    font-size: 14px;
+  }
+
+  .canvas-context-menu__swatch {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+.canvas-context-menu__color {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgb(30 41 37 / 22%);
+}
+
+.canvas-context-menu__width {
+  border-radius: 50%;
+  background: #26302c;
+}

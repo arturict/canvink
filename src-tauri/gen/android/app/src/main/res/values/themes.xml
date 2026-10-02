@@ -1,0 +1,10 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Paper behind the WebView until the page paints, so starting never flashes white or black. -->
+    <style name="Theme.canvink" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/canvink_paper</item>
+        <item name="colorPrimary">@color/canvink_ink</item>
+        <item name="colorAccent">@color/canvink_accent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

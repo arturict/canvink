@@ -1,0 +1,27 @@
+[
+  {
+    "$id": "canvink-sync",
+    "name": "Canvink encrypted sync",
+    "enabled": true,
+    "logging": true,
+    "runtime": "node-22",
+    "buildSpecification": "s-1vcpu-512mb",
+    "runtimeSpecification": "s-1vcpu-512mb",
+    "deploymentRetention": 7,
+    "execute": ["users"],
+    "scopes": [
+      "rows.read",
+      "rows.write",
+      "teams.read",
+      "files.read",
+      "files.write"
+    ],
+    "events": [],
+    "schedule": "",
+    "timeout": 120,
+    "entrypoint": "dist/main.js",
+    "commands": "npm ci && npm run build",
+    "ignore": ["node_modules", "coverage", "test", ".env", ".env.*"],
+    "path": "../functions/canvink-sync"
+  }
+]

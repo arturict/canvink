@@ -1,0 +1,10 @@
+{
+  "projectId": "<PROJECT_ID>",
+  "endpoint": "https://<REGION>.cloud.appwrite.io/v1",
+  "includes": {
+    "functions": "./appwrite/functions.json",
+    "tablesDB": "./appwrite/tablesdb.json",
+    "tables": "./appwrite/tables.json",
+    "buckets": "./appwrite/buckets.json"
+  }
+}

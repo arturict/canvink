@@ -1,0 +1,246 @@
+diff --git a/src/jxg.js b/src/jxg.js
+index 52b449995c0ba9caaf99759b83416f7309ca28ce..36e09a1634916adf0b1a8bad1f7f4884c5c72a25 100644
+--- a/src/jxg.js
++++ b/src/jxg.js
+@@ -74,7 +74,7 @@ try {
+  * @param {Boolean} [toLower=false] If true the keys are convert to lower case. This is needed for visProp, see JXG#copyAttributes
+  */
+ jxg.extend = function (object, extension, onlyOwn, toLower) {
+-    var e, e2;
++    var e, e2, inheritedDescriptor;
+ 
+     onlyOwn = onlyOwn || false;
+     toLower = toLower || false;
+@@ -89,7 +89,24 @@ jxg.extend = function (object, extension, onlyOwn, toLower) {
+                 e2 = e;
+             }
+ 
+-            object[e2] = extension[e];
++            inheritedDescriptor = Object.getOwnPropertyDescriptor(Object.prototype, e2);
++            if (
++                !Object.prototype.hasOwnProperty.call(object, e2) &&
++                inheritedDescriptor &&
++                inheritedDescriptor.writable === false
++            ) {
++                // Tauri may freeze Object.prototype. Define an own property so
++                // extensions such as Complex#toString remain compatible without
++                // disabling the desktop prototype hardening.
++                Object.defineProperty(object, e2, {
++                    configurable: true,
++                    enumerable: true,
++                    value: extension[e],
++                    writable: true
++                });
++            } else {
++                object[e2] = extension[e];
++            }
+         }
+     }
+ };
+diff --git a/src/base/board.js b/src/base/board.js
+index 68a4aef78727c62b675853918729d850e0fd43ac..f91226d6b7666c44a6d4444b3001843bf63d3bb3 100644
+--- a/src/base/board.js
++++ b/src/base/board.js
+@@ -47,7 +47,6 @@ import Mat from '../math/math.js';
+ import Geometry from '../math/geometry.js';
+ import Complex from '../math/complex.js';
+ import Statistics from '../math/statistics.js';
+-import JessieCode from '../parser/jessiecode.js';
+ import Color from '../utils/color.js';
+ import Type from '../utils/type.js';
+ import EventEmitter from '../utils/event.js';
+@@ -226,8 +225,14 @@ JXG.Board = function (container, renderer, id,
+      * @type Number
+      */
+     this.dimension = 2;
+-    this.jc = new JessieCode();
+-    this.jc.use(this);
++    // Canvink hardening: JessieCode is intentionally unavailable. The app's
++    // adapter creates numeric curves only and never parses executable strings.
++    this.jc = Object.freeze({
++        creator: Object.freeze({ clearCache: function () {} }),
++        use: function () { return this; },
++        parse: function () { throw new Error('JessieCode is disabled in this build.'); },
++        snippet: function () { throw new Error('JessieCode is disabled in this build.'); }
++    });
+ 
+     /**
+      * Coordinates of the boards origin. This a object with the two properties
+diff --git a/src/index.js b/src/index.js
+index cce138d332b4a2b344ecdbbeba9a5fc6e0bd76f8..2028edcfd702e758dd6900dbe1b41d81d7d8818b 100644
+--- a/src/index.js
++++ b/src/index.js
+@@ -58,7 +58,6 @@ import './utils/base64.js';
+ import './utils/uuid.js';
+ import './utils/encoding.js';
+ import './parser/datasource.js';
+-import './parser/jessiecode.js';
+ import './parser/prefix.js';
+ import './parser/ca.js';
+ import './utils/dump.js';
+@@ -122,7 +121,6 @@ export const Curve = JXG.Curve;
+ export const GeometryElement = JXG.GeometryElement;
+ export const Group = JXG.Group;
+ export const Image = JXG.Image;
+-export const JessieCode = JXG.JessieCode;
+ export const Prefix = JXG.PrefixParser;
+ export const Line = JXG.Line;
+ export const Point = JXG.Point;
+diff --git a/src/jsxgraph.js b/src/jsxgraph.js
+index 4df91a278bd82d4eccc226efe217ef6455ba026e..7422c6182063b52727bf37422563c4ef7500b00c 100644
+--- a/src/jsxgraph.js
++++ b/src/jsxgraph.js
+@@ -795,153 +795,4 @@ JXG.JSXGraph = {
+     }
+ };
+ 
+-// JessieScript/JessieCode startup:
+-// Search for script tags of type text/jessiecode and execute them.
+-if (Env.isBrowser && typeof window === 'object' && typeof document === 'object') {
+-    Env.addEvent(window, 'load',
+-        function () {
+-            var type, i, j, div, id,
+-                board, txt, width, height, maxWidth, aspectRatio,
+-                cssClasses, bbox, axis, grid, code, src, request,
+-                postpone = false,
+-
+-                scripts = document.getElementsByTagName('script'),
+-                init = function (code, type, bbox) {
+-                    var board = JXG.JSXGraph.initBoard(id, {
+-                        boundingbox: bbox,
+-                        keepaspectratio: true,
+-                        grid: grid,
+-                        axis: axis,
+-                        showReload: true
+-                    });
+-
+-                    if (type.toLowerCase().indexOf('script') > -1) {
+-                        board.construct(code);
+-                    } else {
+-                        try {
+-                            board.jc.parse(code);
+-                        } catch (e2) {
+-                            JXG.debug(e2);
+-                        }
+-                    }
+-
+-                    return board;
+-                },
+-                makeReload = function (board, code, type, bbox) {
+-                    return function () {
+-                        var newBoard;
+-
+-                        JXG.JSXGraph.freeBoard(board);
+-                        newBoard = init(code, type, bbox);
+-                        newBoard.reload = makeReload(newBoard, code, type, bbox);
+-                    };
+-                };
+-
+-            for (i = 0; i < scripts.length; i++) {
+-                type = scripts[i].getAttribute("type", false);
+-
+-                if (
+-                    Type.exists(type) &&
+-                    (type.toLowerCase() === "text/jessiescript" ||
+-                        type.toLowerCase() === "jessiescript" ||
+-                        type.toLowerCase() === "text/jessiecode" ||
+-                        type.toLowerCase() === 'jessiecode')
+-                ) {
+-                    cssClasses = scripts[i].getAttribute("class", false) || "";
+-                    width = scripts[i].getAttribute("width", false) || "";
+-                    height = scripts[i].getAttribute("height", false) || "";
+-                    maxWidth = scripts[i].getAttribute("maxwidth", false) || "100%";
+-                    aspectRatio = scripts[i].getAttribute("aspectratio", false) || "1/1";
+-                    bbox = scripts[i].getAttribute("boundingbox", false) || "-5, 5, 5, -5";
+-                    id = scripts[i].getAttribute("container", false);
+-                    src = scripts[i].getAttribute("src", false);
+-
+-                    bbox = bbox.split(",");
+-                    if (bbox.length !== 4) {
+-                        bbox = [-5, 5, 5, -5];
+-                    } else {
+-                        for (j = 0; j < bbox.length; j++) {
+-                            bbox[j] = parseFloat(bbox[j]);
+-                        }
+-                    }
+-                    axis = Type.str2Bool(scripts[i].getAttribute("axis", false) || 'false');
+-                    grid = Type.str2Bool(scripts[i].getAttribute("grid", false) || 'false');
+-
+-                    if (!Type.exists(id)) {
+-                        id = "jessiescript_autgen_jxg_" + i;
+-                        div = document.createElement('div');
+-                        div.setAttribute("id", id);
+-
+-                        txt = width !== "" ? "width:" + width + ";" : "";
+-                        txt += height !== "" ? "height:" + height + ";" : "";
+-                        txt += maxWidth !== "" ? "max-width:" + maxWidth + ";" : "";
+-                        txt += aspectRatio !== "" ? "aspect-ratio:" + aspectRatio + ";" : "";
+-
+-                        div.setAttribute("style", txt);
+-                        div.setAttribute("class", "jxgbox " + cssClasses);
+-                        try {
+-                            document.body.insertBefore(div, scripts[i]);
+-                        } catch (e) {
+-                            // there's probably jquery involved...
+-                            if (Type.exists(jQuery) && typeof jQuery === 'object') {
+-                                jQuery(div).insertBefore(scripts[i]);
+-                            }
+-                        }
+-                    } else {
+-                        div = document.getElementById(id);
+-                    }
+-
+-                    code = "";
+-
+-                    if (Type.exists(src)) {
+-                        postpone = true;
+-                        request = new XMLHttpRequest();
+-                        request.open("GET", src);
+-                        request.overrideMimeType("text/plain; charset=x-user-defined");
+-                        /* jshint ignore:start */
+-                        request.addEventListener("load", function () {
+-                            if (this.status < 400) {
+-                                code = this.responseText + "\n" + code;
+-                                board = init(code, type, bbox);
+-                                board.reload = makeReload(board, code, type, bbox);
+-                            } else {
+-                                throw new Error(
+-                                    "\nJSXGraph: failed to load file",
+-                                    src,
+-                                    ":",
+-                                    this.responseText
+-                                );
+-                            }
+-                        });
+-                        request.addEventListener("error", function (e) {
+-                            throw new Error("\nJSXGraph: failed to load file", src, ":", e);
+-                        });
+-                        /* jshint ignore:end */
+-                        request.send();
+-                    } else {
+-                        postpone = false;
+-                    }
+-
+-                    if (document.getElementById(id)) {
+-                        code = scripts[i].innerHTML;
+-                        code = code.replace(/<!\[CDATA\[/g, "").replace(/\]\]>/g, "");
+-                        scripts[i].innerHTML = code;
+-
+-                        if (!postpone) {
+-                            // Do no wait for data from "src" attribute
+-                            board = init(code, type, bbox);
+-                            board.reload = makeReload(board, code, type, bbox);
+-                        }
+-                    } else {
+-                        JXG.debug(
+-                            "JSXGraph: Apparently the div injection failed. Can't create a board, sorry."
+-                        );
+-                    }
+-                }
+-            }
+-        },
+-        window
+-    );
+-}
+-
+ export default JXG.JSXGraph;

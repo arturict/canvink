@@ -1,0 +1,41 @@
+/*
+ * Minimal integration styles adapted from JSXGraph 1.13.1's jsxgraph.css.
+ * JSXGraph is licensed MIT OR LGPL-3.0-or-later; dependency provenance is
+ * recorded in the repository's generated third-party notices.
+ */
+.jxgbox {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  border-radius: 0.35rem;
+  background: Canvas;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  user-select: none;
+}
+
+.JXGtext,
+.JXGinfobox {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  white-space: nowrap;
+}
+
+.JXGinfobox {
+  z-index: 20;
+  padding: 0.2rem 0.35rem;
+  border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+  border-radius: 0.25rem;
+  background: Canvas;
+  color: CanvasText;
+}
+
+.JXG_navigation {
+  position: absolute;
+  z-index: 20;
+  right: 0.35rem;
+  bottom: 0.35rem;
+}

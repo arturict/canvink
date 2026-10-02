@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The splash screen's icon: the app tile (dark ink, rounded) with the mark, inside the splash circle. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#1E2925"
+        android:pathData="M42,29h24a13,13 0,0 1,13 13v24a13,13 0,0 1,-13 13h-24a13,13 0,0 1,-13 -13v-24a13,13 0,0 1,13 -13Z" />
+    <group
+        android:scaleX="0.95"
+        android:scaleY="0.95"
+        android:translateX="24.55"
+        android:translateY="23.125">
+        <path
+            android:fillColor="#F7F5EF"
+            android:pathData="M18,18h24a4,4 0,0 1,4 4v20a4,4 0,0 1,-4 4H18V18Z" />
+        <path
+            android:strokeColor="#D7653B"
+            android:strokeWidth="4"
+            android:strokeLineCap="round"
+            android:pathData="M18,18v28M27,25h11M27,32h11" />
+        <path
+            android:fillColor="#F1B654"
+            android:strokeColor="#1E2925"
+            android:strokeWidth="2"
+            android:strokeLineJoin="round"
+            android:pathData="M29,43l13,-13l4,4l-13,13l-6,2l2,-6Z" />
+    </group>
+</vector>

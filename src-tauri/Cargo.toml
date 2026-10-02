@@ -1,6 +1,6 @@
 [package]
 name = "canvink"
-version = "0.1.0"
+version = "0.3.4"
 description = "Local-first canvas notebook"
 authors = ["Canvink contributors"]
 edition = "2021"
@@ -21,9 +21,39 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "=2.6.3", features = [] }
 
 [dependencies]
-rusqlite = { version = "=0.40.2", features = ["bundled"] }
+base64 = "=0.22.1"
+getrandom = "=0.3.4"
+numbat = { version = "=1.23.0", default-features = false }
+rusqlite = { version = "=0.40.1", features = ["bundled"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+sha2 = "=0.10.9"
 tauri = { version = "=2.11.5", features = [] }
-tauri-plugin-single-instance = "=2.4.4"
+tauri-plugin-deep-link = "=2.4.10"
 thiserror = "2.0"
+url = "=2.5.8"
+zeroize = "=1.8.2"
+
+# Desktop uses the platform TLS stack. Android has no system OpenSSL to link
+# against, so it builds OpenSSL from source and reads the system CA store.
+[target.'cfg(not(target_os = "android"))'.dependencies]
+reqwest = { version = "=0.13.4", default-features = false, features = ["json", "native-tls"] }
+
+[target.'cfg(target_os = "android")'.dependencies]
+reqwest = { version = "=0.13.4", default-features = false, features = ["json", "native-tls-vendored"] }
+tauri-plugin-opener = "=2.5.3"
+
+# Single instance, the updater and relaunch exist only on desktop; the Android
+# app is replaced through the system package installer.
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-single-instance = { version = "=2.4.3", features = ["deep-link"] }
+tauri-plugin-process = "=2.3.1"
+tauri-plugin-updater = "=2.11.0"
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "=0.62.2", features = ["Foundation", "Foundation_Collections", "Globalization", "Graphics_Imaging", "Media_Ocr", "Storage_Streams", "Win32_System_WinRT"] }
+windows-sys = { version = "=0.61.2", features = ["Win32_Foundation", "Win32_Security_Cryptography", "Win32_Storage_FileSystem"] }
+
+[patch.crates-io]
+# Security-only vendor patch documented in vendor/numbat-exchange-rates-0.6.0/PATCH.md.
+numbat-exchange-rates = { path = "vendor/numbat-exchange-rates-0.6.0" }

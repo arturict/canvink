@@ -1,0 +1,450 @@
+/* "Notizbuch-Einstellungen": one calm column of sections on an 8 px rhythm,
+   a dialog on wide screens and the whole screen on phones. It reuses the
+   page settings' paper tiles, segments, swatches and switch. */
+.nb-settings-overlay {
+  z-index: 410;
+}
+
+.nb-settings {
+  box-sizing: border-box;
+  width: min(560px, 100%);
+  max-height: min(820px, calc(100dvh - 40px));
+  display: flex;
+  flex-direction: column;
+  color: var(--app-ink);
+  border-radius: 14px;
+  background: var(--app-paper);
+  box-shadow: var(--menu-shadow);
+  outline: none;
+}
+
+.nb-settings__header {
+  padding: 16px 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--app-line);
+}
+
+.nb-settings__dot {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.nb-settings__heading {
+  min-width: 0;
+  flex: 1;
+}
+
+.nb-settings__heading h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.nb-settings__heading p {
+  margin: 2px 0 0;
+  overflow: hidden;
+  color: var(--app-muted);
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nb-settings__body {
+  min-height: 0;
+  padding: 8px 16px 20px;
+  display: grid;
+  gap: 4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.nb-settings__section {
+  padding: 16px 0;
+  gap: 12px;
+  border-bottom: 1px solid var(--app-line);
+}
+
+.nb-settings__section:last-of-type {
+  border-bottom: 0;
+}
+
+.nb-settings__section > h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.nb-settings__where {
+  color: var(--app-muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.nb-settings__notice {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  color: #7a5200;
+  border-radius: 8px;
+  background: #fff3c4;
+  font-size: 12.5px;
+}
+
+.nb-settings__hint {
+  margin: 0;
+  color: var(--app-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.nb-settings__row {
+  min-width: 0;
+  min-height: 32px;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.nb-settings__row-label {
+  color: var(--app-ink);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.nb-settings__row-control {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.nb-settings__row--status {
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.nb-settings__row .settings-row {
+  grid-column: 1 / -1;
+}
+
+/* The shared RuleStyleControls rows use the page settings' grid; line them up with ours. */
+.nb-settings .settings-row {
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 8px 12px;
+}
+
+.nb-settings .settings-row__label {
+  color: var(--app-ink);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.nb-settings .settings-row--switch {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.nb-settings .settings-row--switch .settings-row__label {
+  display: grid;
+  gap: 2px;
+}
+
+.nb-settings .settings-row--switch .settings-row__label small {
+  color: var(--app-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.nb-settings .paper-menu__segments {
+  flex-wrap: wrap;
+}
+
+.nb-settings .paper-menu__segments > button {
+  min-width: 0;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.nb-settings .paper-menu__swatches {
+  padding: 0;
+  gap: 8px;
+}
+
+.nb-settings .paper-menu__swatch {
+  width: 24px;
+  height: 24px;
+}
+
+.nb-settings__input,
+.nb-settings__select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 34px;
+  padding: 0 10px;
+  color: var(--app-ink);
+  border: 1px solid #d9dfdb;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+}
+
+.nb-settings__input:disabled,
+.nb-settings__select:disabled {
+  color: var(--app-muted);
+  background: #f4f6f4;
+}
+
+.nb-settings__input[aria-invalid='true'] {
+  border-color: #c2410c;
+}
+
+.nb-settings__icons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.nb-settings__icon-button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.nb-settings__icon-button--none {
+  color: var(--app-muted);
+}
+
+.nb-settings__icon-button:hover:not(:disabled) {
+  background: var(--menu-hover);
+}
+
+.nb-settings__icon-button[aria-pressed='true'] {
+  border-color: rgb(61 107 88 / 55%);
+  background: var(--menu-active);
+}
+
+.nb-settings__icon-button:disabled {
+  opacity: 0.5;
+}
+
+.nb-settings__input--icon {
+  width: 64px;
+  min-height: 32px;
+  padding: 0 6px;
+  text-align: center;
+}
+
+.nb-settings__facts {
+  margin: 4px 0 0;
+  padding-top: 12px;
+  display: grid;
+  gap: 6px;
+  border-top: 1px dashed var(--app-line);
+}
+
+.nb-settings__facts > div {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 12px;
+  font-size: 12.5px;
+}
+
+.nb-settings__facts dt {
+  color: var(--app-muted);
+}
+
+.nb-settings__facts dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.nb-settings__action {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+}
+
+.nb-settings__result {
+  min-height: 0;
+  display: grid;
+  gap: 2px;
+  color: var(--app-muted);
+  font-size: 12px;
+}
+
+.nb-settings__result:empty {
+  display: none;
+}
+
+.nb-settings__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.nb-settings__share-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.nb-settings__body button:not(.paper-tile):not(.paper-menu__swatch):not(.nb-settings__icon-button):not(.switch):not([aria-pressed]),
+.nb-settings__row--status > button {
+  min-height: 34px;
+  padding: 0 14px;
+  color: var(--app-ink);
+  border: 1px solid #cfd6d1;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.nb-settings__body button:not(.paper-tile):not(.paper-menu__swatch):not(.nb-settings__icon-button):not(.switch):not([aria-pressed]):hover:not(:disabled) {
+  background: var(--menu-hover);
+}
+
+.nb-settings__body button:disabled {
+  opacity: 0.5;
+}
+
+.nb-settings__body .nb-settings__danger-button {
+  color: #b42318;
+  border-color: #efc2bd;
+}
+
+.nb-settings__body .nb-settings__danger-button:hover:not(:disabled) {
+  background: #fdecea;
+}
+
+.nb-settings__danger {
+  padding: 12px;
+  border: 1px solid #efc2bd;
+  border-radius: 10px;
+}
+
+/* Phones: the whole screen, a header that stays, one column. */
+@media (max-width: 640px) {
+  .nb-settings-overlay {
+    padding: 0;
+    place-items: stretch;
+  }
+
+  .nb-settings {
+    width: 100%;
+    height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .nb-settings__header {
+    padding: max(12px, env(safe-area-inset-top)) 12px 12px 16px;
+  }
+
+  .nb-settings__body {
+    padding: 4px 16px max(24px, env(safe-area-inset-bottom));
+  }
+
+  .nb-settings__row,
+  .nb-settings .settings-row,
+  .nb-settings__facts > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .nb-settings .settings-row--switch,
+  .nb-settings__row--status {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .nb-settings__facts > div {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .nb-settings__input,
+  .nb-settings__select {
+    font-size: 16px; /* keeps iOS from zooming into the field */
+  }
+
+  .nb-settings .paper-tile .paper-menu__sample {
+    height: 56px;
+  }
+}
+
+/* Touch mode: every target is 44 px. */
+:root[data-touch-mode='on'] {
+  .nb-settings__input,
+  .nb-settings__select,
+  .nb-settings__icon-button,
+  .nb-settings__input--icon,
+  .nb-settings__body button:not(.paper-tile):not(.paper-menu__swatch):not(.switch):not([aria-pressed]) {
+    min-height: 44px;
+  }
+
+  .nb-settings__icon-button {
+    width: 44px;
+  }
+
+  .nb-settings .paper-menu__segments > button {
+    min-height: 44px;
+  }
+
+  .nb-settings .paper-menu__swatch {
+    width: 44px;
+    height: 44px;
+    border-width: 8px;
+    background-clip: content-box;
+  }
+
+  .nb-settings .paper-menu__swatches {
+    gap: 0;
+  }
+
+  .nb-settings__header .v2-icon-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* The notebook's own symbol takes the colour dot's place in the switcher. */
+.notebook-color--icon {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* The notebook's name in the page header opens its settings. */
+.page-header__meta .page-header__notebook {
+  min-height: 0;
+  height: auto;
+  padding: 0;
+  color: inherit;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  box-shadow: none;
+  font: inherit;
+  text-decoration: underline transparent;
+  text-underline-offset: 2px;
+}
+
+.page-header__meta .page-header__notebook:hover {
+  text-decoration-color: currentcolor;
+}

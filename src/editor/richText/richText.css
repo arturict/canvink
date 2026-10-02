@@ -1,0 +1,355 @@
+.canvink-rich-text-editor {
+  position: relative;
+  isolation: isolate;
+}
+
+.canvink-rich-text-editor__surface {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+.canvink-rich-text-content {
+  min-height: 100%;
+  padding: var(--canvink-text-padding, 6px);
+  line-height: var(--canvink-text-line-height, inherit);
+  outline: none;
+  white-space: pre-wrap;
+}
+
+.canvink-rich-text-content:focus-visible {
+  box-shadow: inset 0 0 0 2px rgb(37 99 235 / 55%);
+}
+
+.canvink-rich-text-content table {
+  width: 100%;
+  border-spacing: 0;
+  border-collapse: collapse;
+  table-layout: var(--canvink-table-layout, fixed);
+}
+
+.canvink-rich-text-content th,
+.canvink-rich-text-content td {
+  min-width: 72px;
+  padding: var(--canvink-cell-padding, 5px 7px);
+  vertical-align: top;
+  border: 1px solid rgb(71 85 105 / 45%);
+}
+
+.canvink-rich-text-content th {
+  background: rgb(226 232 240 / 78%);
+  font-weight: 650;
+}
+
+.canvink-rich-text-content .selectedCell::after {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  content: '';
+  pointer-events: none;
+  background: rgb(37 99 235 / 14%);
+}
+
+.canvink-rich-text-content ul,
+.canvink-rich-text-content ol {
+  padding-inline-start: 1.5rem;
+}
+
+.canvink-check-item {
+  display: flex;
+  gap: 0.45rem;
+  align-items: baseline;
+}
+
+.canvink-check-item.is-checked {
+  color: #64748b;
+  text-decoration: line-through;
+}
+
+.canvink-rich-text-toolbar {
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: calc(100% + 6px);
+  z-index: 20;
+  display: grid;
+  gap: 4px;
+  width: max-content;
+  max-width: min(760px, calc(100vw - 32px));
+  padding: 6px;
+  color: #0f172a;
+  visibility: hidden;
+  background: rgb(255 255 255 / 97%);
+  border: 1px solid rgb(71 85 105 / 30%);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgb(15 23 42 / 18%);
+  opacity: 0;
+  transform: translateY(3px);
+  transition: opacity 120ms ease, transform 120ms ease, visibility 120ms;
+}
+
+.canvink-rich-text-editor:focus-within .canvink-rich-text-toolbar {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.canvink-rich-text-toolbar__row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  max-width: 100%;
+  padding-bottom: 1px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.canvink-rich-text-toolbar__field select,
+.canvink-rich-text-toolbar__button,
+.canvink-rich-text-toolbar__link button,
+.canvink-rich-text-toolbar__link input {
+  min-height: 30px;
+  font: inherit;
+  color: inherit;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+}
+
+.canvink-rich-text-toolbar__field select,
+.canvink-rich-text-toolbar__button,
+.canvink-rich-text-toolbar__link button {
+  padding: 4px 8px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.canvink-rich-text-toolbar__button[aria-pressed='true'] {
+  color: #1d4ed8;
+  background: #dbeafe;
+  border-color: #60a5fa;
+}
+
+.canvink-rich-text-toolbar__button:disabled,
+.canvink-rich-text-toolbar select:disabled {
+  color: #64748b;
+  cursor: not-allowed;
+  background: #f1f5f9;
+  opacity: 0.72;
+}
+
+.canvink-rich-text-toolbar :focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.canvink-rich-text-toolbar__link {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: end;
+  padding-top: 4px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.canvink-rich-text-toolbar__link label {
+  display: grid;
+  gap: 2px;
+  min-width: min(230px, 100%);
+  font-size: 0.75rem;
+}
+
+.canvink-rich-text-toolbar__link input {
+  width: 100%;
+  padding: 4px 7px;
+}
+
+.canvink-rich-text-toolbar__status {
+  min-height: 1em;
+  margin: 0;
+  overflow: hidden;
+  font-size: 0.7rem;
+  color: #475569;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.canvink-rich-text-toolbar .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvink-rich-text-toolbar {
+    transition: none;
+  }
+}
+
+/* Formatting controls docked into the canvas toolbar while a text container
+   has focus (see RichTextEditor). One compact row, no floating card. */
+.canvink-rich-text-toolbar-dock {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.canvink-rich-text-toolbar-dock .canvink-rich-text-toolbar {
+  position: static;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  width: auto;
+  max-width: none;
+  padding: 0;
+  visibility: visible;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  opacity: 1;
+  transform: none;
+}
+
+.canvink-rich-text-toolbar-dock .canvink-rich-text-toolbar__row {
+  flex-wrap: nowrap;
+  overflow: visible;
+}
+
+.canvink-rich-text-toolbar-dock .canvink-rich-text-toolbar__row + .canvink-rich-text-toolbar__row {
+  padding-inline-start: 6px;
+  border-inline-start: 1px solid #e2e8f0;
+}
+
+.canvink-rich-text-toolbar-dock .canvink-rich-text-toolbar__status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.canvink-rich-text-content p,
+.canvink-rich-text-content h1,
+.canvink-rich-text-content h2,
+.canvink-rich-text-content h3,
+.canvink-rich-text-content ul,
+.canvink-rich-text-content ol {
+  margin: 0 0 var(--canvink-paragraph-gap, 0.2em);
+}
+
+.canvink-rich-text-content li > p {
+  margin: 0;
+}
+
+.canvink-rich-text-content h1 { font-size: 1.6em; line-height: 1.25; }
+.canvink-rich-text-content h2 { font-size: 1.35em; line-height: 1.3; }
+.canvink-rich-text-content h3 { font-size: 1.15em; line-height: 1.35; }
+
+.canvink-rich-text-toolbar-dock .canvink-rich-text-toolbar__field select,
+.canvink-rich-text-toolbar-dock .canvink-rich-text-toolbar__button {
+  min-height: 30px;
+  font-size: 0.8125rem;
+  line-height: 1;
+  background: transparent;
+  border-color: transparent;
+}
+
+.canvink-rich-text-toolbar-dock .canvink-rich-text-toolbar__button {
+  min-width: 30px;
+  padding: 4px 7px;
+  font-weight: 600;
+}
+
+.canvink-rich-text-toolbar-dock .canvink-rich-text-toolbar__field select {
+  padding-inline: 6px;
+  border-color: rgb(54 69 62 / 22%);
+}
+
+.canvink-rich-text-toolbar-dock .canvink-rich-text-toolbar__button:hover:not(:disabled) {
+  background: rgb(54 69 62 / 8%);
+}
+
+.canvink-rich-text-toolbar-dock .canvink-rich-text-toolbar__button:disabled {
+  background: transparent;
+  opacity: 0.4;
+}
+
+.canvink-rich-text-toolbar-dock .canvink-rich-text-toolbar__link {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 8px;
+  z-index: 40;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid rgb(71 85 105 / 30%);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgb(15 23 42 / 18%);
+}
+
+.canvink-rich-text-toolbar-dock .canvink-rich-text-toolbar__button[aria-pressed='true'] {
+  color: #1f4d3d;
+  background: rgb(61 107 88 / 14%);
+  border-color: transparent;
+}
+
+/* Inside a selected canvas container the selection frame already shows focus. */
+.live-canvas-element.is-selected .canvink-rich-text-content:focus-visible {
+  box-shadow: none;
+}
+
+/* "/" block menu (see SlashMenu.tsx). */
+.canvink-slash-menu {
+  position: fixed;
+  z-index: 1000;
+  max-height: 300px;
+  padding: 5px;
+  overflow-y: auto;
+  color: #1e2925;
+  background: #fffefa;
+  border: 1px solid rgb(54 69 62 / 18%);
+  border-radius: 10px;
+  box-shadow: 0 14px 34px rgb(24 32 28 / 18%);
+}
+
+.canvink-slash-menu__item {
+  width: 100%;
+  min-height: 32px;
+  padding: 5px 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font: inherit;
+  font-size: 13px;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+}
+
+.canvink-slash-menu__item[aria-selected='true'],
+.canvink-slash-menu__item:hover {
+  background: rgb(61 107 88 / 12%);
+}
+
+.canvink-slash-menu__item kbd {
+  padding: 1px 5px;
+  color: #65716b;
+  font: 11px ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: rgb(54 69 62 / 7%);
+  border-radius: 4px;
+}
+
+.canvink-slash-menu__empty {
+  margin: 0;
+  padding: 8px 9px;
+  color: #65716b;
+  font-size: 13px;
+}

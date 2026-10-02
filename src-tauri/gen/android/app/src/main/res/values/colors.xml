@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Canvink's paper and ink (src/mobile/mobile.css uses the same values). -->
+    <color name="canvink_paper">#FFF7F5EF</color>
+    <color name="canvink_ink">#FF1E2925</color>
+    <color name="canvink_night">#FF121715</color>
+    <color name="canvink_accent">#FFD7653B</color>
+    <color name="ic_launcher_background">#FF1E2925</color>
+</resources>

@@ -1,334 +1,340 @@
-import {
-  ArrowRight,
-  BookOpen,
-  Check,
-  Code2,
-  Download,
-  FileText,
-  Image as ImageIcon,
-  Layers3,
-  LockKeyhole,
-  MousePointer2,
-  PenLine,
-  Sparkles,
-} from "lucide-react";
-import "./landing.css";
+import { useEffect } from 'react';
+import { DESKTOP_DOWNLOAD_PATH } from '../platform/desktopDownload';
+import { ANDROID_DOWNLOAD_PATH } from './downloads';
+import { LandingVideo, type LandingClip } from './LandingVideo';
+import type { LandingKey } from './strings';
+import { useInstallPrompt } from './useInstallPrompt';
+import { useLandingLanguage } from './useLandingLanguage';
+import './landing.css';
 
-const repositoryUrl = "https://github.com/arturict/canvink";
-const releaseUrl = `${repositoryUrl}/releases/latest`;
+const REPOSITORY_URL = 'https://github.com/arturict/canvink';
+const APP_PATH = '/app';
 
-const alphaFeatures = [
-  "Notebook, section, page, and subpage hierarchy",
-  "Free canvas and printable A4 page modes",
-  "Pressure-aware pen and highlighter",
-  "Movable text, images, and PDF previews",
-  "Local autosave, search, trash, and portable export",
+type T = (key: LandingKey, parameters?: Record<string, string>) => string;
+
+// Recorded from the app by scripts/record-landing-clips.mjs; sizes are the encoded clips'.
+const CLIPS = {
+  notebook: { name: 'notebook', width: 1800, height: 1074, label: 'hero.clip' },
+  collab: { name: 'collab', width: 1100, height: 538, label: 'collab.clip' },
+  ink: { name: 'ink', width: 1000, height: 698, label: 'ink.clip' },
+  markdown: { name: 'markdown', width: 1000, height: 580, label: 'markdown.clip' },
+} satisfies Record<string, Omit<LandingClip, 'label'> & { label: LandingKey }>;
+
+function clip(t: T, entry: (typeof CLIPS)[keyof typeof CLIPS]): LandingClip {
+  return { ...entry, label: t(entry.label) };
+}
+
+/* Inline icons keep the landing chunk free of the app's icon bundle. */
+const ICONS = {
+  globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 0c-3.2 3.3-3.2 14.7 0 18m0-18c3.2 3.3 3.2 14.7 0 18M3.5 12h17',
+  download: 'M12 4v11m0 0 4.5-4.5M12 15 7.5 10.5M4 17v1.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V17',
+  arrow: 'M5 12h14m-5.5-5.5L19 12l-5.5 5.5',
+  check: 'm5 12.5 4.5 4.5L19 7',
+  install: 'M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 14.5v-9ZM9 20h6m-3-4v4',
+  android: 'M6 11a6 6 0 0 1 12 0v6H6v-6Zm3-4L7.5 4.5M15 7l1.5-2.5M9 17v3m6-3v3M3.5 11v5m17-5v5M9.5 11h.01m4.99 0h.01',
+  code: 'm8 8-4 4 4 4m8-8 4 4-4 4M14 5l-4 14',
+} as const;
+
+function Icon({ name, size = 18 }: { name: keyof typeof ICONS; size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d={ICONS[name]} />
+    </svg>
+  );
+}
+
+function Brand({ label }: { label: string }) {
+  return (
+    <a className="lp-brand" href="/" aria-label={label}>
+      <img src="/canvink-mark.svg" alt="" width={30} height={30} />
+      Canvink
+    </a>
+  );
+}
+
+function LanguageToggle({ language, setLanguage, label }: { language: 'de' | 'en'; setLanguage: (language: 'de' | 'en') => void; label: string }) {
+  return (
+    <div className="lp-lang" role="group" aria-label={label}>
+      {(['de', 'en'] as const).map((option) => (
+        <button
+          key={option}
+          type="button"
+          lang={option}
+          aria-pressed={language === option}
+          onClick={() => setLanguage(option)}
+        >
+          {option.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** A hand-drawn double underline that draws itself in once (not with reduced motion). */
+function InkUnderline() {
+  return (
+    <svg className="lp-ink-stroke" viewBox="0 0 400 30" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M6 14C70 6 130 18 200 11s130-10 194 4" pathLength={1} />
+      <path d="M90 25c60-5 130 1 200-3" pathLength={1} />
+    </svg>
+  );
+}
+
+function InstallCard({ t }: { t: T }) {
+  const { canPrompt, installed, install } = useInstallPrompt();
+  return (
+    <article className="lp-card" data-tab="4">
+      <Icon name="install" size={28} />
+      <h3>{t('download.pwa.title')}</h3>
+      <p>{t('download.pwa.text')}</p>
+      {installed ? (
+        <p className="lp-card__done">
+          <Icon name="check" size={16} /> {t('download.pwa.done')}
+        </p>
+      ) : canPrompt ? (
+        <button type="button" className="lp-button" onClick={() => void install()}>
+          <Icon name="install" />
+          {t('download.pwa.button')}
+        </button>
+      ) : (
+        <details className="lp-howto">
+          <summary>{t('download.pwa.howto')}</summary>
+          <ul>
+            <li>{t('download.pwa.chrome')}</li>
+            <li>{t('download.pwa.ios')}</li>
+            <li>{t('download.pwa.android')}</li>
+          </ul>
+        </details>
+      )}
+    </article>
+  );
+}
+
+/** Isolated so the Android viewer can be switched on by setting ANDROID_DOWNLOAD_PATH alone. */
+function AndroidCard({ t, path }: { t: T; path: string }) {
+  return (
+    <article className="lp-card" data-tab="5">
+      <Icon name="android" size={28} />
+      <h3>{t('download.android.title')}</h3>
+      <p>{t('download.android.text')}</p>
+      <a className="lp-button" href={path} download>
+        <Icon name="download" />
+        {t('download.android.button')}
+      </a>
+      <p className="lp-fineprint">{t('download.android.fineprint')}</p>
+    </article>
+  );
+}
+
+const FEATURES: LandingKey[] = [
+  'features.f1', 'features.f2', 'features.f3', 'features.f4', 'features.f5',
+  'features.f6', 'features.f7', 'features.f8', 'features.f9', 'features.f10',
 ];
 
-export function LandingPage() {
+const COLLAB_POINTS: LandingKey[] = ['collab.p1', 'collab.p2', 'collab.p3', 'collab.p4'];
+
+const MEASUREMENTS: Array<{ value: LandingKey; text: LandingKey }> = [
+  { value: 'speed.m1.value', text: 'speed.m1.text' },
+  { value: 'speed.m2.value', text: 'speed.m2.text' },
+  { value: 'speed.m3.value', text: 'speed.m3.text' },
+];
+
+export default function LandingPage() {
+  const { language, setLanguage, t } = useLandingLanguage();
+
+  useEffect(() => {
+    document.title = t('meta.title');
+    document.querySelector('meta[name="description"]')?.setAttribute('content', t('meta.description'));
+  }, [t]);
+
   return (
-    <main className="landing-shell">
-      <nav className="landing-nav" aria-label="Primary navigation">
-        <a className="brand-lockup" href="/" aria-label="Canvink home">
-          <span className="brand-mark" aria-hidden="true">
-            <PenLine size={19} strokeWidth={2.4} />
-          </span>
-          <span>Canvink</span>
-          <span className="alpha-pill">public alpha</span>
-        </a>
+    <main className="lp" lang={language}>
+      <header className="lp-nav lp-wrap">
+        <Brand label={t('nav.home')} />
+        <nav aria-label={t('nav.main')}>
+          <a className="lp-nav__link" href="#zusammen">{t('nav.collab')}</a>
+          <a className="lp-nav__link" href="#tempo">{t('nav.speed')}</a>
+          <a className="lp-nav__link" href="#download">{t('nav.download')}</a>
+          <LanguageToggle language={language} setLanguage={setLanguage} label={t('lang.label')} />
+          <a className="lp-button lp-button--primary lp-button--small lp-nav__cta" href={APP_PATH}>{t('nav.open')}</a>
+        </nav>
+      </header>
 
-        <div className="nav-actions">
-          <a href="#principles">Why Canvink</a>
-          <a href="#roadmap">Roadmap</a>
-          <a
-            className="nav-github"
-            href={repositoryUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <Code2 size={17} />
-            GitHub
-          </a>
-        </div>
-      </nav>
-
-      <section className="hero-section">
-        <div className="hero-copy">
-          <div className="eyebrow">
-            <Sparkles size={15} />
-            Open source. Local first. Mixed media.
+      <section className="lp-hero">
+        <div className="lp-wrap">
+          <div className="lp-hero__copy">
+            <div>
+              <p className="lp-eyebrow" data-tab="1">{t('hero.eyebrow')}</p>
+              <h1>
+                {t('hero.title.a')}{' '}
+                <span className="lp-hero__ink">
+                  {t('hero.title.b')}
+                  <InkUnderline />
+                </span>
+              </h1>
+            </div>
+            <div className="lp-hero__row">
+              <p className="lp-lede">{t('hero.lede')}</p>
+              <div className="lp-hero__aside">
+                <div className="lp-actions">
+                  <a className="lp-button lp-button--primary" href={APP_PATH}>
+                    <Icon name="globe" />
+                    {t('hero.open')}
+                  </a>
+                  <a className="lp-button" href={DESKTOP_DOWNLOAD_PATH} download>
+                    <Icon name="download" />
+                    {t('hero.windows')}
+                  </a>
+                </div>
+                <p className="lp-fineprint">{t('hero.fineprint')}</p>
+              </div>
+            </div>
           </div>
-          <h1>
-            Your notes. Your files.
-            <span>Your canvas.</span>
-          </h1>
-          <p className="hero-lede">
-            Canvink is the open notebook where handwriting, movable text, images,
-            and PDF previews live together on one page. No required account. No
-            cloud lock-in.
+          <figure className="lp-figure lp-figure--hero">
+            <div className="lp-frame lp-frame--tabs">
+              <span className="lp-frame__tabs" aria-hidden="true"><i /><i /><i /><i /><i /></span>
+              <LandingVideo clip={clip(t, CLIPS.notebook)} priority />
+            </div>
+            <figcaption>{t('hero.caption')}</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section className="lp-band" id="zusammen" aria-labelledby="zusammen-title">
+        <div className="lp-wrap">
+          <div className="lp-band__head">
+            <p className="lp-eyebrow" data-tab="6">{t('collab.eyebrow')}</p>
+            <h2 id="zusammen-title">{t('collab.title')}</h2>
+          </div>
+          <figure className="lp-figure lp-band__figure">
+            <div className="lp-frame">
+              <LandingVideo clip={clip(t, CLIPS.collab)} />
+            </div>
+            <figcaption>{t('collab.caption')}</figcaption>
+          </figure>
+          <ul className="lp-points lp-band__points">
+            {COLLAB_POINTS.map((key) => (
+              <li key={key}>{t(key)}</li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="lp-speed" id="tempo" aria-labelledby="tempo-title">
+        <div className="lp-wrap">
+          <div className="lp-head">
+            <p className="lp-eyebrow" data-tab="2">{t('speed.eyebrow')}</p>
+            <h2 id="tempo-title">{t('speed.title')}</h2>
+            <p>{t('speed.lede')}</p>
+          </div>
+          <ol className="lp-measures">
+            {MEASUREMENTS.map((item) => (
+              <li key={item.value} className="lp-measure">
+                <span className="lp-measure__value">
+                  {t(item.value)}
+                  <span className="lp-measure__unit">{t('speed.unit')}</span>
+                </span>
+                <span className="lp-measure__text">{t(item.text)}</span>
+              </li>
+            ))}
+          </ol>
+          <p className="lp-fineprint">{t('speed.fineprint')}</p>
+          <div className="lp-pair">
+            <figure className="lp-figure">
+              <div className="lp-frame">
+                <LandingVideo clip={clip(t, CLIPS.ink)} />
+              </div>
+              <figcaption>
+                <strong>{t('ink.title')}</strong>
+                {t('ink.text')}
+              </figcaption>
+            </figure>
+            <figure className="lp-figure">
+              <div className="lp-frame">
+                <LandingVideo clip={clip(t, CLIPS.markdown)} />
+              </div>
+              <figcaption>
+                <strong>{t('markdown.title')}</strong>
+                {t('markdown.text')}
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section className="lp-features" aria-labelledby="features-title">
+        <div className="lp-wrap">
+          <div className="lp-head">
+            <p className="lp-eyebrow" data-tab="3">{t('features.eyebrow')}</p>
+            <h2 id="features-title">{t('features.title')}</h2>
+          </div>
+          <ul className="lp-tabs">
+            {FEATURES.map((key) => (
+              <li key={key}>{t(key)}</li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="lp-download" id="download" aria-labelledby="download-title">
+        <div className="lp-wrap">
+          <div className="lp-head">
+            <p className="lp-eyebrow" data-tab="5">{t('download.eyebrow')}</p>
+            <h2 id="download-title">{t('download.title')}</h2>
+            <p>{t('download.lede')}</p>
+          </div>
+          <div className="lp-cards">
+            <article className="lp-card" data-tab="6">
+              <Icon name="download" size={28} />
+              <h3>{t('download.windows.title')}</h3>
+              <p>{t('download.windows.text')}</p>
+              <a className="lp-button lp-button--primary" href={DESKTOP_DOWNLOAD_PATH} download>
+                <Icon name="download" />
+                {t('download.windows.button')}
+              </a>
+              <p className="lp-fineprint">{t('download.windows.fineprint')}</p>
+            </article>
+            <article className="lp-card" data-tab="2">
+              <Icon name="globe" size={28} />
+              <h3>{t('download.browser.title')}</h3>
+              <p>{t('download.browser.text')}</p>
+              <a className="lp-button" href={APP_PATH}>
+                {t('download.browser.button')}
+                <Icon name="arrow" />
+              </a>
+            </article>
+            <InstallCard t={t} />
+            {ANDROID_DOWNLOAD_PATH ? <AndroidCard t={t} path={ANDROID_DOWNLOAD_PATH} /> : null}
+          </div>
+          <p className="lp-fineprint lp-fineprint--center">
+            {t('download.selfhost')}{' '}
+            <a href={`${REPOSITORY_URL}#build-from-source`} target="_blank" rel="noreferrer">{t('download.selfhost.link')}</a>.
           </p>
-          <div className="hero-actions">
-            <a className="primary-cta" href="/app">
-              Try the local web demo
-              <ArrowRight size={18} />
+        </div>
+      </section>
+
+      <footer className="lp-footer">
+        <div className="lp-wrap">
+          <Brand label={t('nav.home')} />
+          <p>{t('footer.version', { version: __CANVINK_VERSION__ })}</p>
+          <nav aria-label={t('footer.links')}>
+            <a href={REPOSITORY_URL} target="_blank" rel="noreferrer">
+              <Icon name="code" size={16} /> {t('footer.source')}
             </a>
-            <a
-              className="secondary-cta"
-              href={releaseUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <Download size={18} />
-              Download latest alpha
-            </a>
-          </div>
-          <p className="demo-note">
-            The demo saves only in this browser. Desktop builds use a local
-            SQLite notebook file. Current Windows and Linux packages are
-            unsigned public-alpha builds.
-          </p>
-        </div>
-
-        <div className="product-frame" aria-label="Canvink product preview">
-          <div className="window-bar">
-            <span />
-            <span />
-            <span />
-            <div className="window-title">Field Notes · Research</div>
-          </div>
-          <div className="product-ui">
-            <aside className="mock-rail">
-              <div className="mock-logo">
-                <PenLine size={14} />
-              </div>
-              <BookOpen size={17} />
-              <MousePointer2 size={17} />
-              <Layers3 size={17} />
-            </aside>
-            <aside className="mock-sidebar">
-              <small>NOTEBOOKS</small>
-              <div className="mock-notebook active">
-                <BookOpen size={14} /> Field Notes
-              </div>
-              <div className="mock-notebook">
-                <BookOpen size={14} /> Projects
-              </div>
-              <small className="section-label">RESEARCH</small>
-              <div className="mock-page active-page">Mixed media study</div>
-              <div className="mock-page">Interview notes</div>
-              <div className="mock-page nested">↳ Open questions</div>
-            </aside>
-            <section className="mock-workspace">
-              <div className="mock-toolbar">
-                <div className="tool-selected">
-                  <PenLine size={14} /> Pen
-                </div>
-                <div>Text</div>
-                <div>Image</div>
-                <div>PDF</div>
-                <span className="toolbar-spacer" />
-                <div className="sync-state">
-                  <Check size={13} /> Saved locally
-                </div>
-              </div>
-              <div className="mock-canvas">
-                <div className="paper-grid" />
-                <div className="canvas-title">A better research notebook</div>
-                <svg
-                  className="ink-stroke ink-one"
-                  viewBox="0 0 270 82"
-                  role="img"
-                  aria-label="A handwritten annotation"
-                >
-                  <path d="M8 46 C38 5, 64 72, 91 32 S146 18, 161 46 S209 65, 258 16" />
-                  <path d="M192 69 C213 62, 234 59, 259 61" />
-                </svg>
-                <div className="floating-note">
-                  <span>CORE IDEA</span>
-                  Ink, text, images, and documents should be equal objects, not
-                  separate modes.
-                </div>
-                <div className="pdf-card">
-                  <div className="pdf-sheet">
-                    <FileText size={24} />
-                    <div>
-                      <i />
-                      <i />
-                      <i className="short" />
-                    </div>
-                  </div>
-                  <strong>research-paper.pdf</strong>
-                  <small>12 pages · first-page preview</small>
-                </div>
-                <div className="image-card">
-                  <div className="image-placeholder">
-                    <ImageIcon size={25} />
-                    <span />
-                  </div>
-                  <small>Reference image</small>
-                </div>
-                <svg
-                  className="ink-stroke ink-arrow"
-                  viewBox="0 0 120 70"
-                  aria-hidden="true"
-                >
-                  <path d="M6 8 C35 13, 57 28, 92 53" />
-                  <path d="M78 51 L94 55 L91 39" />
-                </svg>
-              </div>
-            </section>
-          </div>
-        </div>
-      </section>
-
-      <section className="proof-strip" aria-label="Product principles">
-        <div>
-          <LockKeyhole size={18} />
-          <span>
-            <strong>Local by default</strong>
-            Your notebook stays on your device
-          </span>
-        </div>
-        <div>
-          <FileText size={18} />
-          <span>
-            <strong>Documented format</strong>
-            SQLite plus portable JSON export
-          </span>
-        </div>
-        <div>
-          <Code2 size={18} />
-          <span>
-            <strong>AGPL-3.0-or-later</strong>
-            Inspect, fork, and improve the code
-          </span>
-        </div>
-      </section>
-
-      <section className="principles-section" id="principles">
-        <div className="section-heading">
-          <span>One page, without artificial boundaries</span>
-          <h2>A notebook should not make you choose between writing and drawing.</h2>
-          <p>
-            Canvink treats every object as part of the same page, while keeping
-            the familiar hierarchy that makes large notebooks navigable.
-          </p>
-        </div>
-        <div className="feature-grid">
-          <article className="feature-card feature-card-wide">
-            <div className="feature-icon ink-icon">
-              <PenLine />
-            </div>
-            <span className="feature-index">01</span>
-            <h3>Ink that belongs on the page</h3>
-            <p>
-              Pressure-aware vector strokes sit directly above text, images, and
-              documents. Annotate the object you mean, in the place you mean.
-            </p>
-            <div className="stroke-sample">
-              <svg viewBox="0 0 420 90" aria-hidden="true">
-                <path d="M12 57 C52 5, 88 74, 124 34 S190 9, 215 51 S288 78, 326 31 S374 22, 408 51" />
-              </svg>
-            </div>
-          </article>
-          <article className="feature-card">
-            <div className="feature-icon">
-              <Layers3 />
-            </div>
-            <span className="feature-index">02</span>
-            <h3>Free canvas or clean paper</h3>
-            <p>
-              Choose an open canvas for exploration or an A4 page when printing
-              and predictable margins matter.
-            </p>
-            <div className="mode-preview">
-              <div className="mode-infinite">Free</div>
-              <div className="mode-paper">A4</div>
-            </div>
-          </article>
-          <article className="feature-card">
-            <div className="feature-icon">
-              <LockKeyhole />
-            </div>
-            <span className="feature-index">03</span>
-            <h3>Trust starts with local data</h3>
-            <p>
-              Desktop notebooks are written transactionally to SQLite. Search
-              indexes can be rebuilt, and JSON export gives you a portable exit.
-            </p>
-            <div className="data-path">
-              <span>notebook.sqlite</span>
-              <ArrowRight size={15} />
-              <span>export.json</span>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section className="alpha-section" id="roadmap">
-        <div>
-          <span className="section-kicker">v{__CANVINK_VERSION__} public alpha</span>
-          <h2>Small enough to test. Honest enough to trust.</h2>
-          <p>
-            This is an early, local-only release, not a finished OneNote
-            replacement. The goal is to validate the mixed-object page and its
-            storage model before adding sync.
-          </p>
-          <a href="/app" className="text-link">
-            Open the demo <ArrowRight size={17} />
-          </a>
-        </div>
-        <div className="alpha-list">
-          {alphaFeatures.map((feature) => (
-            <div key={feature}>
-              <Check size={16} />
-              {feature}
-            </div>
-          ))}
-          <div className="future-item">
-            <span>Next</span>
-            Encrypted sync, native attachment storage, OCR, and importers
-          </div>
-        </div>
-      </section>
-
-      <section className="closing-section">
-        <div className="closing-mark">
-          <PenLine size={34} />
-        </div>
-        <h2>Bring one real notebook.</h2>
-        <p>
-          Try the alpha, inspect the source, and tell us where the first five
-          minutes break.
-        </p>
-        <div className="hero-actions closing-actions">
-          <a className="primary-cta" href="/app">
-            Try Canvink <ArrowRight size={18} />
-          </a>
-          <a
-            className="secondary-cta"
-            href={repositoryUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <Code2 size={18} />
-            View source
-          </a>
-        </div>
-      </section>
-
-      <footer className="landing-footer">
-        <div className="brand-lockup">
-          <span className="brand-mark">
-            <PenLine size={17} />
-          </span>
-          Canvink
-        </div>
-        <p>Built in public. No account, telemetry, or cloud required.</p>
-        <div>
-          <a href={`${repositoryUrl}/blob/main/LICENSE`}>License</a>
-          <a href={`${repositoryUrl}/blob/main/ROADMAP.md`}>Roadmap</a>
-          <a href={`${repositoryUrl}/issues`}>Feedback</a>
+            <a href={`${REPOSITORY_URL}/blob/main/LICENSE`} target="_blank" rel="noreferrer">{t('footer.licence')}</a>
+            <a href={`${REPOSITORY_URL}/blob/main/ROADMAP.md`} target="_blank" rel="noreferrer">{t('footer.roadmap')}</a>
+            <a href={`${REPOSITORY_URL}/issues`} target="_blank" rel="noreferrer">{t('footer.feedback')}</a>
+          </nav>
         </div>
       </footer>
     </main>

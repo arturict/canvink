@@ -1,0 +1,33 @@
+/* The phone app (VIEWER_APP, see src/platform/viewerApp.ts). main.tsx sets
+   data-viewer on the root, so none of this reaches the web or desktop app.
+   The shell's own styles load with it (src/mobile/mobile.css); these hold
+   only until then. */
+:root[data-viewer] {
+  /* The page stays where the finger leaves it: no rubber band of the whole document. */
+  overscroll-behavior: none;
+  background: #f7f5ef;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-viewer] body {
+  margin: 0;
+  background: #f7f5ef;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-viewer],
+  :root[data-viewer] body {
+    background: #121715;
+  }
+}
+
+/* While the shell's code loads: plain paper, continuing the splash screen. */
+:root[data-viewer] .app-loading--mobile {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+}
+
+:root[data-viewer] .app-loading--mobile > * {
+  display: none;
+}

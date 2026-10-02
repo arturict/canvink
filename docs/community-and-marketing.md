@@ -13,6 +13,8 @@ These rules apply to maintainers, contractors, volunteers, and software agents a
 - Never claim OneNote parity.
 - Never call a build signed, secure, private, encrypted, cross-platform, or production-ready without evidence for that exact claim.
 - Say that desktop data uses local SQLite and browser-demo data uses IndexedDB.
+- Say that self-hosting serves the static browser app and does not create server-side notebook storage, accounts, or sync.
+- Describe offline reopening only as an application-shell cache after a successful first load, not as sync or guaranteed backup.
 - State that the two stores do not sync.
 - State that local data is not encrypted by Canvink in the current alpha.
 - Keep the unsigned-build warning next to desktop downloads.

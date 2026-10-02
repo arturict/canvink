@@ -1,4 +1,6 @@
 allowBuilds:
+  '@clerk/shared': false
+  cbor-extract: false
   core-js: false
 supportedArchitectures:
   os:
@@ -11,6 +13,12 @@ supportedArchitectures:
     - musl
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
+  - '@cortex-js/compute-engine@0.100.1'
   - pdfjs-dist@6.2.108
   - baseline-browser-mapping@2.11.6
   - electron-to-chromium@1.5.398
+overrides:
+  'uuid@<11.1.1': 11.1.1
+patchedDependencies:
+  '@automerge/automerge-repo@2.5.6': patches/@automerge__automerge-repo@2.5.6.patch
+  jsxgraph@1.13.1: patches/jsxgraph@1.13.1.patch

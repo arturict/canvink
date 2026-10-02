@@ -1,0 +1,157 @@
+.history-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(10 16 28 / 48%);
+}
+
+.history-panel {
+  width: min(920px, 100%);
+  max-height: min(760px, calc(100vh - 48px));
+  overflow: auto;
+  border: 1px solid var(--border, #d8dee9);
+  border-radius: 18px;
+  background: var(--surface, #fff);
+  color: var(--text, #182230);
+  box-shadow: 0 24px 80px rgb(10 16 28 / 24%);
+}
+
+.history-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 24px 12px;
+}
+
+.history-header h2,
+.history-preview h3 { margin: 0; }
+
+.history-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 5px;
+  color: #526276;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.history-icon-button,
+.history-delete {
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.history-icon-button { width: 36px; height: 36px; border-radius: 9px; }
+.history-icon-button:hover,
+.history-icon-button:focus-visible { background: #eef2f7; }
+
+.history-safety-note {
+  margin: 0 24px 18px;
+  padding: 11px 13px;
+  border-radius: 10px;
+  background: var(--app-green-soft, #eef5f2);
+  color: var(--app-ink, #1e2925);
+  font-size: 0.9rem;
+}
+
+.history-checkpoint { padding: 0 24px 20px; }
+.history-checkpoint label { display: block; margin-bottom: 7px; font-weight: 700; }
+.history-checkpoint > div { display: flex; gap: 8px; }
+.history-checkpoint input {
+  min-width: 0;
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #c8d1dd;
+  border-radius: 9px;
+  font: inherit;
+}
+
+.history-checkpoint button,
+.history-restore,
+.history-delete-confirm button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 13px;
+  border: 1px solid var(--app-green, #3f6859);
+  border-radius: 9px;
+  background: var(--app-green, #3f6859);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.history-content {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
+  min-height: 330px;
+  border-block: 1px solid #e0e5ec;
+}
+
+.history-list { overflow: auto; border-right: 1px solid #e0e5ec; }
+.history-list article { position: relative; display: flex; border-bottom: 1px solid #edf0f4; }
+.history-list article.selected { background: var(--app-green-soft, #eef5f2); box-shadow: inset 3px 0 var(--app-green, #3f6859); }
+.history-entry {
+  min-width: 0;
+  flex: 1;
+  padding: 14px 44px 14px 18px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.history-entry strong,
+.history-entry span,
+.history-entry small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-entry span { margin-top: 4px; color: #4d5c6f; font-size: 0.88rem; }
+.history-entry small { margin-top: 2px; color: #69778a; }
+.history-delete { position: absolute; top: 13px; right: 12px; width: 30px; height: 30px; color: #8c3540; }
+
+.history-delete-confirm {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  padding: 9px 12px;
+  background: #fff8f8;
+}
+.history-delete-confirm button { padding: 5px 9px; }
+.history-delete-confirm button:last-child { border-color: #c8d1dd; background: #fff; color: var(--app-green, #3f6859); }
+
+.history-preview { padding: 20px 22px; }
+.history-preview dl { display: grid; gap: 8px; margin: 18px 0; }
+.history-preview dl div { display: flex; justify-content: space-between; gap: 12px; }
+.history-preview dt { color: #536276; }
+.history-preview dd { margin: 0; font-weight: 800; }
+.history-preview ul { padding-left: 20px; color: #46566a; }
+.history-restore { margin-top: 12px; }
+.history-status { min-height: 24px; margin: 0; padding: 13px 24px 17px; color: #7d3340; }
+.history-empty { padding: 20px; color: #647386; }
+
+@media (max-width: 720px) {
+  .history-backdrop { padding: 0; }
+  .history-panel { width: 100%; max-height: 100vh; border-radius: 0; }
+  .history-content { grid-template-columns: 1fr; }
+  .history-list { max-height: 280px; border-right: 0; border-bottom: 1px solid #e0e5ec; }
+  .history-checkpoint > div { align-items: stretch; flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .history-panel { scroll-behavior: auto; }
+}

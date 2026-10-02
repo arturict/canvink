@@ -1,0 +1,40 @@
+# Copy to .dev.vars for local `wrangler dev`. Never commit the real file.
+# `.dev.vars` is NOT covered by any Cloudflare/wrangler-provided default
+# gitignore — wrangler ships no implicit gitignore behavior for this repo at
+# all. It is ignored here only because the *repository root* `.gitignore`
+# explicitly lists `.dev.vars` and `**/.dev.vars` (D3). Double check that
+# entry is still present before committing this directory.
+
+# Clerk (optional — omit to leave editor-via-Clerk paths untestable locally)
+CLERK_ISSUER=https://your-app.clerk.accounts.dev
+CLERK_JWKS_URL=
+
+# Optional: comma-separated `azp` allow-list (D5). Leave unset to skip the
+# check entirely.
+CLERK_AUTHORIZED_PARTIES=
+
+# Test-only shim: enables `test:<sub>:<hmac>` bearer tokens instead of real
+# Clerk JWTs. MUST NOT be set in any deployed environment.
+TEST_AUTH_SECRET=local-dev-only-shim-secret
+
+# Personal space (PERSONAL-SYNC.md §2.1, §8.1): 32 random bytes, base64.
+# Derives `spaceId` from a Clerk `sub`. Write-once in a real deployment —
+# rotating it orphans every existing personal space. Every `/me/space*` and
+# `/me/assets/*` route returns 503 while this is unset. Already set as a
+# secret on the deployed Worker (`wrangler secret put PERSONAL_SPACE_SALT`);
+# only needed here for local `wrangler dev`.
+PERSONAL_SPACE_SALT=local-dev-only-personal-space-salt
+
+# R2 asset storage (PERSONAL-SYNC.md §3.5, §4.2) is NOT yet enabled on this
+# Cloudflare account (R2 itself is disabled; `wrangler r2 bucket create`
+# fails with error 10042). There is no local dev var for it: the `ASSETS`
+# binding comes only from `r2_buckets` in wrangler.jsonc, which is currently
+# commented out. Until that block is uncommented (after R2 is enabled and
+# the bucket exists), every `/me/assets/*` route answers
+# 503 {"error":"assets-not-configured"} — the rest of the personal space
+# (rooms, doc sync, /me/space) works normally without it.
+
+# Desktop sign-in (PERSONAL-SYNC.md §3.7): HMAC key for device access tokens,
+# 32 random bytes, base64. The /api/v1/device/* and /api/v1/me/devices* routes
+# answer 503 while it is unset.
+DEVICE_TOKEN_SECRET=local-dev-only-device-token-secret

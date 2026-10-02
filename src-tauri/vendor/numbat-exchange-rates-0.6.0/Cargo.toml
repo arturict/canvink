@@ -1,0 +1,20 @@
+[package]
+name = "numbat-exchange-rates"
+description = "A library to fetch and parse currency exchange rates from the ECB"
+authors = ["David Peter <mail@david-peter.de>"]
+homepage = "https://numbat.dev/"
+repository = "https://github.com/sharkdp/numbat"
+version = "0.6.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+rust-version = "1.88"
+
+[dependencies]
+attohttpc = { version = "0.27.0", default-features = false, features = [
+    "tls-rustls-webpki-roots",
+], optional = true }
+# Canvink security patch: upstream 0.6.0 pins vulnerable quick-xml 0.37.5.
+quick-xml = ">=0.41,<0.42"
+
+[features]
+fetch-exchangerates = ["dep:attohttpc"]

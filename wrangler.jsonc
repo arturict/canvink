@@ -1,0 +1,24 @@
+// Static hosting for the Canvink web app (example instance).
+// Deploy: pnpm build (with VITE_COLLAB_SYNC_URL set) then wrangler deploy.
+// The collab backend lives separately in services/collab-sync.
+{
+  "$schema": "./services/collab-sync/node_modules/wrangler/config-schema.json",
+  "name": "canvink-web",
+  "compatibility_date": "2026-09-01",
+  "main": "./web-worker/index.ts",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/download/Canvink.apk"]
+  },
+  "r2_buckets": [
+    { "binding": "DOWNLOADS", "bucket_name": "canvink-downloads" }
+  ],
+  // Reachable only via the custom domain, not a workers.dev URL.
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    { "pattern": "canvink.example.com", "custom_domain": true }
+  ]
+}

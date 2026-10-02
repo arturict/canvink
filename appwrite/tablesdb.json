@@ -1,0 +1,7 @@
+[
+  {
+    "$id": "canvink-sync",
+    "name": "Canvink encrypted sync",
+    "enabled": true
+  }
+]

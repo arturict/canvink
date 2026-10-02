@@ -16,6 +16,70 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  collab-sync:
+    name: collab-sync (worker + e2e)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          check-latest: false
+
+      - name: Install pinned pnpm
+        run: npm install --global pnpm@11.18.0
+
+      # `services/collab-sync` is a standalone package with its own lockfile
+      # (see its README) — installed independently of the root workspace.
+      - name: Install collab-sync worker dependencies
+        working-directory: services/collab-sync
+        run: pnpm install --frozen-lockfile
+
+      - name: Type-check collab-sync worker
+        working-directory: services/collab-sync
+        run: pnpm typecheck
+
+      - name: Test collab-sync worker (Vitest, real Workers runtime)
+        working-directory: services/collab-sync
+        run: pnpm test
+
+      - name: Verify collab-sync wrangler config (dry run, no deploy)
+        working-directory: services/collab-sync
+        run: pnpm dry-run
+
+      # The root app + its lockfile are needed too: the collab-sync e2e spec
+      # builds the app itself (VITE_COLLAB_SYNC_URL baked in at build time)
+      # and spins up `wrangler dev` for the worker — see
+      # tests/e2e/collab-sync.playwright.config.ts. Both web servers run in
+      # local mode (no `--remote`), so no Cloudflare login is required here.
+      - name: Install locked frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run collab-sync notebook-sharing e2e spec
+        id: collab_e2e
+        run: pnpm exec playwright test --config tests/e2e/collab-sync.playwright.config.ts
+
+      - name: Upload collab-sync Playwright failure diagnostics
+        if: ${{ failure() && steps.collab_e2e.outcome == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: collab-sync-playwright-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/collab-sync/
+          if-no-files-found: error
+          retention-days: 1
+
   rust:
     name: required
     runs-on: ubuntu-24.04
@@ -63,6 +127,29 @@ jobs:
       - name: Smoke-test built site
         run: node scripts/smoke-site.mjs dist
 
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run browser end-to-end tests
+        id: browser_e2e
+        # Not reusing the production verification build above: the e2e web server
+        # builds its own bundle that opts into the Math Canvas URL override
+        # (VITE_CANVINK_ALLOW_FEATURE_OVERRIDE, set in playwright.config.ts). The
+        # release-representative build stays clean so smoke-site validates real
+        # production gating.
+        run: pnpm test:e2e
+
+      - name: Upload Playwright failure diagnostics
+        if: ${{ failure() && steps.browser_e2e.outcome == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Install Linux build dependencies
         run: |
           sudo apt-get update
@@ -80,7 +167,7 @@ jobs:
           rustup component list --installed
 
       - name: Restore Rust CI cache
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        uses: Swatinem/rust-cache@23869a5bd66c73db3c0ac40331f3206eb23791dc # v2.9.1
         with:
           workspaces: src-tauri -> target
           cache-on-failure: false
